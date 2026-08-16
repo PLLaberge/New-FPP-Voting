@@ -11,7 +11,7 @@ next song. Runs entirely on your Pi — no third-party server.
 | Catalog parser + reconciler | Done, tested |
 | Database layer | Done, tested |
 | FPP adapter | Done, tested against constructed responses — see below |
-| Service (FastAPI) | Not started |
+| Service (FastAPI) | Done, tested |
 | Voter page | Prototype done, runs on simulated data |
 | Admin page | Not started |
 | Plugin packaging | Not started |
@@ -25,7 +25,7 @@ pip install -r requirements.txt
 pytest
 ```
 
-All 143 tests should pass. That confirms your environment works.
+All 167 tests should pass. That confirms your environment works.
 
 ## Try the voter page
 
@@ -75,6 +75,7 @@ src/fppvote/
   catalog/     parser.py, reconcile.py, metadata.py  — tested
   db/          schema.sql, connection.py, store.py   — eight tables, tested
   fpp/         adapter.py, http.py, mqtt.py, fake.py — the only FPP touchpoint
+  service/     config.py, follower.py, server.py    — FastAPI, rounds, votes
   web/static/  vote.html                             — the voter page
 tests/         pytest suite + playlist fixtures
 scripts/       build_catalog.py, init_db.py, capture_fpp.py
@@ -83,6 +84,27 @@ data/          catalog.json, fppvote.db (generated)
 
 All database access goes through `db/store.py`. Nothing above it writes SQL.
 All FPP access goes through `fpp/`. Nothing else talks to FPP.
+
+## Run the service
+
+On a laptop, with a simulated show and no Pi anywhere:
+
+```bash
+FPPVOTE_FAKE=1 uvicorn fppvote.service:app --reload
+```
+
+Then <http://localhost:8000/api/state> for what the voter page will consume,
+and <http://localhost:8000/api/health> for whether it can see FPP. Against a
+real Pi, drop `FPPVOTE_FAKE` and set `FPPVOTE_FPP_URL=http://<pi>`.
+
+| Variable | Default | |
+|---|---|---|
+| `FPPVOTE_DB` | `data/fppvote.db` | database path |
+| `FPPVOTE_FPP_URL` | `http://localhost` | where FPP is |
+| `FPPVOTE_MQTT_HOST` | *(empty)* | empty disables MQTT; HTTP polling is always the fallback |
+| `FPPVOTE_POLL_SECONDS` | `1.0` | status poll interval |
+| `FPPVOTE_HANDOVER_LEAD` | `2.0` | jump to the winner this long before the song ends |
+| `FPPVOTE_FAKE` | `0` | `1` runs a simulated show |
 
 ## Capture your FPP's responses
 

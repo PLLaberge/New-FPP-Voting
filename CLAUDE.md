@@ -105,6 +105,14 @@ But MQTT is optional in FPP settings, so it can never be the only path.
 - Ties break toward **least-recently-played**, so low turnout rotates the
   catalogue instead of favouring whatever sorts first.
 - The playing song and the last 4 played are locked.
+- The winner takes over by **jumping a beat early** — `start_at_item` fires
+  ~2s before the current song ends (`handover_lead_seconds`), so the winner
+  starts clean at the cost of the outgoing song's last second or two, which is
+  usually a fade. Paulin's call, made deliberately over the alternative of
+  letting FPP advance and then cutting away from a second of the wrong song.
+  If the lead-time window is missed, the service falls back to exactly that
+  alternative rather than skipping the winner — a silently unplayed winner is
+  the one outcome neither option may produce.
 
 Enforced in `db/store.py`, not in the service. `cast_vote` does its
 count-then-insert inside `BEGIN IMMEDIATE`, because the unique index catches an
@@ -156,7 +164,15 @@ Python enforces PEP 668 externally-managed environments.
    that the parsing is self-consistent. `start_at_item` over HTTP is the least
    verified call in the project — if votes tally but nothing changes song,
    start there.
-4. Service — FastAPI, rounds, votes, WebSocket
+4. ~~Service — FastAPI, rounds, votes, WebSocket~~ **done, tested** —
+   `service/config.py`, `follower.py`, `server.py`. Handlers are sync `def` so
+   FastAPI's threadpool meets the store's thread-local connections; the
+   follower is an async task that offloads each pass with `asyncio.to_thread`.
+   The show is derived from the playlist FPP reports playing, matched against
+   `shows.playlist_name` — no admin toggle, right after a restart. The module
+   is `server.py`, never `app.py`: a submodule named `app` shadows the package
+   `__getattr__` that builds the ASGI app, and uvicorn then fails with
+   "'module' object is not callable" at the first request.
 5. Wire `web/static/vote.html` to live data (it currently self-simulates)
 6. Admin page — reconciliation, category assignment, settings
 7. Package as an FPP plugin, deploy, add the tunnel
