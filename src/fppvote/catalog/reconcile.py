@@ -33,6 +33,7 @@ CATEGORY_ALIASES = {
         "Kids & Movies": "Kids & Movies",
         "New this year": "New this year",
         "Not-So-Christmasy": "Pop",
+        "Instrumental": "Instrumental",
     },
     ("nye", "christmas"): {
         "Rock": "Rock & Roll",
@@ -40,7 +41,9 @@ CATEGORY_ALIASES = {
         "Kids & Movies": "Kids & Movies",
         "New this year": "New this year",
         "Dance Tunes": "Contemporary",
-        "Instrumental": "Contemporary",
+        # Christmas gained its own Instrumental chip, so this maps straight
+        # across now instead of degrading to Contemporary.
+        "Instrumental": "Instrumental",
         "Throwback": "Crooners",
         "Countdown": "Contemporary",
     },

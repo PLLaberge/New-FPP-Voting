@@ -55,6 +55,19 @@ playlist is deactivated, not deleted, so categories and votes survive.
 **An uncategorised song still appears to voters under "All".** A curation gap
 must never hide a song from the people voting.
 
+Chips are per show and a show has only the ones that suit it — Halloween might
+be Scary / Spooky / Funny and share nothing with Christmas. `show_categories`
+is that vocabulary, and `Store.set_categories` refuses anything outside it: an
+unrecognised name renders no chip, so the song silently vanishes from every
+filtered view while still appearing under "All".
+
+A chip with no songs behind it is a dead end a viewer can only tap to see
+nothing, so the voter page asks for `list_categories(show_id, non_empty=True)`
+and the admin page asks for the full vocabulary plus `category_counts()`.
+Counted over active songs, so a chip disappears when its last song leaves the
+playlist and returns when it comes back — without the curated vocabulary itself
+ever being edited.
+
 ### 5. All FPP access goes through `fpp/adapter.py`. No exceptions.
 FPP 10 ships mid-August 2026 and major releases break things. One file to fix.
 Contract tests run the same assertions against every implementation, including
@@ -79,6 +92,29 @@ But MQTT is optional in FPP settings, so it can never be the only path.
   catalogue instead of favouring whatever sorts first.
 - The playing song and the last 4 played are locked.
 
+Enforced in `db/store.py`, not in the service. `cast_vote` does its
+count-then-insert inside `BEGIN IMMEDIATE`, because the unique index catches an
+exact double-submit but cannot catch "allowance 3, four different songs" — two
+taps that both read a count of 2 and both insert. The tally, the lock set and
+the tie-break are all queries over `votes`/`rounds`, never stored counters, so
+they are correct after a restart with no state to rebuild.
+
+`ensure_round`, not `open_round`: a round is started only when FPP reports a
+genuinely *different* song. FPP replays the current song after every reconnect,
+and opening a round per report would discard everyone's votes mid-song during
+exactly the wobble the votes most need to survive.
+
+### 8. Voter identity is a browser-held token, never an IP.
+`votes.voter_hash` is an HMAC (per-install salt in `settings`) of an opaque
+random token the viewer's own browser generates and keeps. Not an IP address:
+behind Cloudflare Tunnel every viewer arrives from the same edge address, so
+IP-derived identity would merge the whole audience into one voter and break
+voting in precisely the deployment we are shipping.
+
+It must also be **transparent to the viewer** — say in plain language on the
+page what is stored, and offer a way to reset it. The raw token never reaches
+the database. Wire this up at stage 5.
+
 ## Reliability is the actual feature
 
 The viewers already like the old broken app. The win is that this one keeps
@@ -92,7 +128,11 @@ Python enforces PEP 668 externally-managed environments.
 ## Build order
 
 1. ~~Catalog parser + reconciler~~ **done, tested**
-2. Database layer — schema exists, needs the access code
+2. ~~Database layer~~ **done, tested** — `db/connection.py`, `db/store.py`,
+   `scripts/init_db.py`. All SQL lives in `store.py`; nothing above it writes
+   any. `reconcile()` stays pure and in-memory — the store is only the
+   load/save boundary around it, which is why idempotence is still testable
+   without a database.
 3. FPP adapter — interface exists, needs Http/Mqtt/Fake implementations
 4. Service — FastAPI, rounds, votes, WebSocket
 5. Wire `web/static/vote.html` to live data (it currently self-simulates)
@@ -110,6 +150,21 @@ Stages 1–6 run entirely on a laptop against `FakeFppAdapter`. No Pi needed.
   the Star Wars Imperial March mashup.
 - FPP truncates long media filenames mid-word. The parser repairs these only
   when unambiguous and flags the rest rather than guessing.
+- ~~`300-violin-orchestra` was tagged **Instrumental** at Christmas when that
+  was a New Year's chip only~~ **resolved.** Christmas now has its own
+  Instrumental chip and all five of its instrumental tracks carry it: 300
+  Violin Orchestra, Christmas Eve / Sarajevo 12/24, First Snow, Carol of the
+  Bells (Foster) and Wizards in Winter. `CATEGORY_ALIASES` maps Instrumental
+  straight across between the two shows now instead of degrading it to
+  Contemporary. It was the only out-of-vocabulary assignment in either
+  playlist, and `Store.set_categories` refuses new ones.
+- ~~`music-box-dancer-radio-version` was Instrumental at New Year's but not at
+  Christmas~~ **resolved** — an oversight, now tagged at both, bringing
+  Christmas to six instrumentals. Categories are per show and editorial, but
+  "is this an instrumental?" is a fact about the recording rather than about
+  the night, so a song at both shows should not disagree with itself.
+  `test_songs_in_both_shows_agree_on_being_instrumental` holds the line across
+  all 20 shared songs.
 
 ## Conventions
 

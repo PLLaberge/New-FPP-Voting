@@ -2,6 +2,48 @@
 This is the `songs` table: artist and year are properties of the song and are
 true regardless of which show plays it. year=None means "needs review"."""
 
+# Show definitions — display copy and the controlled category vocabulary, in
+# the order the chips appear. Lives here rather than in a script because both
+# build_catalog.py and init_db.py need it and two copies would drift; once a
+# database exists the `shows` and `show_categories` tables are the source of
+# truth and the admin page edits them, not this file.
+#
+# playlist_name must match the FPP playlist EXACTLY — it is what the adapter
+# asks FPP for at stage 3. These are unverified guesses; confirm them against
+# the Pi before wiring the adapter up.
+SHOW_DEFS = {
+    "christmas": {
+        "name": "Christmas 2025",
+        "playlist_name": "Christmas 2025",
+        "tagline": "Tap any song. The winner plays next.",
+        "note": "",
+        "theme": "christmas",
+        # Instrumental sits with the other genre chips; Not-So-Christmasy is a
+        # catch-all and stays last. Move it if you would rather it read
+        # differently — sort_order is just this list's order.
+        "categories": ["New this year", "Traditional", "Contemporary", "Spiritual",
+                       "Crooners", "Rock & Roll", "Sing-Along", "Kids & Movies",
+                       "Instrumental", "Not-So-Christmasy"],
+    },
+    "nye": {
+        "name": "New Year's Eve 2026",
+        "playlist_name": "New Years 2026",
+        "tagline": "Ring it in. The winner plays next.",
+        "note": "Dec 29 – Jan 3",
+        "theme": "nye",
+        "categories": ["New this year", "Countdown", "Dance Tunes", "Pop", "Rock",
+                       "Kids & Movies", "Throwback", "Instrumental"],
+    },
+    "halloween": {
+        "name": "Halloween 2026",
+        "playlist_name": "Halloween 2026",
+        "tagline": "Catalog not built yet.",
+        "note": "New show — playlist still to come",
+        "theme": "halloween",
+        "categories": [],
+    },
+}
+
 META = {
  # key: (artist, year)
  "christmas-vacation":                              (None, None),
@@ -80,7 +122,7 @@ META = {
 
 CHRISTMAS_CATS = {
  "christmas-vacation":                             ["Sing-Along","Not-So-Christmasy"],
- "christmas-sarajevo-12-24-instrumental":          ["Rock & Roll","Traditional"],
+ "christmas-sarajevo-12-24-instrumental":          ["Rock & Roll","Traditional","Instrumental"],
  "let-it-snow-baby-its-cold-outside":              ["Contemporary"],
  "under-the-sea-the-little-mermaid":               ["Kids & Movies","Not-So-Christmasy"],
  "we-three-kings":                                 ["Traditional","Spiritual"],
@@ -98,8 +140,8 @@ CHRISTMAS_CATS = {
  "zero":                                           ["Rock & Roll","Not-So-Christmasy"],
  "jingle-bells-epic-version":                      ["Traditional","Rock & Roll"],
  "santa-wont-you-bring-me-love":                   ["New this year","Contemporary"],
- "first-snow-instrumental":                        ["Rock & Roll","Contemporary"],
- "music-box-dancer-radio-version":                 ["Contemporary"],
+ "first-snow-instrumental":                        ["Rock & Roll","Contemporary","Instrumental"],
+ "music-box-dancer-radio-version":                 ["Contemporary","Instrumental"],
  "how-far-ill-go":                                 ["Kids & Movies","Not-So-Christmasy"],
  "takin-care-of-christmas":                        ["Rock & Roll"],
  "disney-medley-happily-ever-after":               ["Kids & Movies"],
@@ -120,10 +162,10 @@ CHRISTMAS_CATS = {
  "star-wars-funk-final":                           ["Kids & Movies","Not-So-Christmasy"],
  "the-spirit-of-christmas-medley":                 ["Contemporary","Spiritual"],
  "my-favorite-things":                             ["Kids & Movies","Contemporary"],
- "carol-of-the-bells-foster-instrumental":         ["Contemporary","Traditional"],
+ "carol-of-the-bells-foster-instrumental":         ["Contemporary","Traditional","Instrumental"],
  "barbie-girl":                                    ["Kids & Movies","Not-So-Christmasy"],
  "light-the-lights-edited":                        ["Contemporary"],
- "wizards-in-winter-instrumental":                 ["Rock & Roll","Contemporary"],
+ "wizards-in-winter-instrumental":                 ["Rock & Roll","Contemporary","Instrumental"],
  "its-the-most-wonderful-time-of-the-year":        ["Crooners","Sing-Along"],
  "taylor-swift-show":                              ["Not-So-Christmasy"],
  "hallelujah":                                     ["Contemporary","Spiritual"],

@@ -583,6 +583,7 @@
     "Rock & Roll",
     "Sing-Along",
     "Kids & Movies",
+    "Instrumental",
     "Not-So-Christmasy"
    ],
    "songs": [
@@ -597,7 +598,8 @@
      "key": "christmas-sarajevo-12-24-instrumental",
      "categories": [
       "Rock & Roll",
-      "Traditional"
+      "Traditional",
+      "Instrumental"
      ]
     },
     {
@@ -716,13 +718,15 @@
      "key": "first-snow-instrumental",
      "categories": [
       "Rock & Roll",
-      "Contemporary"
+      "Contemporary",
+      "Instrumental"
      ]
     },
     {
      "key": "music-box-dancer-radio-version",
      "categories": [
-      "Contemporary"
+      "Contemporary",
+      "Instrumental"
      ]
     },
     {
@@ -874,7 +878,8 @@
      "key": "carol-of-the-bells-foster-instrumental",
      "categories": [
       "Contemporary",
-      "Traditional"
+      "Traditional",
+      "Instrumental"
      ]
     },
     {
@@ -894,7 +899,8 @@
      "key": "wizards-in-winter-instrumental",
      "categories": [
       "Rock & Roll",
-      "Contemporary"
+      "Contemporary",
+      "Instrumental"
      ]
     },
     {

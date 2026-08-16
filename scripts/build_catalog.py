@@ -4,17 +4,17 @@ from pathlib import Path
 sys.path[:0] = [str(Path(__file__).resolve().parents[1] / "src"), str(Path(__file__).resolve().parents[1])]
 from tests.fixtures.playlists import CHRISTMAS, NYE
 from fppvote.catalog.parser import parse_playlist
-from fppvote.catalog.metadata import META, CHRISTMAS_CATS, NYE_CATS, PREVIOUSLY_LISTED_NOT_IN_PLAYLIST
+from fppvote.catalog.metadata import (META, CHRISTMAS_CATS, NYE_CATS, SHOW_DEFS,
+                                      PREVIOUSLY_LISTED_NOT_IN_PLAYLIST)
 
+# Show copy and category order come from SHOW_DEFS so this script and
+# init_db.py cannot drift; only the playlist entries and the category
+# assignments are joined in here.
 SHOWS = {
-  "christmas": {"name":"Christmas 2025","entries":CHRISTMAS,"cats":CHRISTMAS_CATS,
-                "order":["New this year","Traditional","Contemporary","Spiritual","Crooners",
-                         "Rock & Roll","Sing-Along","Kids & Movies","Not-So-Christmasy"],
-                "tagline":"Tap any song. The winner plays next.","note":""},
-  "nye":       {"name":"New Year's Eve 2026","entries":NYE,"cats":NYE_CATS,
-                "order":["New this year","Countdown","Dance Tunes","Pop","Rock",
-                         "Kids & Movies","Throwback","Instrumental"],
-                "tagline":"Ring it in. The winner plays next.","note":"Dec 29 – Jan 3"},
+  sid: {**SHOW_DEFS[sid], "entries": entries, "cats": cats,
+        "order": SHOW_DEFS[sid]["categories"]}
+  for sid, entries, cats in (("christmas", CHRISTMAS, CHRISTMAS_CATS),
+                             ("nye", NYE, NYE_CATS))
 }
 
 catalog, shows, report = {}, {}, []
@@ -50,8 +50,9 @@ for sid, cfg in SHOWS.items():
     for t in PREVIOUSLY_LISTED_NOT_IN_PLAYLIST.get(sid, []):
         report.append(("in_list_not_in_playlist", sid, t))
 
-shows["halloween"] = {"name":"Halloween 2026","tagline":"Catalog not built yet.",
-                      "note":"New show — playlist still to come","cats":[],"songs":[]}
+_h = SHOW_DEFS["halloween"]
+shows["halloween"] = {"name":_h["name"],"tagline":_h["tagline"],
+                      "note":_h["note"],"cats":_h["categories"],"songs":[]}
 
 OUT = Path(__file__).resolve().parents[1] / "data" / "catalog.json"
 json.dump({"songs":catalog,"shows":shows}, open(OUT,"w"), indent=1, ensure_ascii=False)

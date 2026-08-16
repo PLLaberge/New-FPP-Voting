@@ -9,6 +9,9 @@ venv/
 # Local data — the database is generated, never committed
 *.db
 *.db-journal
+# WAL mode keeps two sidecar files alongside the database while it is open
+*.db-wal
+*.db-shm
 *.sqlite3
 data/local/
 
