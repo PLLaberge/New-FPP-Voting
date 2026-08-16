@@ -27,6 +27,16 @@ from dataclasses import dataclass
 from typing import Protocol, runtime_checkable
 
 
+class FppError(RuntimeError):
+    """FPP could not be reached, or answered with something unusable.
+
+    get_status() never raises this — it degrades to status='unknown' instead,
+    because a status read failing must not stop the show. The other calls do
+    raise it: they are triggered by an admin action or a vote result, where
+    silently doing nothing would be worse than an error the caller can log.
+    """
+
+
 @dataclass(frozen=True)
 class PlaylistEntry:
     """One item in an FPP playlist."""
@@ -83,3 +93,42 @@ class FppAdapter(Protocol):
 # the contract tests; the old plugin declared open-ended support for versions
 # that did not exist yet, and shipped broken to people who trusted it.
 TESTED_FPP_VERSIONS = ("8.0", "9.0", "9.5")
+
+# Status values a ShowStatus may carry. 'unknown' means we could not reach FPP,
+# which is different from knowing it is idle — the service must not close an
+# open round on 'unknown', or a momentary network blip discards live votes.
+STATUS_IDLE = "idle"
+STATUS_PLAYING = "playing"
+STATUS_STOPPING = "stopping"
+STATUS_UNKNOWN = "unknown"
+
+UNREACHABLE = ShowStatus(
+    status=STATUS_UNKNOWN, playlist_name=None, sequence_name=None,
+    media_title=None, media_artist=None,
+    seconds_elapsed=0.0, seconds_remaining=0.0, seconds_total=0.0,
+)
+
+
+def major_minor(version: str) -> str:
+    """'9.5.1' -> '9.5'. FPP ships patch releases that change nothing we use."""
+    parts = str(version).strip().lstrip("vV").split(".")
+    return ".".join(parts[:2]) if len(parts) >= 2 else (parts[0] if parts else "")
+
+
+def untested_version_warning(version: str | None) -> str | None:
+    """A sentence for the log and the health endpoint, or None if it is fine.
+
+    A warning, never a refusal: telling Paulin his FPP is untested is useful,
+    but refusing to run on the strength of a version string would take the show
+    down over a number. FPP 10 ships mid-August 2026 and this is how we find
+    out — followed by running the contract tests, which is the actual check.
+    """
+    if not version:
+        return ("FPP version unknown — cannot tell whether this release is "
+                "one the contract tests have run against.")
+    if major_minor(version) in TESTED_FPP_VERSIONS:
+        return None
+    return (f"FPP {version} has not been tested against this plugin "
+            f"(tested: {', '.join(TESTED_FPP_VERSIONS)}). Run the contract "
+            f"tests in tests/test_adapter.py against a capture from this Pi "
+            f"before trusting it for a show.")

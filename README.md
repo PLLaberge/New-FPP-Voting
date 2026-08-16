@@ -10,7 +10,7 @@ next song. Runs entirely on your Pi — no third-party server.
 |---|---|
 | Catalog parser + reconciler | Done, tested |
 | Database layer | Done, tested |
-| FPP adapter | Interface defined, implementations pending |
+| FPP adapter | Done, tested against constructed responses — see below |
 | Service (FastAPI) | Not started |
 | Voter page | Prototype done, runs on simulated data |
 | Admin page | Not started |
@@ -25,7 +25,7 @@ pip install -r requirements.txt
 pytest
 ```
 
-All 79 tests should pass. That confirms your environment works.
+All 143 tests should pass. That confirms your environment works.
 
 ## Try the voter page
 
@@ -74,13 +74,30 @@ nothing else — re-running the script rebuilds the rest.
 src/fppvote/
   catalog/     parser.py, reconcile.py, metadata.py  — tested
   db/          schema.sql, connection.py, store.py   — eight tables, tested
-  fpp/         adapter.py                            — the only FPP touchpoint
+  fpp/         adapter.py, http.py, mqtt.py, fake.py — the only FPP touchpoint
   web/static/  vote.html                             — the voter page
 tests/         pytest suite + playlist fixtures
-scripts/       build_catalog.py, init_db.py
+scripts/       build_catalog.py, init_db.py, capture_fpp.py
 data/          catalog.json, fppvote.db (generated)
 ```
 
 All database access goes through `db/store.py`. Nothing above it writes SQL.
+All FPP access goes through `fpp/`. Nothing else talks to FPP.
+
+## Capture your FPP's responses
+
+**Do this before trusting the adapter.** The contract tests currently run
+against responses *constructed* from FPP's documented API, not captured from a
+real Pi — so a green suite proves the parsing is self-consistent, not that the
+field names match your FPP.
+
+```bash
+python3 scripts/capture_fpp.py --host 192.168.1.50   # your Pi's address
+```
+
+Capture **while a show is playing** — an idle FPP omits most of the fields that
+matter. It writes `tests/fixtures/captured/*.json`; `pytest` picks them up
+automatically and starts checking the parsing against what FPP actually said.
+Commit them. They are what makes the FPP 10 upgrade a five-second check.
 
 See `CLAUDE.md` for architecture decisions and why they were made.

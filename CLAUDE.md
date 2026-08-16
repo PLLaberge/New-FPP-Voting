@@ -77,6 +77,20 @@ Do **not** widen `TESTED_FPP_VERSIONS` without running the contract tests. The
 old plugin declared support for versions that did not exist yet and shipped
 broken to people who trusted the range.
 
+An untested version **warns, never refuses** — `untested_version_warning()`.
+Taking the show down over a version string would be a worse bug than the one
+being guarded against.
+
+MQTT wraps HTTP rather than replacing it: `MqttFppAdapter(HttpFppAdapter(...))`.
+Freshness is judged on a message timestamp, not a connection callback, because
+a broker that connects and then goes silent looks healthy from the connection's
+side. Stale means fall back to polling — no reconnect logic, no state to rebuild.
+
+`get_status()` never raises; everything else does. A status read failing must
+not stop the show, but a vote result silently going nowhere is worse than an
+error someone can see. **`unknown` is not `idle`** — the service must not close
+a round on `unknown`, or a network blip discards every vote cast so far.
+
 ### 6. MQTT preferred, HTTP polling as fallback.
 FPP publishes `playlist/sequence/status`, `playlist/media/title`,
 `playlist_details` (with `secondsRemaining`), and accepts
@@ -133,7 +147,15 @@ Python enforces PEP 668 externally-managed environments.
    any. `reconcile()` stays pure and in-memory — the store is only the
    load/save boundary around it, which is why idempotence is still testable
    without a database.
-3. FPP adapter — interface exists, needs Http/Mqtt/Fake implementations
+3. ~~FPP adapter~~ **done, tested** — `fpp/http.py`, `fpp/mqtt.py`,
+   `fpp/fake.py`, contract tests in `tests/test_adapter.py`.
+   **Caveat that matters:** the canned responses are CONSTRUCTED from FPP's
+   documented shapes, not captured from the Pi. Run
+   `scripts/capture_fpp.py --host <pi>` and commit the result; until then
+   `test_captured_responses_are_present` xfails and a green suite means only
+   that the parsing is self-consistent. `start_at_item` over HTTP is the least
+   verified call in the project — if votes tally but nothing changes song,
+   start there.
 4. Service — FastAPI, rounds, votes, WebSocket
 5. Wire `web/static/vote.html` to live data (it currently self-simulates)
 6. Admin page — reconciliation, category assignment, settings
