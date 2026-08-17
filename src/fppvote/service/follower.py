@@ -36,6 +36,25 @@ from .config import Config
 log = logging.getLogger(__name__)
 
 
+def normalise_playlist_name(name: str | None) -> str:
+    """Compare playlist names forgivingly.
+
+    FPP stores playlists as JSON files in ~/media/playlists/ and refers to them
+    by filename without the extension — 'NY_Dance_Party.json' on disk is
+    'NY_Dance_Party' over the API. Whether a given FPP release includes the
+    suffix in a status message is not something to bet a show on, so both forms
+    match, and so does a difference in case or surrounding whitespace.
+
+    Nothing else is normalised. Underscores, spaces and hyphens are all
+    meaningful — 'All_Xmas_Songs - Alphabetic' is a real name, and collapsing
+    those would let two genuinely different playlists collide.
+    """
+    text = (name or "").strip()
+    if text.lower().endswith(".json"):
+        text = text[:-len(".json")]
+    return text.strip().lower()
+
+
 @dataclass
 class FollowerState:
     """What the loop knows. Rebuilt from the database on restart, except for
@@ -69,11 +88,11 @@ class Follower:
         nobody to remember anything. The cost is that shows.playlist_name must
         match FPP exactly — which is why init_db.py nags about it.
         """
-        name = (status.playlist_name or "").strip().lower()
+        name = normalise_playlist_name(status.playlist_name)
         shows = self.store.list_shows(active_only=True)
         if name:
             for show in shows:
-                if show.playlist_name.strip().lower() == name:
+                if normalise_playlist_name(show.playlist_name) == name:
                     return show
 
         # Unrecognised or absent playlist: stay on the show we were already on

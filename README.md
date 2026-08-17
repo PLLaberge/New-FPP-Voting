@@ -25,7 +25,7 @@ pip install -r requirements.txt
 pytest
 ```
 
-All 167 tests should pass. That confirms your environment works.
+All 177 tests should pass. That confirms your environment works.
 
 ## Try the voter page
 

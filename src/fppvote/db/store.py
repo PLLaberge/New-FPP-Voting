@@ -255,6 +255,38 @@ class Store:
         )
         return cur.rowcount > 0
 
+    def define_show(self, show_id: str, name: str, playlist_name: str, *,
+                    tagline: str | None = None, note: str | None = None,
+                    theme: str = "christmas") -> str:
+        """Insert a show, or refresh its DESCRIPTIVE fields if it exists.
+
+        Returns 'created', 'updated' or 'unchanged'.
+
+        The split is the same one upsert_song makes. Descriptive fields come
+        from SHOW_DEFS and are refreshed on every seed — editing the playlist
+        name in that file has to actually reach the database, or you change it,
+        re-run init_db.py, and silently get nothing. Behavioural settings
+        (votes_per_round, cooldown_songs, active) are never touched here:
+        those belong to whoever tuned them on the admin page.
+        """
+        existing = self.get_show(show_id)
+        if existing is None:
+            self._q(
+                "INSERT INTO shows(show_id, name, playlist_name, tagline, note, theme)"
+                " VALUES(?,?,?,?,?,?)",
+                (show_id, name, playlist_name, tagline, note, theme),
+            )
+            return "created"
+
+        changes = {"name": name, "playlist_name": playlist_name,
+                   "tagline": tagline, "note": note, "theme": theme}
+        if all(getattr(existing, field) == value for field, value in changes.items()):
+            return "unchanged"
+        assignments = ", ".join(f"{field} = ?" for field in changes)
+        self._q(f"UPDATE shows SET {assignments} WHERE show_id = ?",
+                (*changes.values(), show_id))
+        return "updated"
+
     def update_show(self, show_id: str, **fields) -> None:
         """Change show settings. The admin page's write path."""
         allowed = {"name", "playlist_name", "tagline", "note", "votes_per_round",

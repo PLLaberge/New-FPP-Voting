@@ -8,13 +8,20 @@ true regardless of which show plays it. year=None means "needs review"."""
 # database exists the `shows` and `show_categories` tables are the source of
 # truth and the admin page edits them, not this file.
 #
-# playlist_name must match the FPP playlist EXACTLY — it is what the adapter
-# asks FPP for at stage 3. These are unverified guesses; confirm them against
-# the Pi before wiring the adapter up.
+# playlist_name is what the adapter asks FPP for. FPP stores playlists as JSON
+# files in ~/media/playlists/ and refers to them by filename WITHOUT the .json,
+# so 'NY_Dance_Party.json' on disk is 'NY_Dance_Party' here.
+#
+# Christmas and New Year's are the real names, from Paulin (2026-08-16).
+# Halloween is still a placeholder — that playlist does not exist yet.
+#
+# Matching is tolerant of a .json suffix and of case, so either form works;
+# see Follower.resolve_show. Confirm against a capture when convenient:
+# tests/fixtures/captured/playlists_*.json is FPP's own list.
 SHOW_DEFS = {
     "christmas": {
         "name": "Christmas 2025",
-        "playlist_name": "Christmas 2025",
+        "playlist_name": "All_Xmas_Songs - Alphabetic",
         "tagline": "Tap any song. The winner plays next.",
         "note": "",
         "theme": "christmas",
@@ -27,7 +34,7 @@ SHOW_DEFS = {
     },
     "nye": {
         "name": "New Year's Eve 2026",
-        "playlist_name": "New Years 2026",
+        "playlist_name": "NY_Dance_Party",
         "tagline": "Ring it in. The winner plays next.",
         "note": "Dec 29 – Jan 3",
         "theme": "nye",
@@ -36,7 +43,7 @@ SHOW_DEFS = {
     },
     "halloween": {
         "name": "Halloween 2026",
-        "playlist_name": "Halloween 2026",
+        "playlist_name": "Halloween 2026",   # placeholder: no such playlist yet
         "tagline": "Catalog not built yet.",
         "note": "New show — playlist still to come",
         "theme": "halloween",

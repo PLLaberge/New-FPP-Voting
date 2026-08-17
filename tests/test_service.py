@@ -12,6 +12,7 @@ from fastapi.testclient import TestClient
 from fppvote.catalog.parser import slugify
 from fppvote.fpp import from_catalog
 from fppvote.service import Config, Follower, build_state, create_app
+from fppvote.service.follower import normalise_playlist_name
 from tests.fixtures.playlists import CHRISTMAS
 
 PLAYLIST = "Christmas 2025"
@@ -85,6 +86,43 @@ def test_an_unrecognised_playlist_is_reported_when_it_is_ambiguous(
     state = follower.tick()
     assert state.show_id is None
     assert "matches no configured show" in state.last_error
+
+
+@pytest.mark.parametrize("stored,reported", [
+    ("NY_Dance_Party", "NY_Dance_Party"),
+    ("NY_Dance_Party", "NY_Dance_Party.json"),          # FPP included the suffix
+    ("NY_Dance_Party.json", "NY_Dance_Party"),          # someone pasted the filename
+    ("All_Xmas_Songs - Alphabetic", "All_Xmas_Songs - Alphabetic"),
+    ("All_Xmas_Songs - Alphabetic", "all_xmas_songs - alphabetic"),
+    ("All_Xmas_Songs - Alphabetic", "  All_Xmas_Songs - Alphabetic  "),
+])
+def test_real_playlist_names_match_in_either_form(curated, config, stored, reported):
+    """FPP keeps playlists as ~/media/playlists/<name>.json and refers to them
+    without the suffix. Both forms match, so pasting the filename works too."""
+    curated.update_show("christmas", playlist_name=stored)
+    fpp = from_catalog({reported.strip(): list(CHRISTMAS)})
+    fpp.start_at_item(reported.strip(), 1)
+    follower = Follower(curated, fpp, config)
+    assert follower.tick().show_id == "christmas"
+
+
+def test_similar_playlist_names_are_not_conflated(curated, config):
+    """Underscores, spaces and hyphens are meaningful; only .json and case are
+    forgiven. Two shows, so there is no single-show fallback to mask this."""
+    curated.update_show("christmas", playlist_name="All_Xmas_Songs - Alphabetic")
+    curated.create_show("nye", "New Year's", "NY_Dance_Party")
+    fpp = from_catalog({"All Xmas Songs Alphabetic": list(CHRISTMAS)})
+    fpp.start_at_item("All Xmas Songs Alphabetic", 1)
+    follower = Follower(curated, fpp, config)
+    assert follower.tick().show_id is None
+
+
+def test_normalise_playlist_name_only_strips_json_and_case():
+    assert normalise_playlist_name("NY_Dance_Party.json") == "ny_dance_party"
+    assert normalise_playlist_name("NY_Dance_Party.JSON") == "ny_dance_party"
+    assert normalise_playlist_name(None) == ""
+    # a name that merely contains 'json' keeps it
+    assert normalise_playlist_name("json_party") == "json_party"
 
 
 def test_an_fpp_blip_does_not_switch_shows(follower, fpp):

@@ -51,15 +51,21 @@ def main():
     skipped = []
 
     for show_id, cfg in SHOW_DEFS.items():
-        created = store.create_show(
+        before = store.get_show(show_id)
+        outcome = store.define_show(
             show_id, cfg["name"], cfg["playlist_name"],
             tagline=cfg["tagline"], note=cfg["note"], theme=cfg["theme"],
         )
         orphaned = store.set_show_categories(show_id, cfg["categories"])
         show = store.get_show(show_id)
-        print(f"[{show_id}] {show.name} — {'created' if created else 'already present'}"
+        print(f"[{show_id}] {show.name} — {outcome}"
               f", {len(cfg['categories'])} categories, "
               f"{show.votes_per_round} vote(s)/round, cooldown {show.cooldown_songs}")
+        print(f"    playlist: {show.playlist_name!r}")
+        if before and before.playlist_name != show.playlist_name:
+            # The one field where a silent no-op would cost an evening of
+            # debugging, so it gets called out rather than merely applied.
+            print(f"    ^ changed from {before.playlist_name!r}")
         if orphaned:
             print(f"    ! songs still assigned to removed categories: {orphaned}")
 
@@ -115,9 +121,19 @@ def main():
         print("    Fix by adding the category to SHOW_DEFS or changing the "
               "assignment in metadata.py.\n")
 
-    print("Reminder: SHOW_DEFS playlist_name values are unverified guesses. "
-          "Confirm them\nagainst the Pi before stage 3 — the adapter asks FPP "
-          "for a playlist by that name.")
+    placeholders = [s for s in SHOW_DEFS
+                    if s not in PLAYLISTS and store.get_show(s)]
+    if placeholders:
+        print("Placeholder playlist name(s), for shows whose playlist does not "
+              "exist yet:")
+        for show_id in placeholders:
+            print(f"    {show_id:<10} {store.get_show(show_id).playlist_name!r}")
+        print("    Set the real name in SHOW_DEFS when the playlist exists; "
+              "re-running\n    this script applies it.\n")
+
+    print("FPP keeps playlists in ~/media/playlists/<name>.json and refers to "
+          "them\nwithout the suffix. Matching tolerates the suffix and case "
+          "either way.")
     store.close()
 
 

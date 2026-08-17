@@ -169,7 +169,10 @@ Python enforces PEP 668 externally-managed environments.
    FastAPI's threadpool meets the store's thread-local connections; the
    follower is an async task that offloads each pass with `asyncio.to_thread`.
    The show is derived from the playlist FPP reports playing, matched against
-   `shows.playlist_name` — no admin toggle, right after a restart. The module
+   `shows.playlist_name` — no admin toggle, right after a restart. FPP keeps
+   playlists as `~/media/playlists/<name>.json` and refers to them without the
+   suffix; matching forgives the suffix and case but nothing else, since
+   underscores, spaces and hyphens are all meaningful in a real name. The module
    is `server.py`, never `app.py`: a submodule named `app` shadows the package
    `__getattr__` that builds the ASGI app, and uvicorn then fails with
    "'module' object is not callable" at the first request.

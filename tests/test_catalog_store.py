@@ -254,3 +254,28 @@ def test_nye_curation_is_independent_of_christmas(curated):
     nye = {s.key: s for s in curated.list_show_songs("nye")}
     assert xmas["zero"].categories == ["Rock & Roll", "Not-So-Christmasy"]
     assert nye["zero"].categories == ["Rock", "Pop"]
+
+
+def test_seeding_refreshes_the_playlist_name_but_not_the_allowance(christmas):
+    """Editing SHOW_DEFS has to actually reach an existing database.
+
+    An insert-only seed would mean changing the playlist name in the file,
+    re-running init_db.py, and silently getting nothing — an evening of
+    debugging for a one-line change. Descriptive fields refresh; anything
+    tuned on the admin page survives.
+    """
+    christmas.update_show("christmas", votes_per_round=1, cooldown_songs=7)
+
+    assert christmas.define_show("christmas", "Christmas 2025",
+                                 "All_Xmas_Songs - Alphabetic") == "updated"
+    show = christmas.get_show("christmas")
+    assert show.playlist_name == "All_Xmas_Songs - Alphabetic"
+    assert show.votes_per_round == 1 and show.cooldown_songs == 7
+
+    assert christmas.define_show("christmas", "Christmas 2025",
+                                 "All_Xmas_Songs - Alphabetic") == "unchanged"
+
+
+def test_define_show_creates_when_missing(store):
+    assert store.define_show("nye", "New Year's Eve 2026", "NY_Dance_Party") == "created"
+    assert store.get_show("nye").playlist_name == "NY_Dance_Party"
