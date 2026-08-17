@@ -21,7 +21,8 @@ import secrets
 from contextlib import asynccontextmanager, suppress
 from pathlib import Path
 
-from fastapi import Body, Cookie, FastAPI, Header, Response, WebSocket, WebSocketDisconnect
+from fastapi import (Body, Cookie, FastAPI, Header, Query, Response, WebSocket,
+                     WebSocketDisconnect)
 from fastapi.responses import FileResponse
 from fastapi.staticfiles import StaticFiles
 
@@ -82,6 +83,11 @@ class Hub:
     async def _send(self, socket: WebSocket, voter_hash: str):
         payload = dict(self.shared or {})
         payload["you"] = personal_block(payload, voter_hash)
+        # _selections maps every voter's hash to what they picked. It exists so
+        # a broadcast is one query rather than one per connection, and it must
+        # never leave the server: sending it would hand every viewer everyone
+        # else's votes.
+        payload.pop("_selections", None)
         with suppress(Exception):
             await socket.send_json(payload)
 
@@ -115,10 +121,15 @@ def build_state(store: Store, follower: Follower) -> dict:
 
     tally = store.tally(state.round_id) if state.round_id else {}
     locked = store.locked_keys(show.show_id)
+    # last_played goes to the page so its "Top" ordering breaks ties the same
+    # way winner() does. Without it the row at the top of the list can differ
+    # from the song that actually plays next, which reads as the vote lying.
+    history = store.last_played_round(show.show_id)
     songs = [
         {"key": s.key, "title": s.title, "artist": s.artist, "year": s.year,
          "categories": s.categories, "index": s.playlist_index,
-         "votes": tally.get(s.key, 0), "locked": s.key in locked}
+         "votes": tally.get(s.key, 0), "locked": s.key in locked,
+         "last_played": history.get(s.key, -1)}
         for s in store.list_show_songs(show.show_id)
     ]
 
@@ -280,9 +291,16 @@ def create_app(config: Config | None = None, *, store: Store | None = None,
         }
 
     @app.websocket("/ws")
-    async def websocket(socket: WebSocket, x_voter_token: str | None = Header(default=None)):
+    async def websocket(socket: WebSocket, token: str | None = Query(default=None)):
+        """The page's live feed.
+
+        The token arrives as a query parameter because a browser cannot set
+        headers on a WebSocket handshake; the cookie is the fallback. It is the
+        same opaque browser-held token the REST calls use, and only its HMAC is
+        ever stored.
+        """
         await socket.accept()
-        token = (x_voter_token or socket.cookies.get(VOTER_COOKIE) or "").strip() \
+        token = (token or socket.cookies.get(VOTER_COOKIE) or "").strip() \
             or secrets.token_urlsafe(24)
         voter = await asyncio.to_thread(store.voter_hash, token)
         await app.state.hub.join(socket, voter)

@@ -176,7 +176,15 @@ Python enforces PEP 668 externally-managed environments.
    is `server.py`, never `app.py`: a submodule named `app` shadows the package
    `__getattr__` that builds the ASGI app, and uvicorn then fails with
    "'module' object is not callable" at the first request.
-5. Wire `web/static/vote.html` to live data (it currently self-simulates)
+5. ~~Wire `web/static/vote.html` to live data~~ **done, tested** — the page
+   fetches `/api/state`, subscribes to `/ws`, and posts votes. Its embedded
+   copy of the catalogue is gone, so chips and categories now follow the
+   database without anyone editing the file. The WebSocket is the fast path and
+   polling is the fallback, the same shape as MQTT over HTTP in the adapter:
+   the event feed is an optimisation, never the only way to be right. The show
+   picker and vote-allowance controls are gone — both follow the server now.
+   `tests/test_vote_page.py` checks the page without a browser: every id the
+   script reaches for exists, every URL it calls is a real route.
 6. Admin page — reconciliation, category assignment, settings
 7. Package as an FPP plugin, deploy, add the tunnel
 

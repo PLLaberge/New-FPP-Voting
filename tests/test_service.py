@@ -6,6 +6,8 @@ follower is driven by calling tick() directly rather than waiting for the
 background task, so a whole evening's worth of transitions happens instantly
 and identically every run.
 """
+import json
+
 import pytest
 from fastapi.testclient import TestClient
 
@@ -370,4 +372,19 @@ def test_a_websocket_receives_state_on_connect(client):
         assert payload["show"]["id"] == "christmas"
         assert len(payload["songs"]) == 65
         assert payload["you"]["votes_left"] == 3
-        assert "_selections" not in payload or isinstance(payload["_selections"], dict)
+
+
+def test_a_websocket_never_receives_other_voters_selections(client, curated):
+    """_selections maps every voter's hash to their picks. It is a broadcast
+    optimisation and must not leave the server — it leaked here once, past an
+    assertion written loosely enough to pass either way."""
+    state = client.get("/api/state").json()
+    key = next(s["key"] for s in state["songs"] if not s["locked"])
+    client.post("/api/vote", json={"song_key": key},
+                headers={"X-Voter-Token": "someone-else"})
+
+    with client.websocket_connect("/ws?token=me") as socket:
+        payload = socket.receive_json()
+        assert "_selections" not in payload
+        assert curated.voter_hash("someone-else") not in json.dumps(payload)
+        assert payload["you"]["selection"] == [], "only my own picks"

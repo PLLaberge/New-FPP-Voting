@@ -12,7 +12,7 @@ next song. Runs entirely on your Pi — no third-party server.
 | Database layer | Done, tested |
 | FPP adapter | Done, tested against constructed responses — see below |
 | Service (FastAPI) | Done, tested |
-| Voter page | Prototype done, runs on simulated data |
+| Voter page | Done — live data over WebSocket |
 | Admin page | Not started |
 | Plugin packaging | Not started |
 
@@ -25,16 +25,18 @@ pip install -r requirements.txt
 pytest
 ```
 
-All 177 tests should pass. That confirms your environment works.
+All 191 tests should pass. That confirms your environment works.
 
 ## Try the voter page
 
 ```bash
-xdg-open src/fppvote/web/static/vote.html   # or just open it in a browser
+python3 scripts/init_db.py                       # once
+FPPVOTE_FAKE=1 uvicorn fppvote.service:app       # then open http://localhost:8000
 ```
 
-It runs on your real 2025 playlists with simulated voting, so you can click
-around before any backend exists.
+That is the real page on real data, with a simulated show playing behind it —
+vote from two browser windows and watch both update. Opening the HTML file
+directly no longer works: it has no data of its own any more.
 
 ## Rebuild the catalog from playlists
 
