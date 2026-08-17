@@ -365,7 +365,7 @@ function loadToken(){
     return t;
   }catch(e){ return ""; }        // private mode: the server issues a cookie instead
 }
-const TOKEN = loadToken();
+let TOKEN = loadToken();     // may start empty; see adoptToken()
 function resetIdentity(){
   try{ localStorage.removeItem(TOKEN_KEY); }catch(e){}
   document.cookie = "fppvote_voter=; Max-Age=0; path=/";
@@ -413,7 +413,19 @@ async function postVote(key, retract){
 }
 
 /* ---------- applying a payload ---------- */
+function adoptToken(data){
+  /* When localStorage is unavailable — Safari private mode, hardened privacy
+     settings — the browser has no token of its own and the server issues one
+     as a cookie. Adopt it so the WebSocket and the REST calls agree on who we
+     are. Without this the socket connects anonymously, the server invents a
+     throwaway identity for it, and every push tells the page it has used no
+     votes: the meter springs back to full while the server correctly refuses
+     the next one. */
+  if(!TOKEN && data && data.you && data.you.token) TOKEN = data.you.token;
+}
+
 function applyState(data){
+  adoptToken(data);
   state.loaded = true;
   state.fpp = data.fpp || {reachable:false};
   state.you = data.you || {selection:[], votes_used:0, votes_left:maxVotes()};
@@ -495,15 +507,23 @@ function groupOf(s){
   return null;
 }
 
-/* ---------- chips ---------- */
+/* ---------- chips ----------
+   Rebuilt only when the chips or their counts actually change. Recreating them
+   on every push made them blink once a second for no reason. */
+let chipSig = null;
 function renderChips(){
+  const counts = state.categories.map(c =>
+    state.songs.filter(s=>s.categories.includes(c)).length);
+  const sig = state.categories.join("|")+"||"+counts.join(",")+"||"+[...state.cats].sort().join(",");
+  if(sig === chipSig) return;
+  chipSig = sig;
+
   const c=$("#chips"); c.innerHTML="";
   $("#chipAll").setAttribute("aria-pressed", state.cats.size===0);
-  state.categories.forEach(cat=>{
-    const n=state.songs.filter(s=>s.categories.includes(cat)).length;
+  state.categories.forEach((cat,i)=>{
     const b=el("button","chip"); b.type="button";
     b.append(document.createTextNode(cat));
-    const sp=el("span","n"); sp.textContent=n; b.appendChild(sp);
+    const sp=el("span","n"); sp.textContent=counts[i]; b.appendChild(sp);
     b.setAttribute("aria-pressed", state.cats.has(cat));
     b.dataset.cat=cat;
     b.onclick=()=>{ state.cats.has(cat)?state.cats.delete(cat):state.cats.add(cat); render(); };
@@ -529,36 +549,138 @@ function scrollChips(dir){
 }
 
 /* ---------- vote meter ---------- */
+let meterSig = null;
 function renderMeter(){
   const used=votesUsed(), left=votesLeft(), max=maxVotes();
+  const sig = used+"/"+left+"/"+max;
+  if(sig === meterSig) return;
+  meterSig = sig;
+
   const p=$("#pips"); p.innerHTML="";
   for(let i=0;i<max;i++){
     const d=el("span","pip"); if(i<used) d.classList.add("used"); p.appendChild(d);
   }
   $("#meter").classList.toggle("full", left===0);
   $("#meterText").innerHTML = max===1
-    ? (used ? "Vote cast — tap another song to move it" : "You have <b>1</b> vote")
-    : (left===0 ? "All <b>"+max+"</b> votes used — tap one to free it up"
+    ? (used ? "Vote cast - tap another song to move it" : "You have <b>1</b> vote")
+    : (left===0 ? "All <b>"+max+"</b> votes used - tap one to free it up"
                 : "<b>"+left+"</b> of "+max+" votes left");
 }
+
+/* Writing the same string back still costs a layout, and on some phones a
+   visible repaint. Cheap guard, used everywhere text refreshes several times
+   a second. */
+function setText(node, text){ if(node.textContent !== text) node.textContent = text; }
 
 /* ---------- now playing ---------- */
 function paintNowPlaying(){
   const np = state.nowPlaying;
   $("#npCard").hidden = !np;
   if(!np) return;
-  $("#npTitle").textContent = np.title || "—";
-  $("#npMeta").textContent  = [np.artist || "Artist to confirm"].join(" · ");
+  setText($("#npTitle"), np.title || "-");
+  setText($("#npMeta"),  np.artist || "Artist to confirm");
   paintClock();
 }
 function paintClock(){
   const c = clockNow(); if(!c) return;
-  $("#npTotal").textContent   = fmt(c.total||0);
-  $("#npElapsed").textContent = fmt(c.elapsed||0);
-  $("#npBar").style.width     = (c.total ? Math.min(100, c.elapsed/c.total*100) : 0)+"%";
+  setText($("#npTotal"),   fmt(c.total||0));
+  setText($("#npElapsed"), fmt(c.elapsed||0));
+  $("#npBar").style.width = (c.total ? Math.min(100, c.elapsed/c.total*100) : 0)+"%";
   const r = Math.round(c.remaining);
-  $("#npClosing").textContent = !state.fpp.reachable ? "Reconnecting…"
-      : r>20 ? "Voting open" : (r>0 ? "Voting closes in "+r+"s" : "Tallying…");
+  setText($("#npClosing"), !state.fpp.reachable ? "Reconnecting..."
+      : r>20 ? "Voting open" : (r>0 ? "Voting closes in "+r+"s" : "Tallying..."));
+}
+
+/* ---------- the song list ----------
+   Rows are created once and then updated in place. Rebuilding the list on each
+   push re-ran the .song entrance animation on all 65 rows every second, which
+   is what made the page flash. Nothing below touches the DOM unless the value
+   it is about to write actually changed. */
+const rowCache  = new Map();    // song key   -> button.song
+const headCache = new Map();    // group name -> div.group
+const songByKey = k => state.songs.find(s => s.key === k);
+
+function ensureRow(key){
+  let n = rowCache.get(key);
+  if(n) return n;
+
+  n = el("button","song"); n.type="button"; n.dataset.key=key;
+  const share=el("div","share");
+  const body=el("div","song-body");
+  const title=el("div","song-title"), meta=el("div","song-meta");
+  body.append(title,meta);
+  const box=el("div","votebox");
+  const num=el("span","num"), lbl=el("span","lbl");
+  box.append(num,lbl);
+  n.append(share,body,box);
+  n._parts={share,title,meta,num,lbl};
+  n.onclick=()=>{ const s=songByKey(key); if(s) vote(s); };
+
+  // Let the entrance animation play once, then take it off the element. A row
+  // later moved to a new sort position would otherwise replay it, because
+  // re-inserting a node restarts its CSS animations.
+  setTimeout(()=>{ n.style.animation="none"; }, 420);
+
+  rowCache.set(key,n);
+  return n;
+}
+
+function paintRow(s, playingKey, max){
+  const n = ensureRow(s.key);
+  const playing = s.key === playingKey;
+  const cool    = s.locked && !playing;
+  const spent   = !s.voted && !s.locked && votesLeft()===0 && maxVotes()>1;
+
+  const sig = [s.title, s.artist, s.year, s.categories.join(","), s.votes,
+               s.voted, s.locked, playing, cool, spent, max].join("|");
+  if(n._sig === sig) return n;          // nothing about this row changed
+  const first = n._sig === undefined;
+  n._sig = sig;
+
+  n.classList.toggle("voted",   !!s.voted);
+  n.classList.toggle("playing", playing);
+  n.classList.toggle("locked",  !!s.locked);
+  n.classList.toggle("spent",   spent);
+
+  const p = n._parts;
+  p.share.style.width = s.votes ? (s.votes/max*100)+"%" : "0%";
+
+  setText(p.title, s.title);
+  if(playing)      p.title.appendChild(mkTag("On now"));
+  else if(cool)    p.title.appendChild(mkTag("Just played"));
+  else if(s.categories.includes("New this year")) p.title.appendChild(mkTag("New","new"));
+
+  setText(p.meta, [s.artist || "Artist to confirm",
+                   s.year == null ? "Year TBD" : s.year,
+                   s.categories.filter(c=>c!=="New this year").join(", ")]
+                  .filter(Boolean).join(" . "));
+
+  const votes = String(s.votes);
+  if(p.num.textContent !== votes){
+    const grew = !first && s.votes > (n._votes || 0);
+    p.num.textContent = votes;
+    if(grew){ p.num.classList.remove("bump"); void p.num.offsetWidth; p.num.classList.add("bump"); }
+  }
+  n._votes = s.votes;
+  setText(p.lbl, s.voted ? "voted" : "votes");
+  return n;
+}
+
+function ensureHeader(label){
+  let h = headCache.get(label);
+  if(!h){ h = el("div","group"); h.textContent = label; headCache.set(label,h); }
+  return h;
+}
+
+/* Put `wanted` into `box` in that exact order, moving as little as possible.
+   When the order has not changed this performs zero DOM operations. */
+function reconcile(box, wanted){
+  const keep = new Set(wanted);
+  for(const node of [...box.childNodes]) if(!keep.has(node)) box.removeChild(node);
+  wanted.forEach((node,i)=>{
+    const current = box.childNodes[i];
+    if(current !== node) box.insertBefore(node, current || null);
+  });
 }
 
 /* ---------- render ---------- */
@@ -566,90 +688,59 @@ function render(){
   const has = state.songs.length>0;
   $("#meter").hidden    = !has;
   $("#controls").hidden = !has;
+  const box=$("#list");
+
   if(!has){
-    $("#list").innerHTML="";
+    rowCache.clear(); headCache.clear();
+    box.innerHTML="";
     const e=el("div","nocat");
     const st=el("strong");
     st.textContent = state.show ? "No catalog yet" : "Waiting for the show";
     e.append(st, document.createTextNode(state.show
-      ? state.show.name+" hasn’t been built yet. Once its playlist exists and its songs are categorised, they appear here."
+      ? state.show.name+" has not been built yet. Once its playlist exists and its songs are categorised, they appear here."
       : "The song list appears as soon as a playlist starts running."));
-    $("#list").appendChild(e);
-    $("#countLabel").textContent="";
+    box.appendChild(e);
+    setText($("#countLabel"), "");
     updateReviewNote();
     return;
   }
 
   if(state.show){
-    $("#showName").textContent = state.show.name;
-    $("#showNote").textContent = state.show.note || "";
-    $("#tagline").textContent  = state.show.tagline || "";
+    setText($("#showName"), state.show.name);
+    setText($("#showNote"), state.show.note || "");
+    setText($("#tagline"),  state.show.tagline || "");
   }
 
   renderChips(); renderMeter();
   document.querySelectorAll("#seg button").forEach(b=>b.setAttribute("aria-pressed", b.dataset.sort===state.sort));
   $("#clearBtn").classList.toggle("on", state.q.length>0);
 
-  const list=sorted(visible());
-  const max=Math.max(1,...state.songs.map(s=>s.votes));
-  $("#countLabel").textContent = list.length===state.songs.length
-    ? state.songs.length+" songs" : list.length+" of "+state.songs.length;
+  const list = sorted(visible());
+  const max  = Math.max(1,...state.songs.map(s=>s.votes));
+  setText($("#countLabel"), list.length===state.songs.length
+    ? state.songs.length+" songs" : list.length+" of "+state.songs.length);
 
-  const box=$("#list"); box.innerHTML="";
   if(!list.length){
+    box.innerHTML="";
     const e=el("div","empty");
     const st=el("strong"); st.textContent="No songs match";
     e.append(st, document.createTextNode("Try a different search or clear your filters."));
     const btn=el("button","linkbtn"); btn.textContent="Clear all filters";
     btn.onclick=()=>{ state.q=""; $("#q").value=""; state.cats.clear(); render(); };
-    e.appendChild(btn); box.appendChild(e); return;
+    e.appendChild(btn); box.appendChild(e);
+    updateReviewNote();
+    return;
   }
 
   const playingKey = state.nowPlaying ? state.nowPlaying.key : null;
-  let lastGroup=null;
-  list.forEach((s,i)=>{
-    const g=groupOf(s);
-    if(g && g!==lastGroup){ const h=el("div","group"); h.textContent=g; box.appendChild(h); lastGroup=g; }
-
-    const playing = s.key===playingKey;
-    const cool    = s.locked && !playing;
-    const spent   = !s.voted && !s.locked && votesLeft()===0 && maxVotes()>1;
-
-    const b=el("button","song"); b.type="button";
-    b.style.animationDelay=Math.min(i,18)*11+"ms";
-    if(s.voted)   b.classList.add("voted");
-    if(playing)   b.classList.add("playing");
-    if(s.locked)  b.classList.add("locked");
-    if(spent)     b.classList.add("spent");
-    b.dataset.key=s.key;
-
-    const share=el("div","share");
-    share.style.width = s.votes ? (s.votes/max*100)+"%" : "0%";
-    b.appendChild(share);
-
-    const body=el("div","song-body");
-    const t=el("div","song-title"); t.textContent=s.title;
-    if(playing)      t.appendChild(mkTag("On now"));
-    else if(cool)    t.appendChild(mkTag("Just played"));
-    else if(s.categories.includes("New this year")) t.appendChild(mkTag("New","new"));
-    const m=el("div","song-meta");
-    // artist and year are genuinely missing for some songs; say so rather than
-    // printing "null" or pretending
-    m.textContent = [s.artist || "Artist to confirm",
-                     s.year ?? "Year TBD",
-                     s.categories.filter(c=>c!=="New this year").join(", ")]
-                    .filter(Boolean).join(" · ");
-    body.append(t,m);
-
-    const v=el("div","votebox");
-    const num=el("span","num"); num.textContent=s.votes;
-    const lbl=el("span","lbl"); lbl.textContent = s.voted?"voted":"votes";
-    v.append(num,lbl);
-
-    b.append(body,v);
-    b.onclick=()=>vote(s);
-    box.appendChild(b);
-  });
+  const wanted = [];
+  let lastGroup = null;
+  for(const s of list){
+    const g = groupOf(s);
+    if(g && g !== lastGroup){ wanted.push(ensureHeader(g)); lastGroup = g; }
+    wanted.push(paintRow(s, playingKey, max));
+  }
+  reconcile(box, wanted);
   updateReviewNote();
 }
 function mkTag(text,cls){ const s=el("span","tag"+(cls?" "+cls:"")); s.textContent=text; return s; }
@@ -798,10 +889,11 @@ $("#resetId").onclick=()=>{
 // A phone that was asleep has a stale page and a dead socket; catch up on wake.
 document.addEventListener("visibilitychange",()=>{ if(!document.hidden) refresh(); });
 
-/* ---------- boot ---------- */
+/* ---------- boot ----------
+   The first state fetch is awaited before the socket opens, so we always know
+   who we are before subscribing — see adoptToken(). */
 paintBanner();
-refresh();
-connect();
+(async ()=>{ await refresh(); connect(); })();
 setInterval(paintClock, 250);      // smooth bar between server updates
 setInterval(()=>{ if(!state.connected) refresh(); }, 5000);   // polling fallback
 </script>

@@ -155,3 +155,44 @@ def test_the_websocket_accepts_the_token_as_a_query_parameter(client):
         payload = socket.receive_json()
         assert payload["show"]["id"] == "christmas"
         assert payload["you"]["votes_left"] == 3
+
+
+# ------------------------------------------------------- rendering, not flashing
+def test_the_song_list_is_updated_in_place_not_rebuilt():
+    """The list used to be wiped and recreated on every push, once a second.
+    `.song` carries `animation:rise`, so all 65 rows re-ran their fade-in every
+    second and the page visibly flashed.
+
+    Rows are now created once, cached by key, and only written to when a value
+    actually changed.
+    """
+    assert "const rowCache" in SCRIPT
+    assert "function reconcile(" in SCRIPT
+    assert "if(n._sig === sig) return n;" in SCRIPT, "rows must skip unchanged writes"
+    assert "function setText(" in SCRIPT
+
+
+def test_nothing_clears_the_list_on_the_hot_path():
+    """innerHTML='' is fine for the empty states, which are rare. It must not
+    appear in the path that runs on every update."""
+    body = SCRIPT[SCRIPT.index("const playingKey = state.nowPlaying"):]
+    assert 'innerHTML=""' not in body
+
+
+def test_chips_and_meter_skip_rebuilds_when_unchanged():
+    for guard in ("if(sig === chipSig) return;", "if(sig === meterSig) return;"):
+        assert guard in SCRIPT
+
+
+def test_the_entrance_animation_is_removed_after_it_plays():
+    """Re-inserting a node restarts its CSS animations, so a row moved to a new
+    sort position would fade in again."""
+    assert 'n.style.animation="none"' in SCRIPT
+
+
+def test_the_socket_waits_until_we_know_who_we_are():
+    """If localStorage is blocked the browser has no token and the server issues
+    a cookie. Connecting before that arrives gets the socket a throwaway
+    identity, and every push then claims the viewer has used no votes."""
+    assert "await refresh(); connect();" in SCRIPT
+    assert "function adoptToken(" in SCRIPT
