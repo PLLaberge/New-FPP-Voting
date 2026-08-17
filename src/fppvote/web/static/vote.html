@@ -377,7 +377,7 @@ const state = {
   q:"", cats:new Set(), sort:"votes",
   show:null, categories:[], songs:[], nowPlaying:null, roundId:null,
   you:{selection:[], votes_used:0, votes_left:3},
-  fpp:{reachable:true}, connected:false, loaded:false,
+  fpp:{reachable:true}, connected:false, loaded:false, broken:false,
   clock:null,                    // interpolates the progress bar between updates
 };
 
@@ -473,7 +473,8 @@ function clockNow(){
 function paintBanner(){
   const b = $("#banner"), m = $("#bannerMsg");
   let msg = null;
-  if(!state.loaded)                 msg = "Connecting to the show…";
+  if(state.broken)                  msg = "<b>Something went wrong on this page.</b> Pull down to refresh, or reload it — your votes are safely recorded either way.";
+  else if(!state.loaded)            msg = "Connecting to the show…";
   else if(!state.fpp.reachable)     msg = "<b>Can’t see the show right now.</b> The lights keep playing — your votes are safe and still counting.";
   else if(!state.show)              msg = "<b>Waiting for the show to start.</b> The song list appears once a playlist is running.";
   else if(!state.connected)         msg = "<b>Live updates disconnected.</b> Reconnecting — votes still work.";
@@ -519,7 +520,6 @@ function renderChips(){
   chipSig = sig;
 
   const c=$("#chips"); c.innerHTML="";
-  $("#chipAll").setAttribute("aria-pressed", state.cats.size===0);
   state.categories.forEach((cat,i)=>{
     const b=el("button","chip"); b.type="button";
     b.append(document.createTextNode(cat));
@@ -712,6 +712,7 @@ function render(){
   }
 
   renderChips(); renderMeter();
+  $("#chipAll").setAttribute("aria-pressed", state.cats.size===0);
   document.querySelectorAll("#seg button").forEach(b=>b.setAttribute("aria-pressed", b.dataset.sort===state.sort));
   $("#clearBtn").classList.toggle("on", state.q.length>0);
 
@@ -827,7 +828,10 @@ function connect(){
 
   socket.onopen = ()=>{ retry=0; state.connected=true; paintBanner(); startHeartbeat(); };
   socket.onmessage = ev=>{
-    try{ applyState(JSON.parse(ev.data)); }catch(e){}
+    let data;
+    try{ data = JSON.parse(ev.data); }
+    catch(err){ console.error("fppvote: unreadable push", err); return; }
+    applySafely(data);
   };
   socket.onclose = ()=>{ state.connected=false; stopHeartbeat(); paintBanner(); scheduleReconnect(); };
   socket.onerror = ()=>{ try{ socket.close(); }catch(e){} };
@@ -843,8 +847,42 @@ function startHeartbeat(){ stopHeartbeat(); hb=setInterval(()=>{
 function stopHeartbeat(){ if(hb) clearInterval(hb); hb=null; }
 
 async function refresh(){
-  try{ applyState(await fetchState()); }
-  catch(e){ state.fpp={reachable:false}; paintBanner(); }
+  let data;
+  try{ data = await fetchState(); }
+  catch(e){ state.fpp={reachable:false}; paintBanner(); return; }
+  applySafely(data);
+}
+
+/* Applying an update must never be able to wedge the page.
+   This used to be `catch(e){}` around applyState. One fault — from any cause —
+   left the socket open, every later push hitting the same fault, and nothing on
+   screen changing again until the viewer thought to reload. Silence is the
+   worst possible response here: the page looks fine and is simply lying.
+   Now it says so, rebuilds from scratch, and only gives up if that fails too. */
+function applySafely(data){
+  try{
+    applyState(data);
+    state.broken = false;
+  }catch(err){
+    console.error("fppvote: could not apply update, rebuilding from scratch", err);
+    try{
+      hardRender(data);
+      state.broken = false;
+    }catch(err2){
+      console.error("fppvote: rebuild failed as well", err2);
+      state.broken = true;
+      paintBanner();
+    }
+  }
+}
+
+/* Throw away every cached node and rebuild. The expensive path, used only to
+   recover — normal updates reuse rows, which is what stopped the flashing. */
+function hardRender(data){
+  rowCache.clear(); headCache.clear();
+  chipSig = null; meterSig = null;
+  $("#list").innerHTML = "";
+  applyState(data);
 }
 
 /* ---------- snow / embers ---------- */
@@ -896,6 +934,11 @@ paintBanner();
 (async ()=>{ await refresh(); connect(); })();
 setInterval(paintClock, 250);      // smooth bar between server updates
 setInterval(()=>{ if(!state.connected) refresh(); }, 5000);   // polling fallback
+/* Reconciling poll. A WebSocket can stop delivering without ever closing —
+   proxies and Cloudflare Tunnel both drop idle connections quietly — so the
+   page re-reads the whole state periodically even when it believes it is
+   connected. One small JSON every 20s, for one to three viewers. */
+setInterval(refresh, 20000);
 </script>
 </body>
 </html>

@@ -196,3 +196,38 @@ def test_the_socket_waits_until_we_know_who_we_are():
     identity, and every push then claims the viewer has used no votes."""
     assert "await refresh(); connect();" in SCRIPT
     assert "function adoptToken(" in SCRIPT
+
+
+def test_a_failed_update_cannot_freeze_the_page():
+    """The websocket handler used to be `catch(e){}`. One fault from any cause
+    left the socket open, every later push hitting the same fault, and the page
+    silently frozen until the viewer thought to reload — it looked fine and was
+    simply out of date.
+    """
+    code = re.sub(r"/\*.*?\*/", "", SCRIPT, flags=re.S)      # drop comments
+    for allowed in ('try{ localStorage.removeItem(TOKEN_KEY); }catch(e){}',
+                    'try{ socket.close(); }catch(e){}'):
+        code = code.replace(allowed, "")   # nothing to recover from in these
+    assert "catch(e){}" not in code, "a silent catch remains in the update path"
+    assert "function applySafely(" in SCRIPT
+    assert "function hardRender(" in SCRIPT
+    assert "console.error" in SCRIPT, "a swallowed error is worse than a loud one"
+
+
+def test_the_viewer_is_told_when_the_page_gives_up():
+    assert "Something went wrong on this page" in SCRIPT
+    assert "state.broken" in SCRIPT
+
+
+def test_a_reconciling_poll_backs_up_the_socket():
+    """A WebSocket can stop delivering without closing — proxies and Cloudflare
+    Tunnel both drop idle connections quietly."""
+    assert "setInterval(refresh, 20000)" in SCRIPT
+
+
+def test_the_all_chip_tracks_the_filter_even_when_chips_do_not_rebuild():
+    """The chip list is only rebuilt when its contents change, so the All
+    button's pressed state has to be set outside that guard."""
+    chips = SCRIPT[SCRIPT.index("function renderChips("):SCRIPT.index("function updateChipNav(")]
+    assert "chipAll" not in chips
+    assert '$("#chipAll").setAttribute' in SCRIPT
