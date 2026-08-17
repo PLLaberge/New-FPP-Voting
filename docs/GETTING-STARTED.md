@@ -109,14 +109,34 @@ explorer.exe .
 ```
 
 That opens a Windows Explorer window pointing at your Linux folder. Drag the
-unzipped `fpp-voting` folder into it, then back in Ubuntu:
+unzipped project folder into it, then back in Ubuntu:
 
 ```bash
-cd ~/projects/fpp-voting
+ls ~/projects
+```
+
+Use whatever name you see there. This guide writes it as `"FPP Voting"`:
+
+```bash
+cd ~/projects/"FPP Voting"
 ls
 ```
 
 **Check:** you see `README.md`, `CLAUDE.md`, `src`, `tests`.
+
+> **The quotes matter.** The folder name has a space in it, and a space
+> normally separates one argument from the next — so `cd ~/projects/FPP Voting`
+> fails with `cd: too many arguments`, because the shell thinks you passed it
+> two folders. Quoting the part with the space fixes it. Any of these work:
+>
+> ```bash
+> cd ~/projects/"FPP Voting"
+> cd "$HOME/projects/FPP Voting"
+> cd ~/projects/FPP\ Voting
+> ```
+>
+> Tip: type `cd ~/projects/FPP` and press **Tab**. The shell completes the name
+> and adds the escaping for you.
 
 ---
 
@@ -182,7 +202,7 @@ The tricky bit in WSL: the server runs inside **Linux**, but your browser is on
 ### 1. Build the database (once)
 
 ```bash
-cd ~/projects/fpp-voting
+cd ~/projects/"FPP Voting"
 source .venv/bin/activate
 pip install -r requirements.txt      # safe to re-run; installs the project itself
 python3 scripts/init_db.py
@@ -244,6 +264,11 @@ Click the terminal running it and press **Ctrl+C**.
 
 ## If something goes wrong
 
+- **`cd: too many arguments`** — the folder name has a space in it and needs
+  quotes: `cd ~/projects/"FPP Voting"`. Or type part of the name and press Tab.
+- **`No such file or directory` for the project folder** — check the real name
+  with `ls ~/projects`. Earlier drafts of this guide called it `fpp-voting`;
+  yours may be `FPP Voting`. They are the same project.
 - **`sudo: command not found` / weird prompt** — you're probably in PowerShell,
   not Ubuntu. Start menu → Ubuntu.
 - **`pytest: command not found`** — the venv isn't active. Run
