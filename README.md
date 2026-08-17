@@ -21,7 +21,7 @@ next song. Runs entirely on your Pi — no third-party server.
 ```bash
 python3 -m venv .venv
 source .venv/bin/activate
-pip install -r requirements.txt
+pip install -r requirements.txt   # also installs this project into the venv
 pytest
 ```
 

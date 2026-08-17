@@ -23,3 +23,8 @@ Thumbs.db
 
 # Logs
 *.log
+
+# Editable-install metadata
+*.egg-info/
+build/
+dist/

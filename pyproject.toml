@@ -1,0 +1,29 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "fppvote"
+version = "0.1.0"
+description = "Self-hosted song voting for a Falcon Player Christmas light show"
+requires-python = ">=3.11"
+
+# The runtime dependencies live here, once. requirements.txt installs this
+# project (`-e .`) and adds the test-only ones, so there is one pinned list
+# rather than two that drift.
+dependencies = [
+    "fastapi==0.115.6",
+    "uvicorn[standard]==0.34.0",
+    "httpx==0.28.1",
+    "paho-mqtt==2.1.0",
+    "jinja2==3.1.5",
+]
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+# schema.sql and the voter page are part of the package, not incidental files
+# next to it. Without this they are missing from an installed copy, which shows
+# up as a working laptop and a broken Pi.
+[tool.setuptools.package-data]
+fppvote = ["db/*.sql", "web/static/*"]

@@ -129,7 +129,11 @@ pip install -r requirements.txt
 pytest
 ```
 
-**Check:** `29 passed`.
+**Check:** `191 passed`.
+
+That `pip install` also installs this project into the venv, which is what lets
+`uvicorn fppvote.service:app` find the code later. If you ever see
+`ModuleNotFoundError: No module named 'fppvote'`, run it again.
 
 That is the whole toolchain verified — Python, dependencies, and the code we
 already wrote. If this passes, nothing later is an environment problem.
@@ -180,6 +184,7 @@ The tricky bit in WSL: the server runs inside **Linux**, but your browser is on
 ```bash
 cd ~/projects/fpp-voting
 source .venv/bin/activate
+pip install -r requirements.txt      # safe to re-run; installs the project itself
 python3 scripts/init_db.py
 ```
 
@@ -243,6 +248,10 @@ Click the terminal running it and press **Ctrl+C**.
   not Ubuntu. Start menu → Ubuntu.
 - **`pytest: command not found`** — the venv isn't active. Run
   `source .venv/bin/activate`.
+- **`ModuleNotFoundError: No module named 'fppvote'`** — the project isn't
+  installed into the venv. Run `pip install -r requirements.txt` from the
+  project folder. (As a one-off you can also prefix the command with
+  `PYTHONPATH=src`.)
 - **`externally-managed-environment` error from pip** — you're outside the
   venv. Same fix. Never use `sudo pip`.
 - **Everything is very slow** — the project is probably under `/mnt/c/`.
