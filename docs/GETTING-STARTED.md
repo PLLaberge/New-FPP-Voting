@@ -170,6 +170,73 @@ Good opening message:
 
 ---
 
+## Step 9 — See the voting page in a browser
+
+The tricky bit in WSL: the server runs inside **Linux**, but your browser is on
+**Windows**. They can talk to each other, but nothing opens automatically.
+
+### 1. Build the database (once)
+
+```bash
+cd ~/projects/fpp-voting
+source .venv/bin/activate
+python3 scripts/init_db.py
+```
+
+**Check:** it prints three shows and finishes without an error.
+
+### 2. Start the server
+
+```bash
+FPPVOTE_FAKE=1 uvicorn fppvote.service:app --host 0.0.0.0 --port 8000
+```
+
+`FPPVOTE_FAKE=1` runs a pretend show, so you need no Raspberry Pi.
+
+**Check:** the last line says
+
+```
+INFO:     Uvicorn running on http://0.0.0.0:8000 (Press CTRL+C to quit)
+```
+
+**The terminal now looks stuck. It is not.** That is the server running, and it
+will sit there until you stop it. Leave this window alone.
+
+### 3. Open it
+
+Easiest way — ignore Linux entirely: open **Edge or Chrome on Windows** as you
+normally would, click the address bar, type `localhost:8000` and press Enter.
+
+Or, from Linux, open a **second** Ubuntu window (Start menu → Ubuntu) and run:
+
+```bash
+explorer.exe "http://localhost:8000"
+```
+
+That hands the address to Windows, which opens your normal browser.
+
+**Check:** you see "Vote for the next song", a song playing at the top, and 65
+Christmas songs you can tap.
+
+> `xdg-open` does **not** work here — that is for a Linux desktop, and WSL has
+> no desktop. Use `explorer.exe`.
+
+### 4. Try it as two different viewers
+
+Two tabs in the same browser are the **same person** as far as voting is
+concerned — they share the voting ID stored in that browser. To be two people:
+
+- one **normal** window, and
+- one **private/incognito** window (Ctrl+Shift+N in Chrome, Ctrl+Shift+P in Edge)
+
+Vote in one and watch the other update by itself. That is the WebSocket working.
+
+### 5. Stop the server
+
+Click the terminal running it and press **Ctrl+C**.
+
+---
+
 ## If something goes wrong
 
 - **`sudo: command not found` / weird prompt** — you're probably in PowerShell,
@@ -180,6 +247,17 @@ Good opening message:
   venv. Same fix. Never use `sudo pip`.
 - **Everything is very slow** — the project is probably under `/mnt/c/`.
   Move it to `~/projects`.
+- **`localhost:8000` says it can't connect** — check the terminal running the
+  server is still showing `Uvicorn running on ...`. If you closed it or pressed
+  Ctrl+C, start it again. Make sure you used `--host 0.0.0.0`.
+- **`xdg-open: command not found`** — expected. WSL has no Linux desktop; use
+  `explorer.exe "http://localhost:8000"` instead.
+- **`Address already in use`** — a server is still running from last time.
+  Stop it with `pkill -f uvicorn`, then start it again.
+- **The terminal won't take commands any more** — that is the server running,
+  not a hang. Press Ctrl+C to stop it, or open a second Ubuntu window.
+- **Both browser tabs show the same votes as "mine"** — same browser, same
+  voting ID. Use a private/incognito window for the second viewer.
 
 Ask me. A stuck environment is not a reflection on you; these tools are
 genuinely fiddly the first time.
