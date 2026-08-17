@@ -927,6 +927,11 @@ $("#resetId").onclick=()=>{
 // A phone that was asleep has a stale page and a dead socket; catch up on wake.
 document.addEventListener("visibilitychange",()=>{ if(!document.hidden) refresh(); });
 
+/* A marker you can look for in the browser console (F12 -> Console) to be
+   certain which copy of this page is running. If you do not see it, the
+   browser is serving a cached one: reload with Ctrl+Shift+R. */
+console.info("fppvote: live page ready - websocket + 20s reconciling poll");
+
 /* ---------- boot ----------
    The first state fetch is awaited before the socket opens, so we always know
    who we are before subscribing — see adoptToken(). */

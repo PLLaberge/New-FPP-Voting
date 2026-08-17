@@ -231,3 +231,22 @@ def test_the_all_chip_tracks_the_filter_even_when_chips_do_not_rebuild():
     chips = SCRIPT[SCRIPT.index("function renderChips("):SCRIPT.index("function updateChipNav(")]
     assert "chipAll" not in chips
     assert '$("#chipAll").setAttribute' in SCRIPT
+
+
+# -------------------------------------------------------------- cache control
+def test_the_page_is_always_revalidated(client):
+    """Without a Cache-Control header browsers fall back to heuristic caching
+    and serve a stale page without asking. That cost an evening: the server was
+    restarted with fixed code and the browser kept running the old page, so a
+    fix that was live looked like a fix that had not worked.
+
+    'no-cache' means "revalidate before using", not "do not cache".
+    """
+    response = client.get("/")
+    assert "no-cache" in response.headers.get("cache-control", "")
+
+
+def test_the_page_announces_itself_in_the_console():
+    """So 'which copy am I running?' is answerable in five seconds rather than
+    by guessing."""
+    assert 'console.info("fppvote: live page ready' in SCRIPT

@@ -312,6 +312,25 @@ def create_app(config: Config | None = None, *, store: Store | None = None,
         finally:
             app.state.hub.leave(socket)
 
+    @app.middleware("http")
+    async def always_revalidate_the_page(request, call_next):
+        """Make the browser check whether the page changed, every load.
+
+        Without a Cache-Control header browsers fall back to *heuristic*
+        caching — roughly a tenth of the file's age — and will happily serve a
+        stale copy without asking. That cost an evening: the server was
+        restarted with fixed code and the phone kept running the old page.
+
+        'no-cache' does not mean "do not cache", it means "revalidate before
+        using". The ETag is still sent, so an unchanged page costs a 304 with
+        no body — cheap enough at this scale, and it means a fix reaches a
+        viewer's phone without anyone being told to clear anything.
+        """
+        response = await call_next(request)
+        if request.url.path == "/" or request.url.path.startswith("/static"):
+            response.headers["Cache-Control"] = "no-cache, must-revalidate"
+        return response
+
     if STATIC.is_dir():
         app.mount("/static", StaticFiles(directory=STATIC), name="static")
 
