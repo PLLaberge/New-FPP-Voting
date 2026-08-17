@@ -259,3 +259,25 @@ def test_the_page_shows_whether_it_is_receiving_data(client):
     assert "function paintLiveStat(" in SCRIPT
     assert "state.lastApplied" in SCRIPT
     assert "updated " in SCRIPT
+
+
+def test_votes_hidden_by_a_filter_are_announced():
+    """With a category filter on, votes landing outside it are invisible: the
+    tally climbs somewhere the viewer cannot see, and clearing the filter makes
+    them all appear at once. That reads as the page being broken, which is
+    exactly how it was reported.
+    """
+    assert 'id="hiddenVotes"' in HTML
+    assert "votes are on songs this filter hides" in SCRIPT
+    assert 'id="showAllBtn"' in HTML
+
+
+def test_the_page_has_a_favicon():
+    """A 404 per page load, and a blank square when a viewer saves the page to
+    their phone's home screen."""
+    assert 'rel="icon"' in HTML
+
+
+def test_no_request_the_page_makes_can_404(client):
+    for path in ("/", "/api/state", "/api/health"):
+        assert client.get(path).status_code == 200, path

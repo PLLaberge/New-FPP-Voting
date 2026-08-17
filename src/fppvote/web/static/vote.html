@@ -242,6 +242,13 @@ body[data-show="nye"] .controls{background:linear-gradient(180deg,rgba(5,9,16,.9
 .banner[hidden]{display:none}
 .banner .bico{flex:none;margin-top:1px;opacity:.85}
 
+/* ---------- votes hidden by a filter ---------- */
+.hiddenvotes{display:flex;gap:8px;align-items:center;justify-content:center;flex-wrap:wrap;
+  margin:0 0 12px;padding:9px 13px;border-radius:var(--radius-sm);font-size:13px;
+  background:rgba(255,255,255,.045);border:1px solid var(--stroke);color:var(--text-3)}
+.hiddenvotes[hidden]{display:none}
+.hiddenvotes .linkbtn{margin-top:0;font-size:13px}
+
 /* ---------- live indicator ---------- */
 .livestat{margin-top:10px;font-size:11.5px;letter-spacing:.06em;text-transform:uppercase;
   color:var(--text-3);display:flex;gap:7px;align-items:center;justify-content:center}
@@ -253,6 +260,7 @@ body[data-show="nye"] .controls{background:linear-gradient(180deg,rgba(5,9,16,.9
 .privacy{margin-top:14px;font-size:12px;line-height:1.55;color:var(--text-3)}
 .privacy .linkbtn{font-size:12px;padding:0;margin-left:4px}
 </style>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect x='5' y='12' width='5' height='14' rx='2.5' fill='%23f6c96b'/%3E%3Crect x='13.5' y='5' width='5' height='21' rx='2.5' fill='%23f6c96b'/%3E%3Crect x='22' y='15' width='5' height='11' rx='2.5' fill='%23f6c96b'/%3E%3C/svg%3E">
 </head>
 <body data-show="christmas">
 <div class="bg"></div>
@@ -323,6 +331,11 @@ body[data-show="nye"] .controls{background:linear-gradient(180deg,rgba(5,9,16,.9
         <button data-sort="order" aria-pressed="false">Playlist</button>
       </div>
     </div>
+  </div>
+
+  <div class="hiddenvotes" id="hiddenVotes" hidden>
+    <span id="hiddenVotesMsg"></span>
+    <button class="linkbtn" id="showAllBtn" type="button">Show all songs</button>
   </div>
 
   <div class="list" id="list"></div>
@@ -746,6 +759,7 @@ function render(){
 
   if(!list.length){
     box.innerHTML="";
+    $("#hiddenVotes").hidden = true;
     const e=el("div","empty");
     const st=el("strong"); st.textContent="No songs match";
     e.append(st, document.createTextNode("Try a different search or clear your filters."));
@@ -754,6 +768,20 @@ function render(){
     e.appendChild(btn); box.appendChild(e);
     updateReviewNote();
     return;
+  }
+
+  /* Votes landing on songs the current filter hides are otherwise completely
+     invisible: the tally climbs somewhere you cannot see, and clearing the
+     filter (or reloading, which does the same thing) makes them appear all at
+     once. That reads as the page being broken. Say so instead. */
+  const shown = new Set(list.map(s=>s.key));
+  const hidden = state.songs.reduce((n,s)=> shown.has(s.key) ? n : n + s.votes, 0);
+  const filtering = state.cats.size>0 || state.q.trim().length>0;
+  $("#hiddenVotes").hidden = !(filtering && hidden>0);
+  if(filtering && hidden>0){
+    setText($("#hiddenVotesMsg"), hidden===1
+      ? "1 vote is on a song this filter hides"
+      : hidden+" votes are on songs this filter hides");
   }
 
   const playingKey = state.nowPlaying ? state.nowPlaying.key : null;
@@ -940,6 +968,7 @@ function hardRender(data){
 $("#q").addEventListener("input",e=>{ state.q=e.target.value; render(); });
 $("#clearBtn").onclick=()=>{ state.q=""; $("#q").value=""; render(); $("#q").focus(); };
 $("#chipAll").onclick=()=>{ state.cats.clear(); render(); };
+$("#showAllBtn").onclick=()=>{ state.cats.clear(); state.q=""; $("#q").value=""; render(); };
 $("#chipPrev").onclick=()=>scrollChips(-1);
 $("#chipNext").onclick=()=>scrollChips(1);
 $("#chips").addEventListener("scroll",updateChipNav,{passive:true});
