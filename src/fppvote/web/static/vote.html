@@ -242,6 +242,13 @@ body[data-show="nye"] .controls{background:linear-gradient(180deg,rgba(5,9,16,.9
 .banner[hidden]{display:none}
 .banner .bico{flex:none;margin-top:1px;opacity:.85}
 
+/* ---------- live indicator ---------- */
+.livestat{margin-top:10px;font-size:11.5px;letter-spacing:.06em;text-transform:uppercase;
+  color:var(--text-3);display:flex;gap:7px;align-items:center;justify-content:center}
+.livestat .led{width:6px;height:6px;border-radius:50%;background:var(--text-3);flex:none}
+.livestat.ok  .led{background:var(--green);box-shadow:0 0 8px color-mix(in srgb,var(--green) 60%,transparent)}
+.livestat.warn .led{background:var(--accent)}
+
 /* ---------- identity note ---------- */
 .privacy{margin-top:14px;font-size:12px;line-height:1.55;color:var(--text-3)}
 .privacy .linkbtn{font-size:12px;padding:0;margin-left:4px}
@@ -324,6 +331,7 @@ body[data-show="nye"] .controls{background:linear-gradient(180deg,rgba(5,9,16,.9
     Votes reset when each song starts.<br>
     Tallies are kept separately for every show.
     <br><span class="review" id="reviewNote"></span>
+    <div class="livestat" id="liveStat"><span class="led"></span><span id="liveMsg">starting</span></div>
     <p class="privacy">
       Your votes are tied to a random ID this browser made up and keeps. There is no
       account, no name, and no IP address — the show only ever sees a scrambled version
@@ -377,7 +385,7 @@ const state = {
   q:"", cats:new Set(), sort:"votes",
   show:null, categories:[], songs:[], nowPlaying:null, roundId:null,
   you:{selection:[], votes_used:0, votes_left:3},
-  fpp:{reachable:true}, connected:false, loaded:false, broken:false,
+  fpp:{reachable:true}, connected:false, loaded:false, broken:false, lastApplied:0,
   clock:null,                    // interpolates the progress bar between updates
 };
 
@@ -565,6 +573,21 @@ function renderMeter(){
     ? (used ? "Vote cast - tap another song to move it" : "You have <b>1</b> vote")
     : (left===0 ? "All <b>"+max+"</b> votes used - tap one to free it up"
                 : "<b>"+left+"</b> of "+max+" votes left");
+}
+
+/* The status line under the song list. Deliberately always visible: working
+   out whether a page is receiving data should not require opening developer
+   tools, least of all on a phone in a driveway in December. */
+function paintLiveStat(){
+  const box=$("#liveStat"), msg=$("#liveMsg");
+  if(!state.lastApplied){
+    box.className="livestat"; setText(msg,"connecting"); return;
+  }
+  const age = Math.round((Date.now()-state.lastApplied)/1000);
+  const how = state.connected ? "live" : "polling";
+  const stale = age > 25;
+  box.className = "livestat " + (stale ? "warn" : "ok");
+  setText(msg, how+" \u00b7 updated "+(age<2 ? "just now" : age+"s ago"));
 }
 
 /* Writing the same string back still costs a layout, and on some phones a
@@ -862,6 +885,7 @@ async function refresh(){
 function applySafely(data){
   try{
     applyState(data);
+    state.lastApplied = Date.now();
     state.broken = false;
   }catch(err){
     console.error("fppvote: could not apply update, rebuilding from scratch", err);
@@ -937,7 +961,7 @@ console.info("fppvote: live page ready - websocket + 20s reconciling poll");
    who we are before subscribing — see adoptToken(). */
 paintBanner();
 (async ()=>{ await refresh(); connect(); })();
-setInterval(paintClock, 250);      // smooth bar between server updates
+setInterval(()=>{ paintClock(); paintLiveStat(); }, 250);   // smooth bar + live indicator
 setInterval(()=>{ if(!state.connected) refresh(); }, 5000);   // polling fallback
 /* Reconciling poll. A WebSocket can stop delivering without ever closing —
    proxies and Cloudflare Tunnel both drop idle connections quietly — so the

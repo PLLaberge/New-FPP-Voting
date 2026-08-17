@@ -250,3 +250,12 @@ def test_the_page_announces_itself_in_the_console():
     """So 'which copy am I running?' is answerable in five seconds rather than
     by guessing."""
     assert 'console.info("fppvote: live page ready' in SCRIPT
+
+
+def test_the_page_shows_whether_it_is_receiving_data(client):
+    """Working out whether a page is live should not require developer tools —
+    least of all on a phone in a driveway in December."""
+    assert 'id="liveStat"' in HTML
+    assert "function paintLiveStat(" in SCRIPT
+    assert "state.lastApplied" in SCRIPT
+    assert "updated " in SCRIPT
