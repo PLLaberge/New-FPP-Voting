@@ -90,6 +90,13 @@ class Follower:
         """
         name = normalise_playlist_name(status.playlist_name)
         shows = self.store.list_shows(active_only=True)
+        if not shows:
+            # Empty database. Says what to do about it, because "waiting for
+            # the show" is what a viewer sees either way and gives no hint
+            # that the catalogue is simply missing.
+            self.state.last_error = ("no shows configured in the database - "
+                                     "run scripts/init_db.py to build it")
+            return None
         if name:
             for show in shows:
                 if normalise_playlist_name(show.playlist_name) == name:
@@ -109,6 +116,10 @@ class Follower:
                         "playlist_name; falling back to the only active show "
                         "(%s)", status.playlist_name, shows[0].show_id)
             return shows[0]
+
+        self.state.last_error = (
+            f"FPP is playing {status.playlist_name!r}, which matches no "
+            f"configured show. Check shows.playlist_name.")
         return None
 
     def playlist_index(self, show) -> dict[str, int]:
@@ -153,9 +164,8 @@ class Follower:
 
         show = self.resolve_show(status)
         if show is None:
-            self.state.last_error = (
-                f"FPP is playing {status.playlist_name!r}, which matches no "
-                f"configured show. Check shows.playlist_name.")
+            # resolve_show has already said which kind of problem it is: an
+            # empty database and an unrecognised playlist need different fixes.
             return self.state
         self.state.show_id = show.show_id
         self.state.last_error = None

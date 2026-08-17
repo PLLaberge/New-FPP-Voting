@@ -96,3 +96,34 @@ def test_unknown_show_field_is_rejected(store):
     store.create_show("x", "X", "P")
     with pytest.raises(ValueError):
         store.update_show("x", playlist="typo-for-playlist_name")
+
+
+def test_every_connection_gets_the_schema(db_path, store):
+    """A database file deleted or replaced under a running service must not
+    leave the process serving "no such table" until it is restarted.
+
+    This is not hypothetical: the file was deleted mid-session while a server
+    was running against it, and a later thread recreated it empty.
+    """
+    import threading
+    store.create_show("christmas", "Christmas", "P")
+    db_path.unlink()                       # yanked from under the running process
+    for suffix in ("-wal", "-shm"):
+        db_path.with_name(db_path.name + suffix).unlink(missing_ok=True)
+
+    result = {}
+
+    def in_another_thread():
+        try:
+            # a fresh thread opens a fresh connection to a path that no longer exists
+            result["tables"] = {r[0] for r in store.db.connection.execute(
+                "SELECT name FROM sqlite_master WHERE type='table'")}
+        except Exception as exc:            # noqa: BLE001
+            result["error"] = exc
+
+    thread = threading.Thread(target=in_another_thread)
+    thread.start(); thread.join()
+
+    assert "error" not in result, f"new connection failed: {result.get('error')}"
+    assert {"shows", "songs", "votes"} <= result["tables"], \
+        "the recreated file must be migrated, not left empty"

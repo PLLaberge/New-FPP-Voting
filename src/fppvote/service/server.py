@@ -278,9 +278,11 @@ def create_app(config: Config | None = None, *, store: Store | None = None,
         on the first cold night to find out whether it is the plugin or FPP."""
         state = follower.state
         show = store.get_show(state.show_id) if state.show_id else None
+        shows = store.list_shows(active_only=True)
         return {
-            "ok": state.fpp_reachable,
+            "ok": state.fpp_reachable and bool(shows),
             "fpp": _fpp_block(state),
+            "shows_configured": len(shows),
             "show": show.show_id if show else None,
             "round_id": state.round_id,
             "playing": state.status.sequence_name if state.status else None,

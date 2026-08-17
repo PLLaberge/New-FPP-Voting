@@ -120,15 +120,22 @@ class Database:
     def __init__(self, path: str | Path):
         self.path = str(path)
         self._local = threading.local()
-        # Eagerly, in the constructing thread: a DatabaseTooNew should surface
-        # at startup, not on the first request of the night.
-        migrate(self.connection)
+        # Touch a connection now so DatabaseTooNew surfaces at startup rather
+        # than on the first request of the night. Migration happens inside the
+        # `connection` property.
+        _ = self.connection
 
     @property
     def connection(self) -> sqlite3.Connection:
         conn = getattr(self._local, "conn", None)
         if conn is None:
             conn = connect(self.path)
+            # Migrate EVERY new connection, not only the first thread's. It
+            # costs one SELECT and it means a database file that was deleted,
+            # moved or restored under a running service comes back with a
+            # schema, instead of every query failing with "no such table" for
+            # as long as the process lives.
+            migrate(conn)
             self._local.conn = conn
             self._local.depth = 0
         return conn
