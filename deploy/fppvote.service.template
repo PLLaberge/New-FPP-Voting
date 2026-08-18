@@ -1,0 +1,27 @@
+# Installed to /etc/systemd/system/fppvote.service by scripts/fpp_install.sh,
+# which fills in the __PLACEHOLDER__s below. Kept as a template rather than a
+# static unit file because the plugin directory path includes FPP's install
+# location, which fpp_install.sh already knows ($PLUGINDIR) and this file
+# should not have to guess.
+#
+# Deliberately NOT started/stopped from fppd's own lifecycle (preStart.sh /
+# postStop.sh) — see the comment in those files. systemd's own Restart=
+# is what gives this the "boring and observable" reliability CLAUDE.md asks
+# for, independent of whatever fppd is doing.
+[Unit]
+Description=FPP Voting — song voting web service
+After=network.target
+
+[Service]
+Type=simple
+User=__FPP_USER__
+Group=__FPP_GROUP__
+WorkingDirectory=__PLUGIN_DIR__
+Environment=FPPVOTE_DB=__DB_PATH__
+Environment=FPPVOTE_FPP_URL=http://localhost
+ExecStart=__PLUGIN_DIR__/venv/bin/uvicorn fppvote.service:app --host 0.0.0.0 --port __PORT__
+Restart=on-failure
+RestartSec=3
+
+[Install]
+WantedBy=multi-user.target

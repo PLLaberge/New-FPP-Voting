@@ -10,7 +10,7 @@ they are NOT evidence that the field names match a real FPP.
 
 To turn them into evidence:
 
-    python3 scripts/capture_fpp.py --host <pi-address>
+    python3 tools/capture_fpp.py --host <pi-address>
 
 That writes tests/fixtures/captured/*.json straight from the Pi, and
 test_adapter.py picks those up automatically and runs the same assertions

@@ -1,0 +1,24 @@
+{
+	"documentation": "https://github.com/PLLaberge/New-FPP-Voting/blob/main/README.md",
+	"repoName": "New-FPP-Voting",
+	"name": "FPP Voting",
+	"author": "Paulin Laberge",
+	"description": "Self-hosted song voting for your light show. Viewers scan a QR code, browse the playlist on their phone, and vote for what plays next — no third-party server, no plugin website in the middle.",
+	"homeURL": "https://github.com/PLLaberge/New-FPP-Voting",
+	"srcURL": "https://github.com/PLLaberge/New-FPP-Voting.git",
+	"bugURL": "https://github.com/PLLaberge/New-FPP-Voting/issues",
+	"allowUpdates": 1,
+	"versions": [
+		{
+			"minFPPVersion": "8.0",
+			"maxFPPVersion": "0",
+			"branch": "main",
+			"sha": ""
+		}
+	],
+	"dependencies": {
+		"packages": [
+			"python3-venv"
+		]
+	}
+}

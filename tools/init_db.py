@@ -4,7 +4,7 @@ Safe to run repeatedly — that is the point. Every write in the store is
 additive, so a re-run picks up playlist changes without touching anything a
 human has since edited on the admin page.
 
-    python3 scripts/init_db.py [--db data/fppvote.db] [--recategorise]
+    python3 tools/init_db.py [--db data/fppvote.db] [--recategorise]
 
 By default categories are seeded only for songs that have none, so your
 curation wins. --recategorise reapplies metadata.py over the top, which is what

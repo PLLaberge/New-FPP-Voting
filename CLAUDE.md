@@ -151,7 +151,7 @@ Python enforces PEP 668 externally-managed environments.
 
 1. ~~Catalog parser + reconciler~~ **done, tested**
 2. ~~Database layer~~ **done, tested** — `db/connection.py`, `db/store.py`,
-   `scripts/init_db.py`. All SQL lives in `store.py`; nothing above it writes
+   `tools/init_db.py`. All SQL lives in `store.py`; nothing above it writes
    any. `reconcile()` stays pure and in-memory — the store is only the
    load/save boundary around it, which is why idempotence is still testable
    without a database.
@@ -159,7 +159,7 @@ Python enforces PEP 668 externally-managed environments.
    `fpp/fake.py`, contract tests in `tests/test_adapter.py`.
    **Caveat that matters:** the canned responses are CONSTRUCTED from FPP's
    documented shapes, not captured from the Pi. Run
-   `scripts/capture_fpp.py --host <pi>` and commit the result; until then
+   `tools/capture_fpp.py --host <pi>` and commit the result; until then
    `test_captured_responses_are_present` xfails and a green suite means only
    that the parsing is self-consistent. `start_at_item` over HTTP is the least
    verified call in the project — if votes tally but nothing changes song,
@@ -200,7 +200,46 @@ Python enforces PEP 668 externally-managed environments.
    like the rest of the defaults in this file. `tests/test_admin.py` and
    `tests/test_admin_page.py` follow the same pattern as stage 5's tests: the
    backend against `FakeFppAdapter`, the page checked without a browser.
-7. Package as an FPP plugin, deploy, add the tunnel
+7. ~~Package as an FPP plugin~~ **packaged, not yet installed on a Pi** —
+   `pluginInfo.json`, `menu.inc`, `scripts/fpp_install.sh` and friends at the
+   repo root, per FPP's own plugin spec
+   (github.com/FalconChristmas/fpp-plugin-Template). `srcURL` is
+   `github.com/PLLaberge/New-FPP-Voting` — that repo is what FPP `git clone`s
+   on install, so this repo's root now doubles as the plugin's root. Deploying
+   it and standing up the Cloudflare Tunnel are in `docs/DEPLOY.md`, written as
+   steps for Paulin to run — this is the one stage that needed the real Pi,
+   which nothing here has access to.
+
+   `scripts/` was FPP's before it was ours: the plugin spec reserves that name
+   for lifecycle hooks (`fpp_install.sh`, `fpp_uninstall.sh`, `preStart.sh`,
+   `postStart.sh`, `preStop.sh`, `postStop.sh`), so this project's own dev
+   tooling — `init_db.py`, `build_catalog.py`, `capture_fpp.py` — moved to
+   `tools/` to get out of the way, rather than fighting FPP for the name.
+
+   `fpp_install.sh` creates the venv **inside the git-managed plugin
+   directory** (`$PLUGINDIR/New-FPP-Voting/venv`), per the "ship a venv"
+   decision above, and installs a `systemd` unit (`deploy/fppvote.service.template`)
+   pointed at it — `Restart=on-failure` is the actual mechanism behind
+   "systemd over `ps | grep`". `fppvote.db` lives outside that directory, in
+   `$MEDIADIR/plugindata/New-FPP-Voting/`, so an uninstall — which deletes the
+   plugin directory — cannot take vote history or curated categories with it.
+
+   `preStart.sh`/`preStop.sh`/`postStop.sh` are deliberate no-ops rather than
+   the `systemctl start/stop` the official plugin guidelines otherwise
+   recommend: this service exists specifically to keep taking votes through an
+   `fppd` hiccup, and tying its lifecycle to `fppd`'s restarts would silently
+   undo that every time a playlist reloads. `postStart.sh` only self-heals —
+   starts the unit if it is not already running — which is a no-op against an
+   already-running service.
+
+   `menu.inc` links to the running service by absolute `http://` URL rather
+   than a PHP page, since the plugin has no PHP UI of its own — FPP renders
+   any `menu.inc` entry beginning `http(s)://` as a plain external link
+   instead of routing it through `plugin.php`.
+
+   **Still open, and Paulin's call, not something to guess at:** the domain
+   for the tunnel. `docs/DEPLOY.md` is written generically
+   (`vote.yourdomain.com`) until one is chosen.
 
 Stages 1–6 run entirely on a laptop against `FakeFppAdapter`. No Pi needed.
 

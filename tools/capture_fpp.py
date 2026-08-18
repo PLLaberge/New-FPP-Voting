@@ -2,7 +2,7 @@
 
 Run this on any machine that can reach the Pi:
 
-    python3 scripts/capture_fpp.py --host 192.168.1.50
+    python3 tools/capture_fpp.py --host 192.168.1.50
 
 It writes tests/fixtures/captured/*.json. `pytest` picks them up automatically
 and runs the parsing against what FPP actually said — which is the only check

@@ -9,7 +9,7 @@ night is the failure this whole module exists to prevent. An unrecognised field
 degrades to None and the show carries on.
 
 The precise key names below come from FPP's documented API and are the most
-likely thing in this project to be wrong. Run scripts/capture_fpp.py against
+likely thing in this project to be wrong. Run tools/capture_fpp.py against
 the real Pi and drop the result into tests/fixtures/captured/ — the contract
 tests then check this parsing against what FPP actually said, which is the only
 verification that counts.

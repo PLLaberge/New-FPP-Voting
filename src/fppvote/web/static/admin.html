@@ -407,7 +407,7 @@ $("#reconcileBtn").onclick = async () => {
       box.appendChild(p);
     }
     if(r.parser_issues && r.parser_issues.length){
-      const p = el("p",""); p.textContent = "Parser notes: " + r.parser_issues.length + " — see scripts/build_catalog.py output for detail.";
+      const p = el("p",""); p.textContent = "Parser notes: " + r.parser_issues.length + " — see tools/build_catalog.py output for detail.";
       box.appendChild(p);
     }
   }catch(e){

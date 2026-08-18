@@ -13,8 +13,8 @@ next song. Runs entirely on your Pi — no third-party server.
 | FPP adapter | Done, tested against constructed responses — see below |
 | Service (FastAPI) | Done, tested |
 | Voter page | Done — live data over WebSocket |
-| Admin page | Not started |
-| Plugin packaging | Not started |
+| Admin page | Done — `/admin`, gated by an optional admin token |
+| Plugin packaging | Done — not yet installed on a real Pi, see `docs/DEPLOY.md` |
 
 ## Quick start
 
@@ -25,12 +25,12 @@ pip install -r requirements.txt   # also installs this project into the venv
 pytest
 ```
 
-All 191 tests should pass. That confirms your environment works.
+All 251 tests should pass. That confirms your environment works.
 
 ## Try the voter page
 
 ```bash
-python3 scripts/init_db.py                       # once
+python3 tools/init_db.py                       # once
 FPPVOTE_FAKE=1 uvicorn fppvote.service:app       # then open http://localhost:8000
 ```
 
@@ -41,7 +41,7 @@ directly no longer works: it has no data of its own any more.
 ## Rebuild the catalog from playlists
 
 ```bash
-python3 scripts/build_catalog.py
+python3 tools/build_catalog.py
 ```
 
 Reads the playlist fixtures, applies the title-cleaning rules, joins curated
@@ -50,7 +50,7 @@ metadata, and writes `data/catalog.json` plus a reconciliation report.
 ## Build the database
 
 ```bash
-python3 scripts/init_db.py
+python3 tools/init_db.py
 ```
 
 Creates `data/fppvote.db`, seeds the three shows and their category chips,
@@ -63,8 +63,8 @@ edited since. It also reports anything it refused, such as a category assigned
 to a show that has no such chip.
 
 ```bash
-python3 scripts/init_db.py --recategorise   # reapply metadata.py over the top
-python3 scripts/init_db.py --db /tmp/try.db # somewhere disposable
+python3 tools/init_db.py --recategorise   # reapply metadata.py over the top
+python3 tools/init_db.py --db /tmp/try.db # somewhere disposable
 ```
 
 The database is generated and gitignored. Deleting it loses vote history and
@@ -78,14 +78,22 @@ src/fppvote/
   db/          schema.sql, connection.py, store.py   — eight tables, tested
   fpp/         adapter.py, http.py, mqtt.py, fake.py — the only FPP touchpoint
   service/     config.py, follower.py, server.py    — FastAPI, rounds, votes
-  web/static/  vote.html                             — the voter page
+  web/static/  vote.html, admin.html                 — voter page, admin page
 tests/         pytest suite + playlist fixtures
-scripts/       build_catalog.py, init_db.py, capture_fpp.py
+tools/         build_catalog.py, init_db.py, capture_fpp.py
 data/          catalog.json, fppvote.db (generated)
+scripts/       FPP plugin lifecycle hooks — see "Deploy to the Pi" below
+deploy/        fppvote.service.template (systemd unit)
+pluginInfo.json, menu.inc — what FPP's Plugin Manager reads
 ```
 
 All database access goes through `db/store.py`. Nothing above it writes SQL.
 All FPP access goes through `fpp/`. Nothing else talks to FPP.
+
+`scripts/` and `tools/` are deliberately not the same directory: FPP's plugin
+convention reserves `scripts/` for its own lifecycle hooks
+(`fpp_install.sh` and friends), so this project's dev/build tooling lives in
+`tools/` instead rather than fighting that name.
 
 ## Run the service
 
@@ -107,6 +115,13 @@ real Pi, drop `FPPVOTE_FAKE` and set `FPPVOTE_FPP_URL=http://<pi>`.
 | `FPPVOTE_POLL_SECONDS` | `1.0` | status poll interval |
 | `FPPVOTE_HANDOVER_LEAD` | `2.0` | jump to the winner this long before the song ends |
 | `FPPVOTE_FAKE` | `0` | `1` runs a simulated show |
+| `FPPVOTE_ADMIN_TOKEN` | *(empty)* | empty leaves `/admin` open; set before it's reachable from outside your LAN |
+
+## Deploy to the Pi
+
+Installing the plugin on real FPP hardware and putting a Cloudflare Tunnel in
+front of it are covered in **`docs/DEPLOY.md`** — that's the one part of this
+project that needs the actual Pi rather than `FPPVOTE_FAKE=1`.
 
 ## Capture your FPP's responses
 
@@ -116,7 +131,7 @@ real Pi — so a green suite proves the parsing is self-consistent, not that the
 field names match your FPP.
 
 ```bash
-python3 scripts/capture_fpp.py --host 192.168.1.50   # your Pi's address
+python3 tools/capture_fpp.py --host 192.168.1.50   # your Pi's address
 ```
 
 Capture **while a show is playing** — an idle FPP omits most of the fields that

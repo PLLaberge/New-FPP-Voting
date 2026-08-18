@@ -95,7 +95,7 @@ class Follower:
             # the show" is what a viewer sees either way and gives no hint
             # that the catalogue is simply missing.
             self.state.last_error = ("no shows configured in the database - "
-                                     "run scripts/init_db.py to build it")
+                                     "run tools/init_db.py to build it")
             return None
         if name:
             for show in shows:

@@ -205,7 +205,7 @@ The tricky bit in WSL: the server runs inside **Linux**, but your browser is on
 cd ~/projects/"FPP Voting"
 source .venv/bin/activate
 pip install -r requirements.txt      # safe to re-run; installs the project itself
-python3 scripts/init_db.py
+python3 tools/init_db.py
 ```
 
 **Check:** it prints three shows and finishes without an error.

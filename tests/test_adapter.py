@@ -7,7 +7,7 @@ seconds whether anything moved. FPP 10 ships mid-August 2026.
 Read the header of tests/fixtures/fpp_responses.py first. The canned responses
 are CONSTRUCTED from FPP's documented shapes, not captured from a real Pi, so a
 green run here means "the parsing is self-consistent", not "this works against
-FPP". Run scripts/capture_fpp.py against the Pi and the tests at the bottom of
+FPP". Run tools/capture_fpp.py against the Pi and the tests at the bottom of
 this file start checking against what FPP actually said.
 """
 import json
@@ -355,7 +355,7 @@ def test_tested_versions_were_not_widened_without_captures():
         captured = CAPTURED / f"fppd_status_{version}.json"
         if not captured.exists():
             pytest.skip(f"no capture for FPP {version} yet — run "
-                        f"scripts/capture_fpp.py on the Pi")
+                        f"tools/capture_fpp.py on the Pi")
 
 
 # ------------------------------------------------- captured real responses
@@ -378,7 +378,7 @@ def test_captured_responses_are_present():
     are right.
     """
     if not _captures():
-        pytest.xfail("no captures yet — run scripts/capture_fpp.py --host <pi>")
+        pytest.xfail("no captures yet — run tools/capture_fpp.py --host <pi>")
     assert _captures()
 
 
