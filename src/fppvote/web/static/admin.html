@@ -1,0 +1,592 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#0a0f1e">
+<title>FPP Voting — Admin</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect x='5' y='12' width='5' height='14' rx='2.5' fill='%23f6c96b'/%3E%3Crect x='13.5' y='5' width='5' height='21' rx='2.5' fill='%23f6c96b'/%3E%3Crect x='22' y='15' width='5' height='11' rx='2.5' fill='%23f6c96b'/%3E%3C/svg%3E">
+<style>
+:root{
+  --bg-0:#0a0e18; --card:rgba(255,255,255,.05); --card-hi:rgba(255,255,255,.085);
+  --stroke:rgba(255,255,255,.10); --stroke-hi:rgba(255,255,255,.20);
+  --text:#f2f5fb; --text-2:#a4b0c9; --text-3:#6f7d99;
+  --accent:#f6c96b; --green:#5fd8a4; --red:#e8788a;
+  --radius:14px; --radius-sm:9px;
+}
+*{box-sizing:border-box}
+html,body{margin:0;padding:0}
+body{font-family:'Outfit',-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;
+  background:var(--bg-0);color:var(--text);line-height:1.45;min-height:100vh}
+.wrap{max-width:1040px;margin:0 auto;padding:22px 18px 60px}
+a{color:var(--accent)}
+h1{font-size:21px;font-weight:600;margin:0}
+h2{font-size:15px;font-weight:600;margin:0 0 12px;letter-spacing:-.01em}
+.topbar{display:flex;align-items:center;justify-content:space-between;gap:12px;
+  padding-bottom:16px;margin-bottom:18px;border-bottom:1px solid var(--stroke);flex-wrap:wrap}
+.tokenbox{display:flex;align-items:center;gap:10px;font-size:12.5px;color:var(--text-3)}
+.linkbtn{background:none;border:0;color:var(--accent);font:inherit;font-size:inherit;
+  cursor:pointer;text-decoration:underline;text-underline-offset:2px;padding:0}
+button{font-family:inherit}
+.btn{font:inherit;font-size:13px;font-weight:500;padding:8px 15px;border-radius:100px;
+  border:1px solid var(--stroke-hi);background:var(--card);color:var(--text);cursor:pointer;
+  transition:all .15s ease}
+.btn:hover{background:var(--card-hi)}
+.btn:disabled{opacity:.5;cursor:default}
+.btn.primary{background:color-mix(in srgb,var(--accent) 20%,transparent);
+  border-color:color-mix(in srgb,var(--accent) 55%,transparent);color:var(--accent)}
+.btn.small{padding:5px 11px;font-size:12px}
+.msg{font-size:12.5px;color:var(--text-3);margin-left:10px}
+.msg.ok{color:var(--green)}
+.msg.err{color:var(--red)}
+
+.showtabs{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:18px}
+.showtab{font:inherit;font-size:13.5px;padding:8px 16px;border-radius:100px;border:1px solid var(--stroke);
+  background:var(--card);color:var(--text-2);cursor:pointer}
+.showtab .badge-inactive{opacity:.55;font-size:11px;margin-left:5px}
+.showtab .badge-review{margin-left:6px;font-size:11px;color:var(--accent)}
+.showtab[aria-pressed="true"]{background:color-mix(in srgb,var(--accent) 16%,transparent);
+  border-color:color-mix(in srgb,var(--accent) 50%,transparent);color:var(--accent);font-weight:500}
+
+.card{background:var(--card);border:1px solid var(--stroke);border-radius:var(--radius);
+  padding:18px 20px;margin-bottom:16px}
+.hint{color:var(--text-3);font-size:12.5px;margin:0 0 12px}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px 16px;margin-bottom:14px}
+label{display:flex;flex-direction:column;gap:5px;font-size:12px;color:var(--text-3)}
+label.checkrow{flex-direction:row;align-items:center;gap:8px;font-size:13px;color:var(--text-2)}
+input[type="text"],input[type="number"],input[type="search"]{
+  font:inherit;font-size:13.5px;color:var(--text);background:rgba(255,255,255,.04);
+  border:1px solid var(--stroke);border-radius:var(--radius-sm);padding:8px 10px;outline:none}
+input:focus{border-color:color-mix(in srgb,var(--accent) 55%,transparent)}
+input[type="checkbox"]{width:16px;height:16px}
+input[type="number"]{width:100%}
+
+.catlist{display:flex;flex-direction:column;gap:6px;margin-bottom:12px}
+.catrow{display:flex;align-items:center;gap:8px;padding:6px 8px;border:1px solid var(--stroke);
+  border-radius:var(--radius-sm);background:rgba(255,255,255,.03)}
+.catrow input[type="text"]{flex:1;border:0;background:none;padding:2px 0}
+.catrow .n{font-size:11.5px;color:var(--text-3);font-variant-numeric:tabular-nums;min-width:2.5em;text-align:right}
+.catrow button{background:none;border:0;color:var(--text-3);cursor:pointer;font-size:15px;line-height:1;padding:2px 4px}
+.catrow button:hover{color:var(--red)}
+.catrow .move{color:var(--text-3);cursor:pointer;font-size:12px;padding:2px 4px}
+.catrow .move:hover{color:var(--text)}
+.addcat{display:flex;gap:8px;margin-bottom:12px}
+.addcat input{flex:1}
+.warn-box{margin-top:10px;padding:9px 12px;border-radius:var(--radius-sm);font-size:12.5px;
+  background:color-mix(in srgb,var(--accent) 10%,transparent);
+  border:1px solid color-mix(in srgb,var(--accent) 30%,transparent);color:var(--text-2)}
+.warn-box[hidden]{display:none}
+
+.reconcile-result{margin-top:12px;padding:12px 14px;border-radius:var(--radius-sm);
+  background:rgba(255,255,255,.03);border:1px solid var(--stroke);font-size:12.5px}
+.reconcile-result[hidden]{display:none}
+.reconcile-result dl{display:grid;grid-template-columns:auto 1fr;gap:4px 10px;margin:0 0 8px}
+.reconcile-result dt{color:var(--text-3)}
+.reconcile-result dd{margin:0;color:var(--text)}
+.reconcile-result ul{margin:6px 0 0;padding-left:18px;color:var(--text-2)}
+
+table{width:100%;border-collapse:collapse;font-size:13px}
+thead th{text-align:left;font-size:11px;letter-spacing:.08em;text-transform:uppercase;
+  color:var(--text-3);font-weight:500;padding:0 8px 8px;border-bottom:1px solid var(--stroke)}
+tbody td{padding:9px 8px;border-bottom:1px solid rgba(255,255,255,.05);vertical-align:top}
+tbody tr.inactive{opacity:.45}
+tbody tr.needs-review td:first-child{box-shadow:inset 3px 0 0 0 var(--accent)}
+.editable{cursor:text;border-radius:5px;padding:2px 4px;margin:-2px -4px}
+.editable:hover{background:rgba(255,255,255,.06)}
+.editable.empty{color:var(--text-3);font-style:italic}
+.editable input{width:100%;font:inherit;font-size:13px;color:var(--text);background:rgba(255,255,255,.08);
+  border:1px solid var(--stroke-hi);border-radius:5px;padding:3px 5px}
+.override{font-size:11px;color:var(--text-3);display:block;margin-top:1px}
+.chiprow{display:flex;flex-wrap:wrap;gap:4px;max-width:280px}
+.chip{font-size:11px;padding:3px 9px;border-radius:100px;border:1px solid var(--stroke);
+  background:rgba(255,255,255,.04);color:var(--text-3);cursor:pointer;white-space:nowrap}
+.chip.on{background:color-mix(in srgb,var(--accent) 18%,transparent);
+  border-color:color-mix(in srgb,var(--accent) 50%,transparent);color:var(--accent)}
+.status-badges{display:flex;flex-direction:column;gap:3px;font-size:11px}
+.tag{display:inline-block;padding:1px 7px;border-radius:5px;font-size:10.5px}
+.tag.inactive{background:rgba(255,255,255,.06);color:var(--text-3)}
+.tag.review{background:color-mix(in srgb,var(--accent) 16%,transparent);color:var(--accent)}
+.tag.suggested{background:color-mix(in srgb,var(--green) 14%,transparent);color:var(--green)}
+.empty-state{text-align:center;padding:40px;color:var(--text-3)}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header class="topbar">
+    <h1>FPP Voting — Admin</h1>
+    <div class="tokenbox">
+      <span id="tokenStatus">no admin token set</span>
+      <button class="linkbtn" id="setTokenBtn" type="button">Set admin token</button>
+    </div>
+  </header>
+
+  <nav class="showtabs" id="showTabs" role="tablist" aria-label="Shows"></nav>
+
+  <div class="empty-state" id="loadingMsg">Loading shows…</div>
+
+  <section id="showPanel" hidden>
+
+    <div class="card">
+      <h2>Settings</h2>
+      <div class="grid">
+        <label>Name <input type="text" id="f_name"></label>
+        <label>FPP playlist name <input type="text" id="f_playlist"></label>
+        <label>Tagline <input type="text" id="f_tagline"></label>
+        <label>Note <input type="text" id="f_note"></label>
+        <label>Votes per round (1–3) <input type="number" id="f_votes" min="1" max="3"></label>
+        <label>Cooldown songs <input type="number" id="f_cooldown" min="0"></label>
+        <label>Theme <input type="text" id="f_theme"></label>
+        <label class="checkrow"><input type="checkbox" id="f_active"> Active</label>
+      </div>
+      <button class="btn primary" id="saveSettingsBtn" type="button">Save settings</button>
+      <span class="msg" id="settingsMsg"></span>
+    </div>
+
+    <div class="card">
+      <h2>Categories</h2>
+      <p class="hint">The chips voters see for this show. Order here is chip order. Removing a
+        category that songs still carry does not touch those songs — it just stops rendering a
+        chip for them, so check the warning below before saving.</p>
+      <div class="catlist" id="catList"></div>
+      <div class="addcat">
+        <input type="text" id="newCat" placeholder="New category name">
+        <button class="btn small" id="addCatBtn" type="button">Add</button>
+      </div>
+      <button class="btn primary" id="saveCatsBtn" type="button">Save category list</button>
+      <span class="msg" id="catsMsg"></span>
+      <div class="warn-box" id="orphanWarning" hidden></div>
+    </div>
+
+    <div class="card">
+      <h2>Reconcile with FPP</h2>
+      <p class="hint">Reads the live playlist from FPP and syncs songs in or out. Additive and
+        idempotent — never overwrites a category a human already set, and a song that leaves the
+        playlist is deactivated, not deleted.</p>
+      <button class="btn" id="reconcileBtn" type="button">Reconcile now</button>
+      <span class="msg" id="reconcileMsg"></span>
+      <div class="reconcile-result" id="reconcileResult" hidden></div>
+    </div>
+
+    <div class="card">
+      <h2>Songs</h2>
+      <div class="grid" style="grid-template-columns:1fr;margin-bottom:10px">
+        <input type="search" id="songSearch" placeholder="Search songs or artists…">
+      </div>
+      <table>
+        <thead>
+          <tr><th style="width:26%">Title</th><th style="width:16%">Artist</th>
+              <th style="width:8%">Year</th><th style="width:38%">Categories</th>
+              <th style="width:12%">Status</th></tr>
+        </thead>
+        <tbody id="songRows"></tbody>
+      </table>
+    </div>
+
+  </section>
+</div>
+
+<script>
+const $ = s => document.querySelector(s);
+const el = (t,c) => { const n=document.createElement(t); if(c) n.className=c; return n; };
+
+/* ---------- admin token ----------
+   A shared secret, not a login system — set once via a prompt and kept in
+   localStorage. Nothing about this page does anything without a valid token
+   once one is configured on the server; see require_admin in server.py. */
+const TOKEN_KEY = "fppvote.admin_token";
+let ADMIN_TOKEN = localStorage.getItem(TOKEN_KEY) || "";
+function paintTokenStatus(){
+  $("#tokenStatus").textContent = ADMIN_TOKEN ? "admin token set" : "no admin token set";
+}
+$("#setTokenBtn").onclick = () => {
+  const t = prompt("Admin token (leave blank to clear):", ADMIN_TOKEN);
+  if(t === null) return;
+  ADMIN_TOKEN = t.trim();
+  if(ADMIN_TOKEN) localStorage.setItem(TOKEN_KEY, ADMIN_TOKEN);
+  else localStorage.removeItem(TOKEN_KEY);
+  paintTokenStatus();
+  loadShows();
+};
+
+async function api(path, opts){
+  opts = opts || {};
+  const headers = Object.assign({"Content-Type":"application/json"}, opts.headers||{});
+  if(ADMIN_TOKEN) headers["X-Admin-Token"] = ADMIN_TOKEN;
+  const r = await fetch(path, Object.assign({}, opts, {headers}));
+  if(r.status === 401){
+    const t = prompt("This server requires an admin token. Enter it:");
+    if(t){
+      ADMIN_TOKEN = t.trim();
+      localStorage.setItem(TOKEN_KEY, ADMIN_TOKEN);
+      paintTokenStatus();
+      return api(path, opts);          // retry once with the new token
+    }
+    throw new Error("admin token required");
+  }
+  if(!r.ok){
+    let detail = r.statusText;
+    try{ detail = (await r.json()).detail || detail; }catch(e){}
+    throw new Error(detail);
+  }
+  return r.status === 204 ? null : r.json();
+}
+
+/* ---------- state ---------- */
+let shows = [];
+let selectedId = null;
+let songs = [];
+let songQuery = "";
+let editableCats = [];     // working copy while editing the vocabulary
+
+/* ---------- shows ---------- */
+async function loadShows(){
+  try{
+    shows = await api("/api/admin/shows");
+  }catch(e){
+    $("#loadingMsg").textContent = "Could not load shows: " + e.message;
+    return;
+  }
+  $("#loadingMsg").hidden = shows.length > 0;
+  if(!shows.length){ $("#loadingMsg").textContent = "No shows configured yet."; return; }
+  renderTabs();
+  if(!selectedId || !shows.some(s=>s.id===selectedId)) selectedId = shows[0].id;
+  selectShow(selectedId);
+}
+
+function renderTabs(){
+  const nav = $("#showTabs"); nav.innerHTML = "";
+  shows.forEach(s=>{
+    const b = el("button","showtab"); b.type="button"; b.setAttribute("role","tab");
+    b.setAttribute("aria-pressed", s.id===selectedId);
+    b.append(document.createTextNode(s.name));
+    if(!s.active){ const sp=el("span","badge-inactive"); sp.textContent="inactive"; b.appendChild(sp); }
+    if(s.needs_review){ const sp=el("span","badge-review"); sp.textContent=s.needs_review+" to review"; b.appendChild(sp); }
+    b.onclick = () => { selectedId = s.id; selectShow(s.id); };
+    nav.appendChild(b);
+  });
+}
+
+async function selectShow(id){
+  selectedId = id;
+  renderTabs();
+  const show = shows.find(s=>s.id===id);
+  if(!show) return;
+  $("#showPanel").hidden = false;
+
+  $("#f_name").value = show.name || "";
+  $("#f_playlist").value = show.playlist_name || "";
+  $("#f_tagline").value = show.tagline || "";
+  $("#f_note").value = show.note || "";
+  $("#f_votes").value = show.votes_per_round;
+  $("#f_cooldown").value = show.cooldown_songs;
+  $("#f_theme").value = show.theme || "";
+  $("#f_active").checked = !!show.active;
+  setText($("#settingsMsg"), "");
+
+  editableCats = [...show.categories];
+  renderCatList(show.category_counts || {});
+  setText($("#catsMsg"), "");
+  $("#orphanWarning").hidden = true;
+
+  $("#reconcileResult").hidden = true;
+  setText($("#reconcileMsg"), "");
+
+  await loadSongs(id);
+}
+
+function setText(node, text){ if(node.textContent !== text) node.textContent = text; }
+
+/* ---------- settings ---------- */
+$("#saveSettingsBtn").onclick = async () => {
+  const body = {
+    name: $("#f_name").value.trim(),
+    playlist_name: $("#f_playlist").value.trim(),
+    tagline: $("#f_tagline").value.trim() || null,
+    note: $("#f_note").value.trim() || null,
+    votes_per_round: parseInt($("#f_votes").value, 10),
+    cooldown_songs: parseInt($("#f_cooldown").value, 10),
+    theme: $("#f_theme").value.trim(),
+    active: $("#f_active").checked,
+  };
+  const msg = $("#settingsMsg");
+  try{
+    const updated = await api("/api/admin/shows/" + encodeURIComponent(selectedId), {
+      method:"PATCH", body: JSON.stringify(body),
+    });
+    shows = shows.map(s => s.id === updated.id ? updated : s);
+    renderTabs();
+    msg.className = "msg ok"; setText(msg, "Saved");
+  }catch(e){
+    msg.className = "msg err"; setText(msg, "Not saved: " + e.message);
+  }
+};
+
+/* ---------- categories ---------- */
+function renderCatList(counts){
+  const box = $("#catList"); box.innerHTML = "";
+  editableCats.forEach((name, i) => {
+    const row = el("div","catrow");
+    const up = el("button","move"); up.type="button"; up.textContent="↑"; up.title="Move up";
+    up.disabled = i === 0;
+    up.onclick = () => { [editableCats[i-1],editableCats[i]] = [editableCats[i],editableCats[i-1]]; renderCatList(counts); };
+    const down = el("button","move"); down.type="button"; down.textContent="↓"; down.title="Move down";
+    down.disabled = i === editableCats.length - 1;
+    down.onclick = () => { [editableCats[i+1],editableCats[i]] = [editableCats[i],editableCats[i+1]]; renderCatList(counts); };
+    const input = document.createElement("input"); input.type="text"; input.value = name;
+    input.onchange = () => { editableCats[i] = input.value.trim(); };
+    const n = el("span","n"); n.textContent = (counts[name] || 0) + " songs";
+    const rm = el("button",""); rm.type="button"; rm.textContent="✕"; rm.title="Remove";
+    rm.onclick = () => { editableCats.splice(i,1); renderCatList(counts); };
+    row.append(up, down, input, n, rm);
+    box.appendChild(row);
+  });
+}
+$("#addCatBtn").onclick = () => {
+  const input = $("#newCat");
+  const name = input.value.trim();
+  if(!name || editableCats.includes(name)) return;
+  editableCats.push(name);
+  input.value = "";
+  renderCatList(shows.find(s=>s.id===selectedId).category_counts || {});
+};
+$("#saveCatsBtn").onclick = async () => {
+  const msg = $("#catsMsg");
+  try{
+    const result = await api("/api/admin/shows/" + encodeURIComponent(selectedId) + "/categories", {
+      method:"PUT", body: JSON.stringify({categories: editableCats}),
+    });
+    const show = shows.find(s=>s.id===selectedId);
+    show.categories = result.categories;
+    show.category_counts = result.counts;
+    editableCats = [...result.categories];
+    renderCatList(result.counts);
+    msg.className = "msg ok"; setText(msg, "Saved");
+    const warn = $("#orphanWarning");
+    if(result.orphaned && result.orphaned.length){
+      warn.hidden = false;
+      warn.textContent = "Still assigned to songs but no longer a chip: " + result.orphaned.join(", ")
+        + ". Those songs keep the assignment; it just renders nothing until the category comes back.";
+    } else {
+      warn.hidden = true;
+    }
+    renderSongRows();     // chip choices for the song table just changed
+  }catch(e){
+    msg.className = "msg err"; setText(msg, "Not saved: " + e.message);
+  }
+};
+
+/* ---------- reconcile ---------- */
+$("#reconcileBtn").onclick = async () => {
+  const btn = $("#reconcileBtn"), msg = $("#reconcileMsg"), box = $("#reconcileResult");
+  btn.disabled = true; setText(msg, "Reading the playlist from FPP…"); msg.className = "msg";
+  try{
+    const r = await api("/api/admin/shows/" + encodeURIComponent(selectedId) + "/reconcile", {method:"POST"});
+    setText(msg, ""); box.hidden = false;
+    box.innerHTML = "";
+    const dl = el("dl","");
+    const rows = [["Added", r.added.length], ["Reactivated", r.reactivated.length],
+                  ["Deactivated", r.deactivated.length], ["Unchanged", r.unchanged],
+                  ["Suggested categories", r.suggested.length], ["Still need review", r.needs_review.length]];
+    rows.forEach(([k,v])=>{ const dt=el("dt",""); dt.textContent=k; const dd=el("dd",""); dd.textContent=v; dl.append(dt,dd); });
+    box.appendChild(dl);
+    if(r.needs_review.length){
+      const p = el("p",""); p.textContent = "Uncategorised (still votable under All): " + r.needs_review.join(", ");
+      box.appendChild(p);
+    }
+    if(r.parser_issues && r.parser_issues.length){
+      const p = el("p",""); p.textContent = "Parser notes: " + r.parser_issues.length + " — see scripts/build_catalog.py output for detail.";
+      box.appendChild(p);
+    }
+    await loadShows();          // counts and needs_review badges moved
+    await loadSongs(selectedId);
+  }catch(e){
+    msg.className = "msg err"; setText(msg, "Reconcile failed: " + e.message);
+  }finally{
+    btn.disabled = false;
+  }
+};
+
+/* ---------- songs ---------- */
+async function loadSongs(showId){
+  try{
+    const r = await api("/api/admin/shows/" + encodeURIComponent(showId) + "/songs");
+    songs = r.songs;
+  }catch(e){
+    songs = [];
+  }
+  renderSongRows();
+}
+
+function visibleSongs(){
+  const q = songQuery.trim().toLowerCase();
+  if(!q) return songs;
+  return songs.filter(s => (s.title||"").toLowerCase().includes(q)
+    || (s.artist||"").toLowerCase().includes(q));
+}
+
+function renderSongRows(){
+  const body = $("#songRows"); body.innerHTML = "";
+  const show = shows.find(s=>s.id===selectedId);
+  const vocab = show ? show.categories : [];
+  const list = visibleSongs();
+  if(!list.length){
+    const tr = el("tr",""); const td = el("td",""); td.colSpan = 5;
+    td.textContent = songs.length ? "No songs match that search." : "No songs synced yet — try Reconcile.";
+    td.style.textAlign = "center"; td.style.color = "var(--text-3)"; td.style.padding = "24px";
+    tr.appendChild(td); body.appendChild(tr);
+    return;
+  }
+  for(const s of list){
+    const tr = el("tr", (s.active ? "" : "inactive ") + (s.needs_review ? "needs-review" : ""));
+
+    const titleTd = el("td","");
+    titleTd.appendChild(makeEditableTitle(s));
+    tr.appendChild(titleTd);
+
+    const artistTd = el("td","");
+    artistTd.appendChild(makeEditable(s.key, "artist", s.artist, "Artist to confirm"));
+    tr.appendChild(artistTd);
+
+    const yearTd = el("td","");
+    yearTd.appendChild(makeEditable(s.key, "year", s.year==null ? "" : String(s.year), "—"));
+    tr.appendChild(yearTd);
+
+    const catTd = el("td","");
+    const chipRow = el("div","chiprow");
+    vocab.forEach(cat=>{
+      const chip = el("button","chip" + (s.categories.includes(cat) ? " on" : ""));
+      chip.type = "button"; chip.textContent = cat;
+      chip.onclick = () => toggleCategory(s, cat, chip);
+      chipRow.appendChild(chip);
+    });
+    catTd.appendChild(chipRow);
+    tr.appendChild(catTd);
+
+    const statusTd = el("td","");
+    const badges = el("div","status-badges");
+    if(!s.active){ const t=el("span","tag inactive"); t.textContent="inactive"; badges.appendChild(t); }
+    if(s.needs_review){ const t=el("span","tag review"); t.textContent="needs review"; badges.appendChild(t); }
+    if(s.source === "suggested"){ const t=el("span","tag suggested"); t.textContent="suggested"; badges.appendChild(t); }
+    statusTd.appendChild(badges);
+    tr.appendChild(statusTd);
+
+    body.appendChild(tr);
+  }
+}
+
+async function toggleCategory(song, cat, chipEl){
+  const next = song.categories.includes(cat)
+    ? song.categories.filter(c=>c!==cat)
+    : [...song.categories, cat];
+  chipEl.disabled = true;
+  try{
+    const r = await api(
+      "/api/admin/shows/" + encodeURIComponent(selectedId) + "/songs/" + encodeURIComponent(song.key) + "/categories",
+      {method:"PUT", body: JSON.stringify({categories: next})});
+    Object.assign(song, r.song);
+    const show = shows.find(s=>s.id===selectedId);
+    if(show) show.category_counts = r.counts;
+    renderSongRows();
+    renderCatList(r.counts);
+  }catch(e){
+    alert("Could not change category: " + e.message);
+  }finally{
+    chipEl.disabled = false;
+  }
+}
+
+/* click-to-edit title (the display override), artist, year.
+
+   `song.title` here is always the RAW parsed title — Store._song_block
+   never blends it with the override, unlike the voter page's ShowSong.title
+   — so the effective title and the parser's title can be shown side by
+   side rather than one hiding the other. */
+function makeEditableTitle(song){
+  const wrap = el("div","");
+  const effective = () => song.display_override || song.title;
+
+  function paint(){
+    wrap.replaceChildren();
+    const span = el("span","editable");
+    span.textContent = effective();
+    span.tabIndex = 0;
+    span.onclick = () => {
+      const input = document.createElement("input");
+      input.type = "text"; input.value = effective();
+      input.onblur = () => commit(input.value);
+      input.onkeydown = e => {
+        if(e.key === "Enter") input.blur();
+        if(e.key === "Escape"){ input.value = effective(); input.blur(); }
+      };
+      wrap.replaceChildren(input); input.focus(); input.select();
+    };
+    wrap.appendChild(span);
+    if(song.display_override){
+      const note = el("span","override");
+      note.textContent = "parsed as: " + song.title;
+      wrap.appendChild(note);
+    }
+  }
+  async function commit(raw){
+    const value = raw.trim();
+    // Typing back the parser's own title (or clearing the field) removes the
+    // override instead of setting one that happens to match it — otherwise a
+    // later parser fix would be silently shadowed here forever.
+    const override = (value === "" || value === song.title) ? null : value;
+    try{
+      const updated = await api("/api/admin/songs/" + encodeURIComponent(song.key),
+        {method:"PUT", body: JSON.stringify({display_override: override})});
+      song.display_override = updated.display_override;
+      song.title = updated.title;
+    }catch(e){
+      alert("Could not save title: " + e.message);
+    }
+    paint();
+  }
+  paint();
+  return wrap;
+}
+
+function makeEditable(key, field, value, placeholder){
+  const span = el("span","editable" + (value ? "" : " empty"));
+  span.textContent = value || placeholder;
+  span.tabIndex = 0;
+  span.onclick = () => {
+    const input = document.createElement("input");
+    input.type = "text"; input.value = value || "";
+    const restore = () => { input.replaceWith(span); };
+    input.onblur = async () => {
+      const raw = input.value.trim();
+      restore();
+      if(raw === (value || "")) return;      // nothing changed, no request
+      const body = {}; body[field] = raw === "" ? null : raw;
+      try{
+        const updated = await api("/api/admin/songs/" + encodeURIComponent(key),
+          {method:"PUT", body: JSON.stringify(body)});
+        value = updated[field] == null ? "" : String(updated[field]);
+        const song = songs.find(s=>s.key===key);
+        if(song) song[field] = updated[field];
+      }catch(e){
+        alert("Could not save " + field + ": " + e.message);
+      }
+      span.textContent = value || placeholder;
+      span.classList.toggle("empty", !value);
+    };
+    input.onkeydown = e => { if(e.key === "Enter") input.blur(); if(e.key === "Escape"){ input.value = value||""; input.blur(); } };
+    span.replaceWith(input); input.focus(); input.select();
+  };
+  return span;
+}
+
+$("#songSearch").addEventListener("input", e => { songQuery = e.target.value; renderSongRows(); });
+
+/* ---------- boot ---------- */
+paintTokenStatus();
+loadShows();
+</script>
+</body>
+</html>

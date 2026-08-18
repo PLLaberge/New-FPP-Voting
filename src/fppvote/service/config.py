@@ -63,6 +63,13 @@ class Config:
     # stages 1-6 buildable on a laptop with no Pi anywhere.
     fake_fpp: bool = False
 
+    # Shared secret the admin page must send back as X-Admin-Token. Empty
+    # (the default, and what every laptop run gets) leaves /api/admin open —
+    # fine on a laptop with nothing listening but you, but this must be set
+    # before the Cloudflare Tunnel goes up, or anyone with the URL can change
+    # vote allowances and categories.
+    admin_token: str = ""
+
     def __post_init__(self):
         object.__setattr__(self, "db_path", Path(self.db_path))
 
@@ -78,4 +85,5 @@ class Config:
             handover_lead_seconds=_float("FPPVOTE_HANDOVER_LEAD", 2.0),
             playlist_cache_seconds=_float("FPPVOTE_PLAYLIST_CACHE", 60.0),
             fake_fpp=_bool("FPPVOTE_FAKE", False),
+            admin_token=os.environ.get("FPPVOTE_ADMIN_TOKEN", ""),
         )

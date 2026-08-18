@@ -185,7 +185,21 @@ Python enforces PEP 668 externally-managed environments.
    picker and vote-allowance controls are gone — both follow the server now.
    `tests/test_vote_page.py` checks the page without a browser: every id the
    script reaches for exists, every URL it calls is a real route.
-6. Admin page — reconciliation, category assignment, settings
+6. ~~Admin page — reconciliation, category assignment, settings~~ **done,
+   tested** — `/admin`, backed by `/api/admin/*` in `server.py`. Every write
+   goes through an existing `Store` method (`update_show`, `set_categories`,
+   `set_show_categories`, `set_display_override`, `set_song_metadata`,
+   `sync_show`); the admin routes add no SQL of their own. Reconcile pulls
+   the show's playlist straight from the adapter's `get_playlist` and runs it
+   through the same `reconcile()` every seed script uses — additive,
+   idempotent, never touching a category a human already set. Gated by
+   `FPPVOTE_ADMIN_TOKEN` (`X-Admin-Token` header): empty by default, which is
+   what every laptop run gets since nothing else is listening, but **must be
+   set before the Cloudflare Tunnel goes up** — an admin page with no auth
+   sitting on a public tunnel is a real hole, not a laptop-only convenience
+   like the rest of the defaults in this file. `tests/test_admin.py` and
+   `tests/test_admin_page.py` follow the same pattern as stage 5's tests: the
+   backend against `FakeFppAdapter`, the page checked without a browser.
 7. Package as an FPP plugin, deploy, add the tunnel
 
 Stages 1–6 run entirely on a laptop against `FakeFppAdapter`. No Pi needed.

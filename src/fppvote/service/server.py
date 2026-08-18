@@ -21,14 +21,14 @@ import secrets
 from contextlib import asynccontextmanager, suppress
 from pathlib import Path
 
-from fastapi import (Body, Cookie, FastAPI, Header, Query, Response, WebSocket,
-                     WebSocketDisconnect)
+from fastapi import (Body, Cookie, Depends, FastAPI, Header, HTTPException,
+                     Query, Response, WebSocket, WebSocketDisconnect)
 from fastapi.responses import FileResponse
 from fastapi.staticfiles import StaticFiles
 
-from ..catalog.parser import slugify
+from ..catalog.parser import parse_playlist, slugify
 from ..db import Store
-from ..fpp import FakeFppAdapter, HttpFppAdapter, MqttFppAdapter, PlaylistEntry
+from ..fpp import FakeFppAdapter, FppError, HttpFppAdapter, MqttFppAdapter, PlaylistEntry
 from .config import Config
 from .follower import Follower
 
@@ -174,6 +174,59 @@ def _fpp_block(state) -> dict:
             "warning": state.version_warning, "error": state.last_error}
 
 
+# ------------------------------------------------------------------- admin
+def _admin_show_block(store: Store, show) -> dict:
+    """A show as the admin page wants it: settings plus enough of a summary
+    to show whether it needs attention, without shipping every song."""
+    songs = store.list_show_songs(show.show_id, include_inactive=True)
+    return {
+        "id": show.show_id, "name": show.name, "playlist_name": show.playlist_name,
+        "tagline": show.tagline, "note": show.note, "theme": show.theme,
+        "votes_per_round": show.votes_per_round, "cooldown_songs": show.cooldown_songs,
+        "active": show.active,
+        "categories": store.list_categories(show.show_id),
+        # include_inactive=True: a deactivated song still carries a category
+        # assignment, and the vocabulary editor needs to know that before
+        # letting a chip be dropped — same population set_show_categories
+        # itself scans for orphans.
+        "category_counts": store.category_counts(show.show_id, include_inactive=True),
+        "songs_total": sum(1 for s in songs if s.active),
+        "needs_review": sum(1 for s in songs if s.active and s.needs_review),
+    }
+
+
+def _song_block(song) -> dict:
+    """The song fields that are true regardless of show — see CLAUDE.md
+    section 3. Shared by the per-show song listing and the plain song editor
+    so the two never describe the same columns differently."""
+    return {
+        "key": song.key, "title": song.title, "display_override": song.display_override,
+        "sequence_name": song.sequence_name, "media_name": song.media_name,
+        "artist": song.artist, "year": song.year,
+    }
+
+
+def _admin_song_block(store: Store, membership) -> dict:
+    """One song as the admin page edits it: the raw parsed fields plus the
+    curated ones, so 'what the parser saw' and 'what a human overrode' are
+    both visible rather than pre-blended into one title."""
+    block = _song_block(store.get_song(membership.key))
+    block.update(categories=membership.categories, active=membership.active,
+                 playlist_index=membership.playlist_index, source=membership.source,
+                 needs_review=membership.needs_review)
+    return block
+
+
+def _find_show_song(store: Store, show_id: str, key: str):
+    """No single-row lookup exists in Store — list_show_songs is the only
+    query, and reading ~100 rows to find one is cheap at this scale. Adding a
+    second SQL path for one caller was not worth it."""
+    for s in store.list_show_songs(show_id, include_inactive=True):
+        if s.key == key:
+            return s
+    return None
+
+
 def create_app(config: Config | None = None, *, store: Store | None = None,
                adapter=None) -> FastAPI:
     config = config or Config.from_env()
@@ -226,6 +279,16 @@ def create_app(config: Config | None = None, *, store: Store | None = None,
                 response.set_cookie(VOTER_COOKIE, token, max_age=60 * 60 * 24 * 90,
                                     httponly=False, samesite="lax")
         return token
+
+    def require_admin(x_admin_token: str | None = Header(default=None)) -> None:
+        """Gate /api/admin/*. An empty admin_token (every laptop run, by
+        default) leaves it open — there is nothing else listening. Once a
+        token is set, a wrong or missing header is refused outright rather
+        than warned about: unlike a bad FPP version, there is no safe
+        degraded mode for "anyone with the tunnel URL can edit categories"."""
+        if config.admin_token and x_admin_token != config.admin_token:
+            raise HTTPException(status_code=401,
+                                detail="missing or incorrect X-Admin-Token")
 
     # ------------------------------------------------------------- endpoints
     @app.get("/api/state")
@@ -292,6 +355,123 @@ def create_app(config: Config | None = None, *, store: Store | None = None,
             "websockets": len(app.state.hub.connections),
         }
 
+    # --------------------------------------------------------- admin: shows
+    @app.get("/api/admin/shows")
+    def admin_list_shows(_: None = Depends(require_admin)):
+        return [_admin_show_block(store, s) for s in store.list_shows(active_only=False)]
+
+    @app.patch("/api/admin/shows/{show_id}")
+    def admin_update_show(show_id: str, body: dict = Body(...),
+                          _: None = Depends(require_admin)):
+        if store.get_show(show_id) is None:
+            raise HTTPException(404, f"no such show: {show_id!r}")
+        try:
+            store.update_show(show_id, **body)
+        except ValueError as e:
+            raise HTTPException(400, str(e))
+        return _admin_show_block(store, store.get_show(show_id))
+
+    # ----------------------------------------------------- admin: categories
+    @app.get("/api/admin/shows/{show_id}/categories")
+    def admin_get_categories(show_id: str, _: None = Depends(require_admin)):
+        if store.get_show(show_id) is None:
+            raise HTTPException(404, f"no such show: {show_id!r}")
+        return {"categories": store.list_categories(show_id),
+                "counts": store.category_counts(show_id, include_inactive=True)}
+
+    @app.put("/api/admin/shows/{show_id}/categories")
+    def admin_set_categories(show_id: str, body: dict = Body(...),
+                             _: None = Depends(require_admin)):
+        if store.get_show(show_id) is None:
+            raise HTTPException(404, f"no such show: {show_id!r}")
+        names = body.get("categories")
+        if not isinstance(names, list) or not all(isinstance(n, str) for n in names):
+            raise HTTPException(400, "categories must be a list of strings")
+        orphaned = store.set_show_categories(show_id, names)
+        return {"categories": store.list_categories(show_id),
+                "counts": store.category_counts(show_id, include_inactive=True),
+                "orphaned": orphaned}
+
+    # ---------------------------------------------------------- admin: songs
+    @app.get("/api/admin/shows/{show_id}/songs")
+    def admin_list_songs(show_id: str, _: None = Depends(require_admin)):
+        if store.get_show(show_id) is None:
+            raise HTTPException(404, f"no such show: {show_id!r}")
+        songs = store.list_show_songs(show_id, include_inactive=True)
+        return {"songs": [_admin_song_block(store, s) for s in songs]}
+
+    @app.put("/api/admin/shows/{show_id}/songs/{song_key}/categories")
+    def admin_set_song_categories(show_id: str, song_key: str, body: dict = Body(...),
+                                  _: None = Depends(require_admin)):
+        if store.get_show(show_id) is None:
+            raise HTTPException(404, f"no such show: {show_id!r}")
+        cats = body.get("categories")
+        if not isinstance(cats, list) or not all(isinstance(c, str) for c in cats):
+            raise HTTPException(400, "categories must be a list of strings")
+        try:
+            store.set_categories(show_id, song_key, cats)
+        except ValueError as e:
+            raise HTTPException(400, str(e))
+        row = _find_show_song(store, show_id, song_key)
+        if row is None:
+            raise HTTPException(404, f"no such song in {show_id!r}: {song_key!r}")
+        return {"song": _admin_song_block(store, row),
+                "counts": store.category_counts(show_id, include_inactive=True)}
+
+    @app.put("/api/admin/songs/{song_key}")
+    def admin_update_song(song_key: str, body: dict = Body(...),
+                          _: None = Depends(require_admin)):
+        """Display-name override and curated artist/year — the fields the
+        parser cannot get right or cannot know at all."""
+        song = store.get_song(song_key)
+        if song is None:
+            raise HTTPException(404, f"no such song: {song_key!r}")
+        if "display_override" in body:
+            store.set_display_override(song_key, body["display_override"])
+        meta: dict = {}
+        if "artist" in body:
+            meta["artist"] = body["artist"]
+        if "year" in body:
+            year = body["year"]
+            if year is not None:
+                try:
+                    year = int(year)
+                except (TypeError, ValueError):
+                    raise HTTPException(400, "year must be an integer or null")
+            meta["year"] = year
+        if meta:
+            store.set_song_metadata(song_key, **meta)
+        return _song_block(store.get_song(song_key))
+
+    # ------------------------------------------------------ admin: reconcile
+    @app.post("/api/admin/shows/{show_id}/reconcile")
+    def admin_reconcile(show_id: str, _: None = Depends(require_admin)):
+        """Pull the show's playlist straight from FPP and run it through the
+        same reconcile() every seed script uses: additive, idempotent, never
+        touching a category a human already set. This is what picks up a
+        song added or removed on the Pi without anyone running init_db.py."""
+        show = store.get_show(show_id)
+        if show is None:
+            raise HTTPException(404, f"no such show: {show_id!r}")
+        try:
+            entries = adapter.get_playlist(show.playlist_name)
+        except FppError as e:
+            raise HTTPException(
+                502, f"could not read playlist {show.playlist_name!r} from FPP: {e}")
+        tuples = [(e.sequence_name, e.media_name, str(e.duration_seconds))
+                 for e in entries if e.enabled]
+        rows, issues = parse_playlist(tuples)
+        report = store.sync_show(show_id, rows)
+        return {
+            "summary": report.summary(),
+            "added": report.added, "reactivated": report.reactivated,
+            "deactivated": report.deactivated, "unchanged": report.unchanged,
+            "suggested": [{"key": k, "categories": c, "borrowed_from": b}
+                         for k, c, b in report.suggested],
+            "needs_review": report.needs_review,
+            "parser_issues": issues,
+        }
+
     @app.websocket("/ws")
     async def websocket(socket: WebSocket, token: str | None = Query(default=None)):
         """The page's live feed.
@@ -329,7 +509,8 @@ def create_app(config: Config | None = None, *, store: Store | None = None,
         viewer's phone without anyone being told to clear anything.
         """
         response = await call_next(request)
-        if request.url.path == "/" or request.url.path.startswith("/static"):
+        if (request.url.path in ("/", "/admin")
+                or request.url.path.startswith("/static")):
             response.headers["Cache-Control"] = "no-cache, must-revalidate"
         return response
 
@@ -339,5 +520,9 @@ def create_app(config: Config | None = None, *, store: Store | None = None,
         @app.get("/")
         def index():
             return FileResponse(STATIC / "vote.html")
+
+        @app.get("/admin")
+        def admin_page():
+            return FileResponse(STATIC / "admin.html")
 
     return app
