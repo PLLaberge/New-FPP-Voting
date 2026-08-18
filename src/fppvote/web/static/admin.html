@@ -100,7 +100,7 @@ tbody tr.needs-review td:first-child{box-shadow:inset 3px 0 0 0 var(--accent)}
 .editable input{width:100%;font:inherit;font-size:13px;color:var(--text);background:rgba(255,255,255,.08);
   border:1px solid var(--stroke-hi);border-radius:5px;padding:3px 5px}
 .override{font-size:11px;color:var(--text-3);display:block;margin-top:1px}
-.chiprow{display:flex;flex-wrap:wrap;gap:4px;max-width:280px}
+.chiprow{display:flex;flex-wrap:wrap;gap:4px 5px}
 .chip{font-size:11px;padding:3px 9px;border-radius:100px;border:1px solid var(--stroke);
   background:rgba(255,255,255,.04);color:var(--text-3);cursor:pointer;white-space:nowrap}
 .chip.on{background:color-mix(in srgb,var(--accent) 18%,transparent);
@@ -385,7 +385,16 @@ $("#reconcileBtn").onclick = async () => {
   btn.disabled = true; setText(msg, "Reading the playlist from FPP…"); msg.className = "msg";
   try{
     const r = await api("/api/admin/shows/" + encodeURIComponent(selectedId) + "/reconcile", {method:"POST"});
-    setText(msg, ""); box.hidden = false;
+    setText(msg, "");
+    // Refresh BEFORE painting the result. loadShows() re-runs selectShow(),
+    // which resets this panel to hidden along with the settings form — that
+    // reset must land before we build the report, or it wipes the report we
+    // just tried to show, which is what happened the first time this ran
+    // against a real browser.
+    await loadShows();          // counts and needs_review badges moved
+    await loadSongs(selectedId);
+
+    box.hidden = false;
     box.innerHTML = "";
     const dl = el("dl","");
     const rows = [["Added", r.added.length], ["Reactivated", r.reactivated.length],
@@ -401,8 +410,6 @@ $("#reconcileBtn").onclick = async () => {
       const p = el("p",""); p.textContent = "Parser notes: " + r.parser_issues.length + " — see scripts/build_catalog.py output for detail.";
       box.appendChild(p);
     }
-    await loadShows();          // counts and needs_review badges moved
-    await loadSongs(selectedId);
   }catch(e){
     msg.className = "msg err"; setText(msg, "Reconcile failed: " + e.message);
   }finally{
