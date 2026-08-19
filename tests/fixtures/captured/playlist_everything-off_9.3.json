@@ -1,0 +1,17 @@
+{
+ "name": "Everything_Off",
+ "repeat": 0,
+ "loopCount": 0,
+ "mainPlaylist": [
+  {
+   "type": "sequence",
+   "enabled": 1,
+   "playOnce": 0,
+   "sequenceName": "Everything Off.fseq"
+  }
+ ],
+ "playlistInfo": {
+  "total_duration": 5,
+  "total_items": 1
+ }
+}

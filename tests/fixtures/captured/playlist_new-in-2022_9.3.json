@@ -1,0 +1,98 @@
+{
+ "name": "New_In_2022",
+ "version": 3,
+ "repeat": 0,
+ "loopCount": 0,
+ "empty": false,
+ "desc": "",
+ "random": 0,
+ "leadIn": [],
+ "mainPlaylist": [
+  {
+   "type": "both",
+   "enabled": 1,
+   "playOnce": 0,
+   "sequenceName": "Light the Lights-edited.fseq",
+   "mediaName": "01 Light the Lights-edited-V3.mp3",
+   "videoOut": "--Default--",
+   "duration": 195.05
+  },
+  {
+   "type": "both",
+   "enabled": 1,
+   "playOnce": 0,
+   "sequenceName": "Danger Zone - Top Gun.fseq",
+   "mediaName": "01 Danger Zone.mp3",
+   "videoOut": "--Default--",
+   "duration": 216.15
+  },
+  {
+   "type": "both",
+   "enabled": 1,
+   "playOnce": 0,
+   "sequenceName": "Under the Sea (The Little Mermaid).fseq",
+   "mediaName": "03 Under the Sea (The Little Mermaid).m4a",
+   "videoOut": "--Default--",
+   "duration": 193.6
+  },
+  {
+   "type": "both",
+   "enabled": 1,
+   "playOnce": 0,
+   "sequenceName": "We Three Kings.fseq",
+   "mediaName": "01 We Three Kings (feat. Casey Abram.m4a",
+   "videoOut": "--Default--",
+   "duration": 227.45
+  },
+  {
+   "type": "both",
+   "enabled": 1,
+   "playOnce": 0,
+   "sequenceName": "We Dont Talk About Bruno.fseq",
+   "mediaName": "04 We Dont Talk About Bruno.mp3",
+   "videoOut": "--Default--",
+   "duration": 216.15
+  },
+  {
+   "type": "both",
+   "enabled": 1,
+   "playOnce": 0,
+   "sequenceName": "Schubert  Ave Maria.fseq",
+   "mediaName": "02-06- Schubert  Ave Maria-edited.mp3",
+   "videoOut": "--Default--",
+   "duration": 160.5
+  },
+  {
+   "type": "both",
+   "enabled": 1,
+   "playOnce": 0,
+   "sequenceName": "You're a Mean One, Mr Grinch.fseq",
+   "mediaName": "14 You're a Mean One, Mr. Grinch.m4a",
+   "videoOut": "--Default--",
+   "duration": 180
+  },
+  {
+   "type": "both",
+   "enabled": 1,
+   "playOnce": 0,
+   "sequenceName": "Life Is a Highway.fseq",
+   "mediaName": "03 Life Is A Highway (Edit).mp3",
+   "videoOut": "--Default--",
+   "duration": 174.45
+  },
+  {
+   "type": "both",
+   "enabled": 1,
+   "playOnce": 0,
+   "sequenceName": "Light the Lights-edited.fseq",
+   "mediaName": "01 Light the Lights-edited-V3.mp3",
+   "videoOut": "--Default--",
+   "duration": 195.05
+  }
+ ],
+ "leadOut": [],
+ "playlistInfo": {
+  "total_duration": 1758.4,
+  "total_items": 9
+ }
+}

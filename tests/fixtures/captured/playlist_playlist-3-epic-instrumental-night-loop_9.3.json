@@ -1,0 +1,117 @@
+{
+ "name": "Playlist_3_Epic_Instrumental_Night_Loop",
+ "version": 3,
+ "repeat": 0,
+ "loopCount": 0,
+ "empty": false,
+ "desc": "Epic Instrumental Night Loop (Sequence #3)",
+ "random": 0,
+ "leadIn": [],
+ "mainPlaylist": [
+  {
+   "type": "both",
+   "enabled": 1,
+   "playOnce": 0,
+   "sequenceName": "Star Wars Imperial March x Carol of The Bells.fseq",
+   "mediaName": "Star Wars Imperial March x Carol of The Bells.mp4",
+   "videoOut": "--Default--",
+   "timecode": "Default",
+   "duration": 209.3
+  },
+  {
+   "type": "both",
+   "enabled": 1,
+   "playOnce": 0,
+   "sequenceName": "Carol of the Bells - Foster [Instrumental].fseq",
+   "mediaName": "01 Carol of the Bells - Foster [Instrumental].mp3",
+   "videoOut": "--Default--",
+   "timecode": "Default",
+   "duration": 154.55
+  },
+  {
+   "type": "both",
+   "enabled": 1,
+   "playOnce": 0,
+   "sequenceName": "First Snow (Instrumental).fseq",
+   "mediaName": "04 First Snow (Instrumental).mp3",
+   "videoOut": "--Default--",
+   "timecode": "Default",
+   "duration": 232.65
+  },
+  {
+   "type": "both",
+   "enabled": 1,
+   "playOnce": 0,
+   "sequenceName": "Queen of the Winter Night.fseq",
+   "mediaName": "08 Queen of the Winter Night.mp3",
+   "videoOut": "--Default--",
+   "timecode": "Default",
+   "duration": 191.65
+  },
+  {
+   "type": "both",
+   "enabled": 1,
+   "playOnce": 0,
+   "sequenceName": "Dance of the Sugar Plum Fairy.fseq",
+   "mediaName": "01 Dance of the Sugar Plum Fairy.mp3",
+   "videoOut": "--Default--",
+   "timecode": "Default",
+   "duration": 225.45
+  },
+  {
+   "type": "both",
+   "enabled": 1,
+   "playOnce": 0,
+   "sequenceName": "Do You Hear What I Hear.fseq",
+   "mediaName": "Do You Hear What I Hear.mp3",
+   "videoOut": "--Default--",
+   "timecode": "Default",
+   "duration": 191
+  },
+  {
+   "type": "both",
+   "enabled": 1,
+   "playOnce": 0,
+   "sequenceName": "300 Violin Orchestra.fseq",
+   "mediaName": "13 300 Violin Orchestra.mp3",
+   "videoOut": "--Default--",
+   "timecode": "Default",
+   "duration": 178.1
+  },
+  {
+   "type": "both",
+   "enabled": 1,
+   "playOnce": 0,
+   "sequenceName": "Music Box Dancer (Radio Version).fseq",
+   "mediaName": "02 Music Box Dancer (Radio Version).mp3",
+   "videoOut": "--Default--",
+   "timecode": "Default",
+   "duration": 193.25
+  },
+  {
+   "type": "both",
+   "enabled": 1,
+   "playOnce": 0,
+   "sequenceName": "Ice Storm.fseq",
+   "mediaName": "14 Ice Storm.mp3",
+   "videoOut": "--Default--",
+   "timecode": "Default",
+   "duration": 187.2
+  },
+  {
+   "type": "both",
+   "enabled": 1,
+   "playOnce": 0,
+   "sequenceName": "A Star To Follow-short-short[Xmas].fseq",
+   "mediaName": "03 A Star To Follow-short-short.mp3",
+   "videoOut": "--Default--",
+   "timecode": "Default",
+   "duration": 91.9
+  }
+ ],
+ "leadOut": [],
+ "playlistInfo": {
+  "total_duration": 1855.05,
+  "total_items": 10
+ }
+}

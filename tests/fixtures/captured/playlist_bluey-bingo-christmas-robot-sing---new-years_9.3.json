@@ -1,0 +1,107 @@
+{
+ "name": "Bluey Bingo Christmas Robot Sing - New Years",
+ "version": 3,
+ "repeat": 0,
+ "loopCount": 0,
+ "empty": false,
+ "desc": "",
+ "random": 0,
+ "leadIn": [],
+ "mainPlaylist": [
+  {
+   "type": "both",
+   "enabled": 1,
+   "playOnce": 0,
+   "sequenceName": "Barbie Girl.fseq",
+   "mediaName": "03 Barbie Girl.mp3",
+   "videoOut": "--Default--",
+   "duration": 197.95
+  },
+  {
+   "type": "both",
+   "enabled": 1,
+   "playOnce": 0,
+   "sequenceName": "My Favorite Things.fseq",
+   "mediaName": "03 My Favorite Things.mp3",
+   "videoOut": "--Default--",
+   "duration": 172.45
+  },
+  {
+   "type": "both",
+   "enabled": 1,
+   "playOnce": 0,
+   "sequenceName": "Danger Zone - Top Gun.fseq",
+   "mediaName": "01 Danger Zone.mp3",
+   "videoOut": "--Default--",
+   "duration": 216.15
+  },
+  {
+   "type": "both",
+   "enabled": 1,
+   "playOnce": 0,
+   "sequenceName": "Disney Medley - Happily Ever After .fseq",
+   "mediaName": "Happily Ever After v3 .mp3",
+   "videoOut": "--Default--",
+   "duration": 325.7
+  },
+  {
+   "type": "both",
+   "enabled": 1,
+   "playOnce": 0,
+   "sequenceName": "Anti-Hero.fseq",
+   "mediaName": "01 Anti-Hero (Kungs Remix).mp3",
+   "videoOut": "--Default--",
+   "duration": 194.65
+  },
+  {
+   "type": "both",
+   "enabled": 1,
+   "playOnce": 0,
+   "sequenceName": "Taylor Swift Show.fseq",
+   "mediaName": "taylorshow2a.mp3",
+   "videoOut": "--Default--",
+   "duration": 217.35
+  },
+  {
+   "type": "both",
+   "enabled": 1,
+   "playOnce": 0,
+   "sequenceName": "Life Is a Highway.fseq",
+   "mediaName": "03 Life Is A Highway (Edit).mp3",
+   "videoOut": "--Default--",
+   "duration": 174.45
+  },
+  {
+   "type": "both",
+   "enabled": 1,
+   "playOnce": 0,
+   "sequenceName": "We Dont Talk About Bruno.fseq",
+   "mediaName": "04 We Dont Talk About Bruno.mp3",
+   "videoOut": "--Default--",
+   "duration": 216.15
+  },
+  {
+   "type": "both",
+   "enabled": 1,
+   "playOnce": 0,
+   "sequenceName": "I Gotta Feeling.fseq",
+   "mediaName": "I Gotta Feeling.mp3",
+   "videoOut": "--Default--",
+   "duration": 202.125
+  },
+  {
+   "type": "both",
+   "enabled": 1,
+   "playOnce": 0,
+   "sequenceName": "Zero.fseq",
+   "mediaName": "01 Zero (From the Original Motion Pi.mp3",
+   "videoOut": "--Default--",
+   "duration": 210.95
+  }
+ ],
+ "leadOut": [],
+ "playlistInfo": {
+  "total_duration": 2127.925,
+  "total_items": 10
+ }
+}

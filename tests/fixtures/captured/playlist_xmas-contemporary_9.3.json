@@ -1,0 +1,99 @@
+{
+ "name": "Xmas_Contemporary",
+ "version": 3,
+ "repeat": 0,
+ "loopCount": 0,
+ "empty": false,
+ "desc": "",
+ "random": 0,
+ "leadIn": [],
+ "mainPlaylist": [
+  {
+   "type": "both",
+   "enabled": 1,
+   "playOnce": 0,
+   "sequenceName": "Carol of the Bells - Foster [Instrumental].fseq",
+   "mediaName": "01 Carol of the Bells - Foster [Instrumental].mp3",
+   "videoOut": "--Default--",
+   "duration": 154.55
+  },
+  {
+   "type": "both",
+   "enabled": 1,
+   "playOnce": 0,
+   "sequenceName": "Hallelujah.fseq",
+   "mediaName": "08 Hallelujah.mp3",
+   "videoOut": "--Default--",
+   "duration": 269
+  },
+  {
+   "type": "both",
+   "enabled": 1,
+   "playOnce": 0,
+   "sequenceName": "Christmas  Every Day.fseq",
+   "mediaName": "01 Christmas  Every Day.mp3",
+   "videoOut": "--Default--",
+   "duration": 226.05
+  },
+  {
+   "type": "both",
+   "enabled": 1,
+   "playOnce": 0,
+   "sequenceName": "Let It Snow Baby - Its Cold Outside.fseq",
+   "mediaName": "01 Let It Snow Baby - It's Cold Outside.mp3",
+   "videoOut": "--Default--",
+   "duration": 129.75
+  },
+  {
+   "type": "both",
+   "enabled": 1,
+   "playOnce": 0,
+   "sequenceName": "The 12 Days of Christmas.fseq",
+   "mediaName": "15 - The 12 Days of Christmas.mp3",
+   "videoOut": "--Default--",
+   "duration": 178.65
+  },
+  {
+   "type": "both",
+   "enabled": 1,
+   "playOnce": 0,
+   "sequenceName": "Dance of the Sugar Plum Fairy.fseq",
+   "mediaName": "01 Dance of the Sugar Plum Fairy.mp3",
+   "videoOut": "--Default--",
+   "duration": 225.45
+  },
+  {
+   "type": "both",
+   "enabled": 1,
+   "playOnce": 0,
+   "sequenceName": "Feliz Navidad.fseq",
+   "mediaName": "01 Feliz Navidad.mp3",
+   "videoOut": "--Default--",
+   "duration": 181.85
+  },
+  {
+   "type": "both",
+   "enabled": 1,
+   "playOnce": 0,
+   "sequenceName": "Light the Lights-edited.fseq",
+   "mediaName": "01 Light the Lights-edited-V3.mp3",
+   "videoOut": "--Default--",
+   "duration": 195.05
+  }
+ ],
+ "leadOut": [
+  {
+   "type": "command",
+   "enabled": 1,
+   "playOnce": 0,
+   "command": "Run Script",
+   "args": [
+    "RestartFPPD.sh"
+   ]
+  }
+ ],
+ "playlistInfo": {
+  "total_duration": 1560.35,
+  "total_items": 8
+ }
+}

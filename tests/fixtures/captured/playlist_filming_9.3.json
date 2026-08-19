@@ -1,0 +1,35 @@
+{
+ "name": "Filming",
+ "version": 3,
+ "repeat": 0,
+ "loopCount": 0,
+ "empty": false,
+ "desc": "",
+ "random": 0,
+ "leadIn": [],
+ "mainPlaylist": [
+  {
+   "type": "sequence",
+   "enabled": 1,
+   "playOnce": 0,
+   "sequenceName": "Thirty Second Countdown.fseq",
+   "timecode": "Default",
+   "duration": 30
+  },
+  {
+   "type": "both",
+   "enabled": 1,
+   "playOnce": 0,
+   "sequenceName": "Christmas Vacation.fseq",
+   "mediaName": "Christmas Vacation with Intro 2024.mp3",
+   "videoOut": "--Default--",
+   "timecode": "Default",
+   "duration": 214.3
+  }
+ ],
+ "leadOut": [],
+ "playlistInfo": {
+  "total_duration": 244.3,
+  "total_items": 2
+ }
+}

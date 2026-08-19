@@ -1,0 +1,89 @@
+{
+ "name": "Playlist_4_Disney_Modern_Family_Favorites_Loop",
+ "version": 3,
+ "repeat": 0,
+ "loopCount": 0,
+ "empty": false,
+ "desc": "Disney & Modern Family Favorites Loop (Sequence #4)",
+ "random": 0,
+ "leadIn": [],
+ "mainPlaylist": [
+  {
+   "type": "both",
+   "enabled": 1,
+   "playOnce": 0,
+   "sequenceName": "How Far Ill Go.fseq",
+   "mediaName": "04 How Far I'll Go.mp3",
+   "videoOut": "--Default--",
+   "duration": 160
+  },
+  {
+   "type": "both",
+   "enabled": 1,
+   "playOnce": 0,
+   "sequenceName": "We Dont Talk About Bruno.fseq",
+   "mediaName": "04 We Dont Talk About Bruno.mp3",
+   "videoOut": "--Default--",
+   "duration": 216
+  },
+  {
+   "type": "both",
+   "enabled": 1,
+   "playOnce": 0,
+   "sequenceName": "Under the Sea (The Little Mermaid).fseq",
+   "mediaName": "03 Under the Sea (The Little Mermaid).m4a",
+   "videoOut": "--Default--",
+   "duration": 193
+  },
+  {
+   "type": "both",
+   "enabled": 1,
+   "playOnce": 0,
+   "sequenceName": "FROZEN - Let It Go Sing-along - Official Disney HD.fseq",
+   "mediaName": "FROZEN - Let It Go Sing-along - Official Disney HD.mp3",
+   "videoOut": "--Default--",
+   "duration": 223
+  },
+  {
+   "type": "both",
+   "enabled": 1,
+   "playOnce": 0,
+   "sequenceName": "FROZEN 2 - Into the Unknown.fseq",
+   "mediaName": "03 Frozen - Into the Unknown.mp3",
+   "videoOut": "--Default--",
+   "duration": 194
+  },
+  {
+   "type": "both",
+   "enabled": 1,
+   "playOnce": 0,
+   "sequenceName": "Life Is a Highway.fseq",
+   "mediaName": "03 Life Is A Highway (Edit).mp3",
+   "videoOut": "--Default--",
+   "duration": 174
+  },
+  {
+   "type": "both",
+   "enabled": 1,
+   "playOnce": 0,
+   "sequenceName": "My Favorite Things.fseq",
+   "mediaName": "03 My Favorite Things.mp3",
+   "videoOut": "--Default--",
+   "duration": 172
+  },
+  {
+   "type": "both",
+   "enabled": 1,
+   "playOnce": 0,
+   "sequenceName": "Here Comes the Sun.fseq",
+   "mediaName": "07 Here Comes the Sun.mp3",
+   "videoOut": "--Default--",
+   "duration": 185
+  }
+ ],
+ "leadOut": [],
+ "playlistInfo": {
+  "total_duration": 1517,
+  "total_items": 8
+ }
+}

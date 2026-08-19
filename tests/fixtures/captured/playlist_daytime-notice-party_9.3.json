@@ -1,0 +1,34 @@
+{
+ "name": "Daytime_Notice Party",
+ "version": 3,
+ "repeat": 0,
+ "loopCount": 0,
+ "empty": false,
+ "desc": "",
+ "random": 0,
+ "leadIn": [],
+ "mainPlaylist": [
+  {
+   "type": "sequence",
+   "enabled": 1,
+   "playOnce": 0,
+   "sequenceName": "Early Afternoon - After Party.fseq",
+   "timecode": "Default",
+   "duration": 70
+  }
+ ],
+ "leadOut": [
+  {
+   "type": "sequence",
+   "enabled": 1,
+   "playOnce": 0,
+   "sequenceName": "Everything Off.fseq",
+   "timecode": "Default",
+   "duration": 1
+  }
+ ],
+ "playlistInfo": {
+  "total_duration": 70,
+  "total_items": 1
+ }
+}

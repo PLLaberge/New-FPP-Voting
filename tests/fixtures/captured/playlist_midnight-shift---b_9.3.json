@@ -1,0 +1,32 @@
+{
+ "name": "Midnight_Shift - B",
+ "version": 3,
+ "repeat": 0,
+ "loopCount": 0,
+ "empty": false,
+ "desc": "Overnight",
+ "random": 0,
+ "leadIn": [],
+ "mainPlaylist": [
+  {
+   "type": "sequence",
+   "enabled": 1,
+   "playOnce": 0,
+   "sequenceName": "Driveway Posts - Blue.fseq",
+   "duration": 300
+  }
+ ],
+ "leadOut": [
+  {
+   "type": "sequence",
+   "enabled": 1,
+   "playOnce": 0,
+   "sequenceName": "Everything Off.fseq",
+   "duration": 1
+  }
+ ],
+ "playlistInfo": {
+  "total_duration": 300,
+  "total_items": 1
+ }
+}

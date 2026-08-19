@@ -1,0 +1,107 @@
+{
+ "name": "Playlist_2_Kids_Novelty_Giggles_Loop",
+ "version": 3,
+ "repeat": 0,
+ "loopCount": 0,
+ "empty": false,
+ "desc": "Kids’ Novelty & Giggles Loop (Sequence #2)",
+ "random": 0,
+ "leadIn": [],
+ "mainPlaylist": [
+  {
+   "type": "both",
+   "enabled": 1,
+   "playOnce": 0,
+   "sequenceName": "I Want a Hippopotamus for Christmas.fseq",
+   "mediaName": "01 I Want a Hippopotamus for Christmas.mp3",
+   "videoOut": "--Default--",
+   "duration": 155
+  },
+  {
+   "type": "both",
+   "enabled": 1,
+   "playOnce": 0,
+   "sequenceName": "Frosty the Snowman.fseq",
+   "mediaName": "05 Frosty the Snowman.mp3",
+   "videoOut": "--Default--",
+   "duration": 155
+  },
+  {
+   "type": "both",
+   "enabled": 1,
+   "playOnce": 0,
+   "sequenceName": "Snoopy's Christmas.fseq",
+   "mediaName": "06 Snoopy's Christmas.mp3",
+   "videoOut": "--Default--",
+   "duration": 190
+  },
+  {
+   "type": "both",
+   "enabled": 1,
+   "playOnce": 0,
+   "sequenceName": "Oh Christmas Tree.fseq",
+   "mediaName": "10 Oh Christmas Tree.mp3",
+   "videoOut": "--Default--",
+   "duration": 105
+  },
+  {
+   "type": "both",
+   "enabled": 1,
+   "playOnce": 0,
+   "sequenceName": "Trim Up The Tree.fseq",
+   "mediaName": "03 Trim Up The Tree.mp3",
+   "videoOut": "--Default--",
+   "duration": 81
+  },
+  {
+   "type": "both",
+   "enabled": 1,
+   "playOnce": 0,
+   "sequenceName": "You're a Mean One, Mr Grinch.fseq",
+   "mediaName": "14 You're a Mean One, Mr. Grinch.m4a",
+   "videoOut": "--Default--",
+   "duration": 180
+  },
+  {
+   "type": "both",
+   "enabled": 1,
+   "playOnce": 0,
+   "sequenceName": "Jingle Bell Rock.fseq",
+   "mediaName": "01 Jingle Bell Rock.mp3",
+   "videoOut": "--Default--",
+   "duration": 131
+  },
+  {
+   "type": "both",
+   "enabled": 1,
+   "playOnce": 0,
+   "sequenceName": "Feliz Navidad.fseq",
+   "mediaName": "01 Feliz Navidad.mp3",
+   "videoOut": "--Default--",
+   "duration": 181
+  },
+  {
+   "type": "both",
+   "enabled": 1,
+   "playOnce": 0,
+   "sequenceName": "Linus And Lucy.fseq",
+   "mediaName": "01-04- Linus And Lucy.mp3",
+   "videoOut": "--Default--",
+   "duration": 185
+  },
+  {
+   "type": "both",
+   "enabled": 1,
+   "playOnce": 0,
+   "sequenceName": "Barbie Girl.fseq",
+   "mediaName": "03 Barbie Girl.mp3",
+   "videoOut": "--Default--",
+   "duration": 197
+  }
+ ],
+ "leadOut": [],
+ "playlistInfo": {
+  "total_duration": 1560,
+  "total_items": 10
+ }
+}

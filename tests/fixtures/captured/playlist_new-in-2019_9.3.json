@@ -1,0 +1,72 @@
+{
+ "name": "New_In_2019",
+ "version": 3,
+ "repeat": 0,
+ "loopCount": 0,
+ "empty": false,
+ "desc": "",
+ "random": 0,
+ "leadIn": [],
+ "mainPlaylist": [
+  {
+   "type": "both",
+   "enabled": 1,
+   "playOnce": 0,
+   "sequenceName": "I Heard the Bells on Christmas Day.fseq",
+   "mediaName": "01 I Heard the Bells on Christmas Day.mp3",
+   "videoOut": "--Default--",
+   "duration": 258.25
+  },
+  {
+   "type": "both",
+   "enabled": 1,
+   "playOnce": 0,
+   "sequenceName": "White Christmas (feat. Ken Darby).fseq",
+   "mediaName": "03 White Christmas (feat. Ken Darby).mp3",
+   "videoOut": "--Default--",
+   "duration": 183.6
+  },
+  {
+   "type": "both",
+   "enabled": 1,
+   "playOnce": 0,
+   "sequenceName": "Little Drummer Boy (Live).fseq",
+   "mediaName": "01 Little Drummer Boy (Live).m4a",
+   "videoOut": "--Default--",
+   "duration": 277.6
+  },
+  {
+   "type": "both",
+   "enabled": 1,
+   "playOnce": 0,
+   "sequenceName": "Silent Night (feat. Reba McEntire).fseq",
+   "mediaName": "14 Silent Night (feat. Reba McEntire).mp3",
+   "videoOut": "--Default--",
+   "duration": 249.25
+  },
+  {
+   "type": "both",
+   "enabled": 1,
+   "playOnce": 0,
+   "sequenceName": "The Christmas Song (Merry Christmas).fseq",
+   "mediaName": "01 The Christmas Song (Merry Christmas).mp3",
+   "videoOut": "--Default--",
+   "duration": 192.15
+  }
+ ],
+ "leadOut": [
+  {
+   "type": "command",
+   "enabled": 1,
+   "playOnce": 0,
+   "command": "Run Script",
+   "args": [
+    "RestartFPPD.sh"
+   ]
+  }
+ ],
+ "playlistInfo": {
+  "total_duration": null,
+  "total_items": 5
+ }
+}

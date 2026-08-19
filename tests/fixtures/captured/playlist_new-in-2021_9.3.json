@@ -1,0 +1,62 @@
+{
+ "name": "New_In_2021",
+ "version": 3,
+ "repeat": 0,
+ "loopCount": 0,
+ "empty": false,
+ "desc": "",
+ "random": 0,
+ "leadIn": [],
+ "mainPlaylist": [
+  {
+   "type": "both",
+   "enabled": 1,
+   "playOnce": 0,
+   "sequenceName": "Oh Christmas Tree.fseq",
+   "mediaName": "10 Oh Christmas Tree.mp3",
+   "videoOut": "--Default--",
+   "duration": 105.65
+  },
+  {
+   "type": "both",
+   "enabled": 1,
+   "playOnce": 0,
+   "sequenceName": "Queen of the Winter Night.fseq",
+   "mediaName": "08 Queen of the Winter Night.mp3",
+   "videoOut": "--Default--",
+   "duration": 191.65
+  },
+  {
+   "type": "both",
+   "enabled": 1,
+   "playOnce": 0,
+   "sequenceName": "Light of Christmas (feat. tobyMac.fseq",
+   "mediaName": "01 Light of Christmas (feat. tobyMac.mp3",
+   "videoOut": "--Default--",
+   "duration": 220.6
+  },
+  {
+   "type": "both",
+   "enabled": 1,
+   "playOnce": 0,
+   "sequenceName": "I Want a Hippopotamus for Christmas.fseq",
+   "mediaName": "01 I Want a Hippopotamus for Christmas.mp3",
+   "videoOut": "--Default--",
+   "duration": 155
+  },
+  {
+   "type": "both",
+   "enabled": 1,
+   "playOnce": 0,
+   "sequenceName": "Zero.fseq",
+   "mediaName": "01 Zero (From the Original Motion Pi.mp3",
+   "videoOut": "--Default--",
+   "duration": 210.95
+  }
+ ],
+ "leadOut": [],
+ "playlistInfo": {
+  "total_duration": 883.8499999999999,
+  "total_items": 5
+ }
+}

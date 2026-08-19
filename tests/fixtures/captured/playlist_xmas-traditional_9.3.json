@@ -1,0 +1,62 @@
+{
+ "name": "Xmas_Traditional",
+ "version": 3,
+ "repeat": 0,
+ "loopCount": 0,
+ "empty": false,
+ "desc": "",
+ "random": 0,
+ "leadIn": [],
+ "mainPlaylist": [
+  {
+   "type": "both",
+   "enabled": 1,
+   "playOnce": 0,
+   "sequenceName": "Carol of the Bells.fseq",
+   "mediaName": "01 - Carol of the Bells.mp3",
+   "videoOut": "--Default--",
+   "duration": 145.75
+  },
+  {
+   "type": "both",
+   "enabled": 1,
+   "playOnce": 0,
+   "sequenceName": "Hallelujah Chorus.fseq",
+   "mediaName": "01-18- Hallelujah Chorus_edited.mp3",
+   "videoOut": "--Default--",
+   "duration": 100.65
+  },
+  {
+   "type": "both",
+   "enabled": 1,
+   "playOnce": 0,
+   "sequenceName": "Dance of the Sugar Plum Fairy.fseq",
+   "mediaName": "01 Dance of the Sugar Plum Fairy.mp3",
+   "videoOut": "--Default--",
+   "duration": 225.45
+  },
+  {
+   "type": "both",
+   "enabled": 1,
+   "playOnce": 0,
+   "sequenceName": "A Star To Follow-short-short[Xmas].fseq",
+   "mediaName": "03 A Star To Follow-short-short.mp3",
+   "videoOut": "--Default--",
+   "duration": 91.9
+  },
+  {
+   "type": "both",
+   "enabled": 1,
+   "playOnce": 0,
+   "sequenceName": "O Tannenbaum.fseq",
+   "mediaName": "07 O Tannenbaum.mp3",
+   "videoOut": "--Default--",
+   "duration": 178
+  }
+ ],
+ "leadOut": [],
+ "playlistInfo": {
+  "total_duration": 741.75,
+  "total_items": 5
+ }
+}

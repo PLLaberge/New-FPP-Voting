@@ -1,0 +1,668 @@
+{
+ "name": "All_Xmas_Songs",
+ "version": 3,
+ "repeat": 0,
+ "loopCount": 0,
+ "empty": false,
+ "desc": "All available Christmas songs",
+ "random": 0,
+ "leadIn": [],
+ "mainPlaylist": [
+  {
+   "type": "both",
+   "enabled": 1,
+   "playOnce": 0,
+   "sequenceName": "Christmas Vacation.fseq",
+   "mediaName": "Christmas Vacation with Intro 2024.mp3",
+   "videoOut": "--Default--",
+   "timecode": "Default",
+   "duration": 214.3
+  },
+  {
+   "type": "both",
+   "enabled": 1,
+   "playOnce": 0,
+   "sequenceName": "Christmas Sarajevo 12-24 (Instrumental).fseq",
+   "mediaName": "08 Christmas Sarajevo 12-24 (Instrumental).mp3",
+   "videoOut": "--Default--",
+   "timecode": "Default",
+   "duration": 205.4
+  },
+  {
+   "type": "both",
+   "enabled": 1,
+   "playOnce": 0,
+   "sequenceName": "Let It Snow Baby - Its Cold Outside.fseq",
+   "mediaName": "01 Let It Snow Baby - It's Cold Outside.mp3",
+   "videoOut": "--Default--",
+   "timecode": "Default",
+   "duration": 129.75
+  },
+  {
+   "type": "both",
+   "enabled": 1,
+   "playOnce": 0,
+   "sequenceName": "Under the Sea (The Little Mermaid).fseq",
+   "mediaName": "03 Under the Sea (The Little Mermaid).m4a",
+   "videoOut": "--Default--",
+   "timecode": "Default",
+   "duration": 193.6
+  },
+  {
+   "type": "both",
+   "enabled": 1,
+   "playOnce": 0,
+   "sequenceName": "We Three Kings.fseq",
+   "mediaName": "01 We Three Kings (feat. Casey Abram.m4a",
+   "videoOut": "--Default--",
+   "timecode": "Default",
+   "duration": 227.45
+  },
+  {
+   "type": "both",
+   "enabled": 1,
+   "playOnce": 0,
+   "sequenceName": "Frosty the Snowman.fseq",
+   "mediaName": "05 Frosty the Snowman.mp3",
+   "videoOut": "--Default--",
+   "timecode": "Default",
+   "duration": 155.3
+  },
+  {
+   "type": "both",
+   "enabled": 1,
+   "playOnce": 0,
+   "sequenceName": "FROZEN - Let It Go Sing-along - Official Disney HD.fseq",
+   "mediaName": "FROZEN - Let It Go Sing-along - Official Disney HD.mp3",
+   "videoOut": "--Default--",
+   "timecode": "Default",
+   "duration": 223.25
+  },
+  {
+   "type": "both",
+   "enabled": 1,
+   "playOnce": 0,
+   "sequenceName": "Carol of the Bells.fseq",
+   "mediaName": "01 - Carol of the Bells.mp3",
+   "videoOut": "--Default--",
+   "timecode": "Default",
+   "duration": 145.75
+  },
+  {
+   "type": "both",
+   "enabled": 1,
+   "playOnce": 0,
+   "sequenceName": "Feliz Navidad.fseq",
+   "mediaName": "01 Feliz Navidad.mp3",
+   "videoOut": "--Default--",
+   "timecode": "Default",
+   "duration": 181.85
+  },
+  {
+   "type": "both",
+   "enabled": 1,
+   "playOnce": 0,
+   "sequenceName": "Jingle Bell Rock.fseq",
+   "mediaName": "01 Jingle Bell Rock.mp3",
+   "videoOut": "--Default--",
+   "timecode": "Default",
+   "duration": 131
+  },
+  {
+   "type": "both",
+   "enabled": 1,
+   "playOnce": 0,
+   "sequenceName": "Silent Night (feat. Reba McEntire).fseq",
+   "mediaName": "14 Silent Night (feat. Reba McEntire).mp3",
+   "videoOut": "--Default--",
+   "timecode": "Default",
+   "duration": 249.25
+  },
+  {
+   "type": "both",
+   "enabled": 1,
+   "playOnce": 0,
+   "sequenceName": "Golden - KPop Demon Hunters.fseq",
+   "mediaName": "KPop Demon Hunters - Golden.mp3",
+   "videoOut": "--Default--",
+   "timecode": "Default",
+   "duration": 169.35
+  },
+  {
+   "type": "both",
+   "enabled": 1,
+   "playOnce": 0,
+   "sequenceName": "Do You Hear What I Hear.fseq",
+   "mediaName": "Do You Hear What I Hear.mp3",
+   "videoOut": "--Default--",
+   "timecode": "Default",
+   "duration": 191
+  },
+  {
+   "type": "both",
+   "enabled": 1,
+   "playOnce": 0,
+   "sequenceName": "Linus And Lucy.fseq",
+   "mediaName": "01-04- Linus And Lucy.mp3",
+   "videoOut": "--Default--",
+   "timecode": "Default",
+   "duration": 185.5
+  },
+  {
+   "type": "both",
+   "enabled": 1,
+   "playOnce": 0,
+   "sequenceName": "The Christmas Song (Merry Christmas).fseq",
+   "mediaName": "01 The Christmas Song (Merry Christmas).mp3",
+   "videoOut": "--Default--",
+   "timecode": "Default",
+   "duration": 192.15
+  },
+  {
+   "type": "both",
+   "enabled": 1,
+   "playOnce": 0,
+   "sequenceName": "FROZEN 2 - Into the Unknown.fseq",
+   "mediaName": "03 Frozen - Into the Unknown.mp3",
+   "videoOut": "--Default--",
+   "timecode": "Default",
+   "duration": 194.9
+  },
+  {
+   "type": "both",
+   "enabled": 1,
+   "playOnce": 0,
+   "sequenceName": "Zero.fseq",
+   "mediaName": "01 Zero (From the Original Motion Pi.mp3",
+   "videoOut": "--Default--",
+   "timecode": "Default",
+   "duration": 210.95
+  },
+  {
+   "type": "both",
+   "enabled": 1,
+   "playOnce": 0,
+   "sequenceName": "Jingle Bells (Epic Version).fseq",
+   "mediaName": "07 Jingle Bells (Epic Version).m4a",
+   "videoOut": "--Default--",
+   "timecode": "Default",
+   "duration": 180.75
+  },
+  {
+   "type": "both",
+   "enabled": 1,
+   "playOnce": 0,
+   "sequenceName": "First Snow (Instrumental).fseq",
+   "mediaName": "04 First Snow (Instrumental).mp3",
+   "videoOut": "--Default--",
+   "timecode": "Default",
+   "duration": 232.65
+  },
+  {
+   "type": "both",
+   "enabled": 1,
+   "playOnce": 0,
+   "sequenceName": "Music Box Dancer (Radio Version).fseq",
+   "mediaName": "02 Music Box Dancer (Radio Version).mp3",
+   "videoOut": "--Default--",
+   "timecode": "Default",
+   "duration": 193.25
+  },
+  {
+   "type": "both",
+   "enabled": 1,
+   "playOnce": 0,
+   "sequenceName": "How Far Ill Go.fseq",
+   "mediaName": "04 How Far I'll Go.mp3",
+   "videoOut": "--Default--",
+   "timecode": "Default",
+   "duration": 160.45
+  },
+  {
+   "type": "both",
+   "enabled": 1,
+   "playOnce": 0,
+   "sequenceName": "Takin Care of Christmas.fseq",
+   "mediaName": "01 Takin' Care of Christmas.mp3",
+   "videoOut": "--Default--",
+   "timecode": "Default",
+   "duration": 210.45
+  },
+  {
+   "type": "both",
+   "enabled": 1,
+   "playOnce": 0,
+   "sequenceName": "Disney Medley - Happily Ever After .fseq",
+   "mediaName": "Happily Ever After v3 .mp3",
+   "videoOut": "--Default--",
+   "timecode": "Default",
+   "duration": 325.7
+  },
+  {
+   "type": "both",
+   "enabled": 1,
+   "playOnce": 0,
+   "sequenceName": "Believer.fseq",
+   "mediaName": "04 Believer.mp3",
+   "videoOut": "--Default--",
+   "timecode": "Default",
+   "duration": 204
+  },
+  {
+   "type": "both",
+   "enabled": 1,
+   "playOnce": 0,
+   "sequenceName": "Anti-Hero.fseq",
+   "mediaName": "01 Anti-Hero (Kungs Remix).mp3",
+   "videoOut": "--Default--",
+   "timecode": "Default",
+   "duration": 194.65
+  },
+  {
+   "type": "both",
+   "enabled": 1,
+   "playOnce": 0,
+   "sequenceName": "Mele Kalikimaka.fseq",
+   "mediaName": "12 Mele Kalikimaka (Merry Christmas).mp3",
+   "videoOut": "--Default--",
+   "timecode": "Default",
+   "duration": 175.35
+  },
+  {
+   "type": "both",
+   "enabled": 1,
+   "playOnce": 0,
+   "sequenceName": "300 Violin Orchestra.fseq",
+   "mediaName": "13 300 Violin Orchestra.mp3",
+   "videoOut": "--Default--",
+   "timecode": "Default",
+   "duration": 178.1
+  },
+  {
+   "type": "both",
+   "enabled": 1,
+   "playOnce": 0,
+   "sequenceName": "Little Drummer Boy (Live).fseq",
+   "mediaName": "01 Little Drummer Boy (Live).m4a",
+   "videoOut": "--Default--",
+   "timecode": "Default",
+   "duration": 277.6
+  },
+  {
+   "type": "both",
+   "enabled": 1,
+   "playOnce": 0,
+   "sequenceName": "The 12 Days of Christmas.fseq",
+   "mediaName": "15 - The 12 Days of Christmas.mp3",
+   "videoOut": "--Default--",
+   "timecode": "Default",
+   "duration": 178.65
+  },
+  {
+   "type": "both",
+   "enabled": 1,
+   "playOnce": 0,
+   "sequenceName": "O Tannenbaum.fseq",
+   "mediaName": "07 O Tannenbaum.mp3",
+   "videoOut": "--Default--",
+   "timecode": "Default",
+   "duration": 178
+  },
+  {
+   "type": "both",
+   "enabled": 1,
+   "playOnce": 0,
+   "sequenceName": "Christmas  Every Day.fseq",
+   "mediaName": "01 Christmas  Every Day.mp3",
+   "videoOut": "--Default--",
+   "timecode": "Default",
+   "duration": 226.05
+  },
+  {
+   "type": "both",
+   "enabled": 1,
+   "playOnce": 0,
+   "sequenceName": "Snoopy's Christmas.fseq",
+   "mediaName": "06 Snoopy's Christmas.mp3",
+   "videoOut": "--Default--",
+   "timecode": "Default",
+   "duration": 190.575
+  },
+  {
+   "type": "both",
+   "enabled": 1,
+   "playOnce": 0,
+   "sequenceName": "Santa Won't You (Bring Me Love).fseq",
+   "mediaName": "01 - Santa Won't You (Bring Me Love).mp3",
+   "videoOut": "--Default--",
+   "timecode": "Default",
+   "duration": 167.375
+  },
+  {
+   "type": "both",
+   "enabled": 1,
+   "playOnce": 0,
+   "sequenceName": "Oh Christmas Tree.fseq",
+   "mediaName": "10 Oh Christmas Tree.mp3",
+   "videoOut": "--Default--",
+   "timecode": "Default",
+   "duration": 105.65
+  },
+  {
+   "type": "both",
+   "enabled": 1,
+   "playOnce": 0,
+   "sequenceName": "Danger Zone - Top Gun.fseq",
+   "mediaName": "01 Danger Zone.mp3",
+   "videoOut": "--Default--",
+   "timecode": "Default",
+   "duration": 216.15
+  },
+  {
+   "type": "both",
+   "enabled": 1,
+   "playOnce": 0,
+   "sequenceName": "What a Wonderful World (Single).fseq",
+   "mediaName": "3-15 What a Wonderful World (Single.mp3",
+   "videoOut": "--Default--",
+   "timecode": "Default",
+   "duration": 143.65
+  },
+  {
+   "type": "both",
+   "enabled": 1,
+   "playOnce": 0,
+   "sequenceName": "Dance the Night.fseq",
+   "mediaName": "02 Dance The Night.mp3",
+   "videoOut": "--Default--",
+   "timecode": "Default",
+   "duration": 176.6
+  },
+  {
+   "type": "both",
+   "enabled": 1,
+   "playOnce": 0,
+   "sequenceName": "Sounding Joy.fseq",
+   "mediaName": "01 Sounding Joy.mp3",
+   "videoOut": "--Default--",
+   "timecode": "Default",
+   "duration": 230.05
+  },
+  {
+   "type": "both",
+   "enabled": 1,
+   "playOnce": 0,
+   "sequenceName": "Star Wars Funk final.fseq",
+   "mediaName": "07 Star Wars Funk final.mp3",
+   "videoOut": "--Default--",
+   "timecode": "Default",
+   "duration": 222.4
+  },
+  {
+   "type": "both",
+   "enabled": 1,
+   "playOnce": 0,
+   "sequenceName": "The Spirit Of Christmas - Medley.fseq",
+   "mediaName": "The Spirit Of Christmas - Medley.mp3",
+   "videoOut": "--Default--",
+   "timecode": "Default",
+   "duration": 277.15
+  },
+  {
+   "type": "both",
+   "enabled": 1,
+   "playOnce": 0,
+   "sequenceName": "My Favorite Things.fseq",
+   "mediaName": "03 My Favorite Things.mp3",
+   "videoOut": "--Default--",
+   "timecode": "Default",
+   "duration": 172.45
+  },
+  {
+   "type": "both",
+   "enabled": 1,
+   "playOnce": 0,
+   "sequenceName": "Carol of the Bells - Foster [Instrumental].fseq",
+   "mediaName": "01 Carol of the Bells - Foster [Instrumental].mp3",
+   "videoOut": "--Default--",
+   "timecode": "Default",
+   "duration": 154.55
+  },
+  {
+   "type": "both",
+   "enabled": 1,
+   "playOnce": 0,
+   "sequenceName": "Barbie Girl.fseq",
+   "mediaName": "03 Barbie Girl.mp3",
+   "videoOut": "--Default--",
+   "timecode": "Default",
+   "duration": 197.95
+  },
+  {
+   "type": "both",
+   "enabled": 1,
+   "playOnce": 0,
+   "sequenceName": "Light the Lights-edited.fseq",
+   "mediaName": "01 Light the Lights-edited-V3.mp3",
+   "videoOut": "--Default--",
+   "timecode": "Default",
+   "duration": 195.05
+  },
+  {
+   "type": "both",
+   "enabled": 1,
+   "playOnce": 0,
+   "sequenceName": "Wizards In Winter [Instrumental].fseq",
+   "mediaName": "04 Wizards In Winter [Instrumental].mp3",
+   "videoOut": "--Default--",
+   "timecode": "Default",
+   "duration": 185.95
+  },
+  {
+   "type": "both",
+   "enabled": 1,
+   "playOnce": 0,
+   "sequenceName": "Its the Most Wonderful Time of the Year.fseq",
+   "mediaName": "01 - Its the Most Wonderful Time of the Year.mp3",
+   "videoOut": "--Default--",
+   "timecode": "Default",
+   "duration": 154.5
+  },
+  {
+   "type": "both",
+   "enabled": 1,
+   "playOnce": 0,
+   "sequenceName": "Taylor Swift Show.fseq",
+   "mediaName": "taylorshow2a.mp3",
+   "videoOut": "--Default--",
+   "timecode": "Default",
+   "duration": 217.35
+  },
+  {
+   "type": "both",
+   "enabled": 1,
+   "playOnce": 0,
+   "sequenceName": "Hallelujah.fseq",
+   "mediaName": "08 Hallelujah.mp3",
+   "videoOut": "--Default--",
+   "timecode": "Default",
+   "duration": 269
+  },
+  {
+   "type": "both",
+   "enabled": 1,
+   "playOnce": 0,
+   "sequenceName": "A Star To Follow-short-short[Xmas].fseq",
+   "mediaName": "03 A Star To Follow-short-short.mp3",
+   "videoOut": "--Default--",
+   "timecode": "Default",
+   "duration": 91.9
+  },
+  {
+   "type": "both",
+   "enabled": 1,
+   "playOnce": 0,
+   "sequenceName": "Here Comes the Sun.fseq",
+   "mediaName": "07 Here Comes the Sun.mp3",
+   "videoOut": "--Default--",
+   "timecode": "Default",
+   "duration": 185.8
+  },
+  {
+   "type": "both",
+   "enabled": 1,
+   "playOnce": 0,
+   "sequenceName": "Star Wars Imperial March x Carol of The Bells.fseq",
+   "mediaName": "Star Wars Imperial March x Carol of The Bells.mp4",
+   "videoOut": "--Default--",
+   "timecode": "Default",
+   "duration": 209.3
+  },
+  {
+   "type": "both",
+   "enabled": 1,
+   "playOnce": 0,
+   "sequenceName": "Queen of the Winter Night.fseq",
+   "mediaName": "08 Queen of the Winter Night.mp3",
+   "videoOut": "--Default--",
+   "timecode": "Default",
+   "duration": 191.65
+  },
+  {
+   "type": "both",
+   "enabled": 1,
+   "playOnce": 0,
+   "sequenceName": "Huron Carol Short Version.fseq",
+   "mediaName": "07 Huron Carol Short Version.mp3",
+   "videoOut": "--Default--",
+   "timecode": "Default",
+   "duration": 94.65
+  },
+  {
+   "type": "both",
+   "enabled": 1,
+   "playOnce": 0,
+   "sequenceName": "We Dont Talk About Bruno.fseq",
+   "mediaName": "04 We Dont Talk About Bruno.mp3",
+   "videoOut": "--Default--",
+   "timecode": "Default",
+   "duration": 216.15
+  },
+  {
+   "type": "both",
+   "enabled": 1,
+   "playOnce": 0,
+   "sequenceName": "I Want a Hippopotamus for Christmas.fseq",
+   "mediaName": "01 I Want a Hippopotamus for Christmas.mp3",
+   "videoOut": "--Default--",
+   "timecode": "Default",
+   "duration": 155
+  },
+  {
+   "type": "both",
+   "enabled": 1,
+   "playOnce": 0,
+   "sequenceName": "I Gotta Feeling.fseq",
+   "mediaName": "I Gotta Feeling.mp3",
+   "videoOut": "--Default--",
+   "timecode": "Default",
+   "duration": 202.125
+  },
+  {
+   "type": "both",
+   "enabled": 1,
+   "playOnce": 0,
+   "sequenceName": "White Christmas (feat. Ken Darby).fseq",
+   "mediaName": "03 White Christmas (feat. Ken Darby).mp3",
+   "videoOut": "--Default--",
+   "timecode": "Default",
+   "duration": 183.6
+  },
+  {
+   "type": "both",
+   "enabled": 1,
+   "playOnce": 0,
+   "sequenceName": "You're a Mean One, Mr Grinch.fseq",
+   "mediaName": "14 You're a Mean One, Mr. Grinch.m4a",
+   "videoOut": "--Default--",
+   "timecode": "Default",
+   "duration": 180
+  },
+  {
+   "type": "both",
+   "enabled": 1,
+   "playOnce": 0,
+   "sequenceName": "Dance of the Sugar Plum Fairy.fseq",
+   "mediaName": "01 Dance of the Sugar Plum Fairy.mp3",
+   "videoOut": "--Default--",
+   "timecode": "Default",
+   "duration": 225.45
+  },
+  {
+   "type": "both",
+   "enabled": 1,
+   "playOnce": 0,
+   "sequenceName": "CANT STOP THE FEELING Film final.fseq",
+   "mediaName": "01 CAN'T STOP THE FEELING! Film final.mp3",
+   "videoOut": "--Default--",
+   "timecode": "Default",
+   "duration": 234.05
+  },
+  {
+   "type": "both",
+   "enabled": 1,
+   "playOnce": 0,
+   "sequenceName": "I Heard the Bells on Christmas Day.fseq",
+   "mediaName": "01 I Heard the Bells on Christmas Day.mp3",
+   "videoOut": "--Default--",
+   "timecode": "Default",
+   "duration": 258.25
+  },
+  {
+   "type": "both",
+   "enabled": 1,
+   "playOnce": 0,
+   "sequenceName": "Light of Christmas (feat. tobyMac.fseq",
+   "mediaName": "01 Light of Christmas (feat. tobyMac.mp3",
+   "videoOut": "--Default--",
+   "timecode": "Default",
+   "duration": 220.6
+  },
+  {
+   "type": "both",
+   "enabled": 1,
+   "playOnce": 0,
+   "sequenceName": "Life Is a Highway.fseq",
+   "mediaName": "03 Life Is A Highway (Edit).mp3",
+   "videoOut": "--Default--",
+   "timecode": "Default",
+   "duration": 174.45
+  },
+  {
+   "type": "both",
+   "enabled": 1,
+   "playOnce": 0,
+   "sequenceName": "Trim Up The Tree.fseq",
+   "mediaName": "03 Trim Up The Tree.mp3",
+   "videoOut": "--Default--",
+   "timecode": "Default",
+   "duration": 81.4
+  }
+ ],
+ "leadOut": [
+  {
+   "type": "both",
+   "enabled": 1,
+   "playOnce": 0,
+   "sequenceName": "Nutcracker Trepak (Russian Dance).fseq",
+   "mediaName": "205 - Nutcracker Trepak (Russian Dance).mp3",
+   "videoOut": "--Default--",
+   "timecode": "Default",
+   "duration": 67.5
+  }
+ ],
+ "playlistInfo": {
+  "total_duration": 12297.174999999997,
+  "total_items": 64
+ }
+}

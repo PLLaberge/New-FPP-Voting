@@ -1,0 +1,98 @@
+{
+ "name": "Playlist_6_Low_Sensory_Calm_Glow_Loop",
+ "version": 3,
+ "repeat": 0,
+ "loopCount": 0,
+ "empty": false,
+ "desc": "Low-Sensory / Calm Glow Loop (Sequence #6)",
+ "random": 0,
+ "leadIn": [],
+ "mainPlaylist": [
+  {
+   "type": "both",
+   "enabled": 1,
+   "playOnce": 0,
+   "sequenceName": "What a Wonderful World (Single).fseq",
+   "mediaName": "3-15 What a Wonderful World (Single.mp3",
+   "videoOut": "--Default--",
+   "duration": 143
+  },
+  {
+   "type": "both",
+   "enabled": 1,
+   "playOnce": 0,
+   "sequenceName": "Huron Carol Short Version.fseq",
+   "mediaName": "07 Huron Carol Short Version.mp3",
+   "videoOut": "--Default--",
+   "duration": 94
+  },
+  {
+   "type": "both",
+   "enabled": 1,
+   "playOnce": 0,
+   "sequenceName": "O Tannenbaum.fseq",
+   "mediaName": "07 O Tannenbaum.mp3",
+   "videoOut": "--Default--",
+   "duration": 178
+  },
+  {
+   "type": "both",
+   "enabled": 1,
+   "playOnce": 0,
+   "sequenceName": "Do You Hear What I Hear.fseq",
+   "mediaName": "Do You Hear What I Hear.mp3",
+   "videoOut": "--Default--",
+   "duration": 191
+  },
+  {
+   "type": "both",
+   "enabled": 1,
+   "playOnce": 0,
+   "sequenceName": "First Snow (Instrumental).fseq",
+   "mediaName": "04 First Snow (Instrumental).mp3",
+   "videoOut": "--Default--",
+   "duration": 232
+  },
+  {
+   "type": "both",
+   "enabled": 1,
+   "playOnce": 0,
+   "sequenceName": "Silent Night (feat. Reba McEntire).fseq",
+   "mediaName": "14 Silent Night (feat. Reba McEntire).mp3",
+   "videoOut": "--Default--",
+   "duration": 249
+  },
+  {
+   "type": "both",
+   "enabled": 1,
+   "playOnce": 0,
+   "sequenceName": "Carol of the Bells - Foster [Instrumental].fseq",
+   "mediaName": "01 Carol of the Bells - Foster [Instrumental].mp3",
+   "videoOut": "--Default--",
+   "duration": 154
+  },
+  {
+   "type": "both",
+   "enabled": 1,
+   "playOnce": 0,
+   "sequenceName": "White Christmas (feat. Ken Darby).fseq",
+   "mediaName": "03 White Christmas (feat. Ken Darby).mp3",
+   "videoOut": "--Default--",
+   "duration": 183
+  },
+  {
+   "type": "both",
+   "enabled": 1,
+   "playOnce": 0,
+   "sequenceName": "Sounding Joy.fseq",
+   "mediaName": "01 Sounding Joy.mp3",
+   "videoOut": "--Default--",
+   "duration": 230
+  }
+ ],
+ "leadOut": [],
+ "playlistInfo": {
+  "total_duration": 1654,
+  "total_items": 9
+ }
+}

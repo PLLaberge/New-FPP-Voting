@@ -1,0 +1,71 @@
+{
+ "name": "Xmas_Crooners",
+ "version": 3,
+ "repeat": 0,
+ "loopCount": 0,
+ "empty": false,
+ "desc": "",
+ "random": 0,
+ "leadIn": [],
+ "mainPlaylist": [
+  {
+   "type": "both",
+   "enabled": 1,
+   "playOnce": 0,
+   "sequenceName": "White Christmas (feat. Ken Darby).fseq",
+   "mediaName": "03 White Christmas (feat. Ken Darby).mp3",
+   "videoOut": "--Default--",
+   "duration": 183.6
+  },
+  {
+   "type": "both",
+   "enabled": 1,
+   "playOnce": 0,
+   "sequenceName": "It's the Most Wonderful Time of the Year 2014.fseq",
+   "mediaName": "06 It's the Most Wonderful Time of the Year 2014.mp3",
+   "videoOut": "--Default--",
+   "duration": 154.5
+  },
+  {
+   "type": "both",
+   "enabled": 1,
+   "playOnce": 0,
+   "sequenceName": "Frosty the Snowman.fseq",
+   "mediaName": "05 Frosty the Snowman.mp3",
+   "videoOut": "--Default--",
+   "duration": 155.3
+  },
+  {
+   "type": "both",
+   "enabled": 1,
+   "playOnce": 0,
+   "sequenceName": "What a Wonderful World (Single).fseq",
+   "mediaName": "3-15 What a Wonderful World (Single.mp3",
+   "videoOut": "--Default--",
+   "duration": 143.65
+  },
+  {
+   "type": "both",
+   "enabled": 1,
+   "playOnce": 0,
+   "sequenceName": "Mele Kalikimaka.fseq",
+   "mediaName": "12 Mele Kalikimaka (Merry Christmas).mp3",
+   "videoOut": "--Default--",
+   "duration": 175.35
+  },
+  {
+   "type": "both",
+   "enabled": 1,
+   "playOnce": 0,
+   "sequenceName": "The Christmas Song (Merry Christmas).fseq",
+   "mediaName": "01 The Christmas Song (Merry Christmas).mp3",
+   "videoOut": "--Default--",
+   "duration": 192.15
+  }
+ ],
+ "leadOut": [],
+ "playlistInfo": {
+  "total_duration": 1004.5500000000001,
+  "total_items": 6
+ }
+}

@@ -1,0 +1,89 @@
+{
+ "name": "New_In_2024",
+ "version": 3,
+ "repeat": 0,
+ "loopCount": 0,
+ "empty": false,
+ "desc": "",
+ "random": 0,
+ "leadIn": [],
+ "mainPlaylist": [
+  {
+   "type": "both",
+   "enabled": 1,
+   "playOnce": 0,
+   "sequenceName": "Christmas Vacation.fseq",
+   "mediaName": "Christmas Vacation with Intro 2024.mp3",
+   "videoOut": "--Default--",
+   "duration": 214.3
+  },
+  {
+   "type": "both",
+   "enabled": 1,
+   "playOnce": 0,
+   "sequenceName": "The Spirit Of Christmas - Medley.fseq",
+   "mediaName": "The Spirit Of Christmas - Medley.mp3",
+   "videoOut": "--Default--",
+   "duration": 277.15
+  },
+  {
+   "type": "both",
+   "enabled": 1,
+   "playOnce": 0,
+   "sequenceName": "I Gotta Feeling.fseq",
+   "mediaName": "I Gotta Feeling.mp3",
+   "videoOut": "--Default--",
+   "duration": 202.125
+  },
+  {
+   "type": "both",
+   "enabled": 1,
+   "playOnce": 0,
+   "sequenceName": "Do You Hear What I Hear.fseq",
+   "mediaName": "Do You Hear What I Hear.mp3",
+   "videoOut": "--Default--",
+   "duration": 191
+  },
+  {
+   "type": "both",
+   "enabled": 1,
+   "playOnce": 0,
+   "sequenceName": "Taylor Swift Show.fseq",
+   "mediaName": "taylorshow2a.mp3",
+   "videoOut": "--Default--",
+   "duration": 217.35
+  },
+  {
+   "type": "both",
+   "enabled": 1,
+   "playOnce": 0,
+   "sequenceName": "Sounding Joy.fseq",
+   "mediaName": "01 Sounding Joy.mp3",
+   "videoOut": "--Default--",
+   "duration": 230.05
+  },
+  {
+   "type": "both",
+   "enabled": 1,
+   "playOnce": 0,
+   "sequenceName": "Music Box Dancer (Radio Version).fseq",
+   "mediaName": "02 Music Box Dancer (Radio Version).mp3",
+   "videoOut": "--Default--",
+   "duration": 193.275
+  },
+  {
+   "type": "both",
+   "enabled": 1,
+   "playOnce": 0,
+   "sequenceName": "Believer.fseq",
+   "mediaName": "04 Believer.mp3",
+   "videoOut": "--Default--",
+   "duration": 204
+  }
+ ],
+ "leadOut": [],
+ "playlistInfo": {
+  "total_duration": 1729.25,
+  "total_items": 8
+ }
+}

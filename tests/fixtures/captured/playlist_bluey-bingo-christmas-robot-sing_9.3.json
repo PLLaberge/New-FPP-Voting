@@ -1,0 +1,147 @@
+{
+ "name": "Bluey Bingo Christmas Robot Sing",
+ "version": 3,
+ "repeat": 0,
+ "loopCount": 0,
+ "empty": false,
+ "desc": "",
+ "random": 0,
+ "leadIn": [],
+ "mainPlaylist": [
+  {
+   "type": "both",
+   "enabled": 1,
+   "playOnce": 0,
+   "sequenceName": "Christmas  Every Day.fseq",
+   "mediaName": "01 Christmas  Every Day.mp3",
+   "videoOut": "--Default--",
+   "timecode": "Default",
+   "duration": 226.05
+  },
+  {
+   "type": "both",
+   "enabled": 1,
+   "playOnce": 0,
+   "sequenceName": "I Want a Hippopotamus for Christmas.fseq",
+   "mediaName": "01 I Want a Hippopotamus for Christmas.mp3",
+   "videoOut": "--Default--",
+   "timecode": "Default",
+   "duration": 155
+  },
+  {
+   "type": "both",
+   "enabled": 1,
+   "playOnce": 0,
+   "sequenceName": "Barbie Girl.fseq",
+   "mediaName": "03 Barbie Girl.mp3",
+   "videoOut": "--Default--",
+   "timecode": "Default",
+   "duration": 197.95
+  },
+  {
+   "type": "both",
+   "enabled": 1,
+   "playOnce": 0,
+   "sequenceName": "You're a Mean One, Mr Grinch.fseq",
+   "mediaName": "14 You're a Mean One, Mr. Grinch.m4a",
+   "videoOut": "--Default--",
+   "timecode": "Default",
+   "duration": 180
+  },
+  {
+   "type": "both",
+   "enabled": 1,
+   "playOnce": 0,
+   "sequenceName": "Golden - KPop Demon Hunters.fseq",
+   "mediaName": "03 A Star To Follow-short-short.mp3",
+   "videoOut": "--Default--",
+   "timecode": "Default",
+   "duration": 91.977143
+  },
+  {
+   "type": "both",
+   "enabled": 1,
+   "playOnce": 0,
+   "sequenceName": "My Favorite Things.fseq",
+   "mediaName": "03 My Favorite Things.mp3",
+   "videoOut": "--Default--",
+   "timecode": "Default",
+   "duration": 172.45
+  },
+  {
+   "type": "both",
+   "enabled": 1,
+   "playOnce": 0,
+   "sequenceName": "Danger Zone - Top Gun.fseq",
+   "mediaName": "01 Danger Zone.mp3",
+   "videoOut": "--Default--",
+   "timecode": "Default",
+   "duration": 216.15
+  },
+  {
+   "type": "both",
+   "enabled": 1,
+   "playOnce": 0,
+   "sequenceName": "Disney Medley - Happily Ever After .fseq",
+   "mediaName": "Happily Ever After v3 .mp3",
+   "videoOut": "--Default--",
+   "timecode": "Default",
+   "duration": 325.7
+  },
+  {
+   "type": "both",
+   "enabled": 1,
+   "playOnce": 0,
+   "sequenceName": "Taylor Swift Show.fseq",
+   "mediaName": "taylorshow2a.mp3",
+   "videoOut": "--Default--",
+   "timecode": "Default",
+   "duration": 217.35
+  },
+  {
+   "type": "both",
+   "enabled": 1,
+   "playOnce": 0,
+   "sequenceName": "Light of Christmas (feat. tobyMac.fseq",
+   "mediaName": "01 Light of Christmas (feat. tobyMac.mp3",
+   "videoOut": "--Default--",
+   "timecode": "Default",
+   "duration": 220.6
+  },
+  {
+   "type": "both",
+   "enabled": 1,
+   "playOnce": 0,
+   "sequenceName": "We Dont Talk About Bruno.fseq",
+   "mediaName": "04 We Dont Talk About Bruno.mp3",
+   "videoOut": "--Default--",
+   "timecode": "Default",
+   "duration": 216.15
+  },
+  {
+   "type": "both",
+   "enabled": 1,
+   "playOnce": 0,
+   "sequenceName": "I Gotta Feeling.fseq",
+   "mediaName": "I Gotta Feeling.mp3",
+   "videoOut": "--Default--",
+   "timecode": "Default",
+   "duration": 202.125
+  },
+  {
+   "type": "both",
+   "enabled": 1,
+   "playOnce": 0,
+   "sequenceName": "Zero.fseq",
+   "mediaName": "01 Zero (From the Original Motion Pi.mp3",
+   "videoOut": "--Default--",
+   "timecode": "Default",
+   "duration": 210.95
+  }
+ ],
+ "leadOut": [],
+ "playlistInfo": {
+  "total_duration": 2632.4521429999995,
+  "total_items": 13
+ }
+}

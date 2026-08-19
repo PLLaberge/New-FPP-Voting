@@ -1,0 +1,40 @@
+{
+ "name": "Late_Night",
+ "version": 3,
+ "repeat": 0,
+ "loopCount": 0,
+ "empty": false,
+ "desc": "",
+ "random": 0,
+ "leadIn": [
+  {
+   "type": "sequence",
+   "enabled": 1,
+   "playOnce": 0,
+   "sequenceName": "Everything Off.fseq",
+   "duration": 1
+  }
+ ],
+ "mainPlaylist": [
+  {
+   "type": "sequence",
+   "enabled": 1,
+   "playOnce": 0,
+   "sequenceName": "House - Blue no Second Story w Salmon.fseq",
+   "duration": 60
+  }
+ ],
+ "leadOut": [
+  {
+   "type": "sequence",
+   "enabled": 1,
+   "playOnce": 0,
+   "sequenceName": "Everything Off.fseq",
+   "duration": 1
+  }
+ ],
+ "playlistInfo": {
+  "total_duration": 60,
+  "total_items": 1
+ }
+}

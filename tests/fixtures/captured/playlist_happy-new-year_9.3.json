@@ -1,0 +1,69 @@
+{
+ "name": "Happy_New Year",
+ "version": 3,
+ "repeat": 0,
+ "loopCount": 0,
+ "empty": false,
+ "desc": "",
+ "random": 0,
+ "leadIn": [],
+ "mainPlaylist": [
+  {
+   "type": "sequence",
+   "enabled": 1,
+   "playOnce": 0,
+   "sequenceName": "Evening Transition - rainbow.fseq",
+   "duration": 60
+  },
+  {
+   "type": "both",
+   "enabled": 1,
+   "playOnce": 0,
+   "sequenceName": "Auld Lang Syne.fseq",
+   "mediaName": "13 Auld Lang Syne-short.mp3",
+   "videoOut": "--Default--",
+   "duration": 152.05870833333333
+  },
+  {
+   "type": "sequence",
+   "enabled": 1,
+   "playOnce": 0,
+   "sequenceName": "Evening Transition - rainbow.fseq",
+   "duration": 60
+  },
+  {
+   "type": "sequence",
+   "enabled": 1,
+   "playOnce": 0,
+   "sequenceName": "Evening Transition - rainbow.fseq",
+   "duration": 60
+  },
+  {
+   "type": "sequence",
+   "enabled": 1,
+   "playOnce": 0,
+   "sequenceName": "Evening Transition - rainbow.fseq",
+   "duration": 60
+  },
+  {
+   "type": "sequence",
+   "enabled": 1,
+   "playOnce": 0,
+   "sequenceName": "Late eveming - rainbow.fseq",
+   "duration": 60
+  }
+ ],
+ "leadOut": [
+  {
+   "type": "sequence",
+   "enabled": 1,
+   "playOnce": 0,
+   "sequenceName": "Everything Off.fseq",
+   "duration": 1
+  }
+ ],
+ "playlistInfo": {
+  "total_duration": null,
+  "total_items": 6
+ }
+}

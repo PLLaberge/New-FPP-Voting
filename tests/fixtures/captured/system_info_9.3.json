@@ -1,0 +1,47 @@
+{
+ "HostName": "MasterFPP",
+ "HostDescription": "Main Year-long Controller",
+ "Platform": "Raspberry Pi",
+ "Variant": "Pi 4",
+ "SubPlatform": "Raspberry Pi 4 Model B Rev 1.1",
+ "backgroundColor": "000000",
+ "Mode": "player",
+ "Logo": "Raspberry_Pi_4.png",
+ "Version": "9.3",
+ "Branch": "v9.3",
+ "multisync": true,
+ "OSVersion": "v2025-11",
+ "OSRelease": "Raspbian GNU/Linux 12 (bookworm)",
+ "channelRanges": "0-31,4608-27136",
+ "majorVersion": 9,
+ "minorVersion": 3,
+ "typeId": 13,
+ "uuid": "M1-1000000026a501ce",
+ "capeInfo": {
+  "name": "Pi-OLED",
+  "id": "PIOLED",
+  "version": "1.0"
+ },
+ "Utilization": {
+  "CPU": 2.057827559260218,
+  "Memory": 5.8155534379687115,
+  "Uptime": "26 days 4:5",
+  "Disk": {
+   "Media": {
+    "Free": 13590401024,
+    "Total": 31132934144
+   },
+   "Root": {
+    "Free": 13590401024,
+    "Total": 31132934144
+   }
+  }
+ },
+ "Kernel": "6.12.57-v7l+",
+ "LocalGitVersion": "4f915cdec",
+ "RemoteGitVersion": "9f9176e7c",
+ "UpgradeSource": "github.com",
+ "IPs": [
+  "192.168.0.182"
+ ]
+}

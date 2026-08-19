@@ -1,0 +1,71 @@
+{
+ "name": "Xmas_Spiritual",
+ "version": 3,
+ "repeat": 0,
+ "loopCount": 0,
+ "empty": false,
+ "desc": "",
+ "random": 0,
+ "leadIn": [],
+ "mainPlaylist": [
+  {
+   "type": "both",
+   "enabled": 1,
+   "playOnce": 0,
+   "sequenceName": "Silent Night (feat. Reba McEntire).fseq",
+   "mediaName": "14 Silent Night (feat. Reba McEntire).mp3",
+   "videoOut": "--Default--",
+   "duration": 249.25
+  },
+  {
+   "type": "both",
+   "enabled": 1,
+   "playOnce": 0,
+   "sequenceName": "Huron Carol Short Version.fseq",
+   "mediaName": "07 Huron Carol Short Version.mp3",
+   "videoOut": "--Default--",
+   "duration": 94.65
+  },
+  {
+   "type": "both",
+   "enabled": 1,
+   "playOnce": 0,
+   "sequenceName": "Schubert  Ave Maria.fseq",
+   "mediaName": "02-06- Schubert  Ave Maria-edited.mp3",
+   "videoOut": "--Default--",
+   "duration": 160.5
+  },
+  {
+   "type": "both",
+   "enabled": 1,
+   "playOnce": 0,
+   "sequenceName": "I Heard the Bells on Christmas Day.fseq",
+   "mediaName": "01 I Heard the Bells on Christmas Day.mp3",
+   "videoOut": "--Default--",
+   "duration": 258.25
+  },
+  {
+   "type": "both",
+   "enabled": 1,
+   "playOnce": 0,
+   "sequenceName": "Hallelujah Chorus.fseq",
+   "mediaName": "01-18- Hallelujah Chorus_edited.mp3",
+   "videoOut": "--Default--",
+   "duration": 100.65
+  },
+  {
+   "type": "both",
+   "enabled": 1,
+   "playOnce": 0,
+   "sequenceName": "Light of Christmas (feat. tobyMac.fseq",
+   "mediaName": "01 Light of Christmas (feat. tobyMac.mp3",
+   "videoOut": "--Default--",
+   "duration": 220.6
+  }
+ ],
+ "leadOut": [],
+ "playlistInfo": {
+  "total_duration": 1083.8999999999999,
+  "total_items": 6
+ }
+}

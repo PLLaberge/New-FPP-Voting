@@ -1,0 +1,80 @@
+{
+ "name": "New_In_2020",
+ "version": 3,
+ "repeat": 0,
+ "loopCount": 0,
+ "empty": false,
+ "desc": "",
+ "random": 0,
+ "leadIn": [],
+ "mainPlaylist": [
+  {
+   "type": "both",
+   "enabled": 1,
+   "playOnce": 0,
+   "sequenceName": "O Tannenbaum.fseq",
+   "mediaName": "07 O Tannenbaum.mp3",
+   "videoOut": "--Default--",
+   "duration": 178
+  },
+  {
+   "type": "both",
+   "enabled": 1,
+   "playOnce": 0,
+   "sequenceName": "Christmas  Every Day.fseq",
+   "mediaName": "01 Christmas  Every Day.mp3",
+   "videoOut": "--Default--",
+   "duration": 226.05
+  },
+  {
+   "type": "both",
+   "enabled": 1,
+   "playOnce": 0,
+   "sequenceName": "What a Wonderful World (Single).fseq",
+   "mediaName": "3-15 What a Wonderful World (Single.mp3",
+   "videoOut": "--Default--",
+   "duration": 143.65
+  },
+  {
+   "type": "both",
+   "enabled": 1,
+   "playOnce": 0,
+   "sequenceName": "Feliz Navidad.fseq",
+   "mediaName": "01 Feliz Navidad.mp3",
+   "videoOut": "--Default--",
+   "duration": 181.85
+  },
+  {
+   "type": "both",
+   "enabled": 1,
+   "playOnce": 0,
+   "sequenceName": "Hallelujah.fseq",
+   "mediaName": "08 Hallelujah.mp3",
+   "videoOut": "--Default--",
+   "duration": 269
+  },
+  {
+   "type": "both",
+   "enabled": 1,
+   "playOnce": 0,
+   "sequenceName": "FROZEN 2 - Into the Unknown.fseq",
+   "mediaName": "03 Frozen - Into the Unknown.mp3",
+   "videoOut": "--Default--",
+   "duration": 194.9
+  },
+  {
+   "type": "both",
+   "enabled": 1,
+   "playOnce": 0,
+   "sequenceName": "Here Comes the Sun.fseq",
+   "mediaName": "07 Here Comes the Sun.mp3",
+   "videoOut": "--Default--",
+   "duration": 185.8
+  }
+ ],
+ "leadOut": [],
+ "playlistInfo": {
+  "total_duration": null,
+  "total_items": 7
+ }
+}

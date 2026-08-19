@@ -1,0 +1,67 @@
+{
+ "name": "New_in_2025",
+ "version": 3,
+ "repeat": 0,
+ "loopCount": 0,
+ "empty": false,
+ "desc": "",
+ "random": null,
+ "leadIn": [],
+ "mainPlaylist": [
+  {
+   "type": "both",
+   "enabled": 1,
+   "playOnce": 0,
+   "sequenceName": "Golden - KPop Demon Hunters.fseq",
+   "mediaName": "KPop Demon Hunters - Golden.mp3",
+   "videoOut": "--Default--",
+   "timecode": "Default",
+   "duration": 169.35
+  },
+  {
+   "type": "both",
+   "enabled": 1,
+   "playOnce": 0,
+   "sequenceName": "Snoopy's Christmas.fseq",
+   "mediaName": "06 Snoopy's Christmas.mp3",
+   "videoOut": "--Default--",
+   "timecode": "Default",
+   "duration": 190.575
+  },
+  {
+   "type": "both",
+   "enabled": 1,
+   "playOnce": 0,
+   "sequenceName": "300 Violin Orchestra.fseq",
+   "mediaName": "13 300 Violin Orchestra.mp3",
+   "videoOut": "--Default--",
+   "timecode": "Default",
+   "duration": 178.1
+  },
+  {
+   "type": "both",
+   "enabled": 1,
+   "playOnce": 0,
+   "sequenceName": "Santa Won't You (Bring Me Love).fseq",
+   "mediaName": "01 - Santa Won't You (Bring Me Love).mp3",
+   "videoOut": "--Default--",
+   "timecode": "Default",
+   "duration": 167.375
+  },
+  {
+   "type": "both",
+   "enabled": 1,
+   "playOnce": 0,
+   "sequenceName": "Don't Start Now.fseq",
+   "mediaName": "01 Don't Start Now.mp3",
+   "videoOut": "--Default--",
+   "timecode": "Default",
+   "duration": 183.35
+  }
+ ],
+ "leadOut": [],
+ "playlistInfo": {
+  "total_duration": 888.75,
+  "total_items": 5
+ }
+}

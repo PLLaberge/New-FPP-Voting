@@ -1,0 +1,47 @@
+{
+ "name": "Upbeat Christmas Songs",
+ "version": 3,
+ "repeat": 0,
+ "loopCount": 0,
+ "empty": false,
+ "desc": "",
+ "random": 0,
+ "leadIn": [],
+ "mainPlaylist": [
+  {
+   "type": "both",
+   "enabled": 1,
+   "playOnce": 0,
+   "sequenceName": "Little Drummer Boy (Live).fseq",
+   "mediaName": "01 Little Drummer Boy (Live).m4a",
+   "videoOut": "--Default--",
+   "timecode": "Default",
+   "duration": 277.6
+  },
+  {
+   "type": "both",
+   "enabled": 1,
+   "playOnce": 0,
+   "sequenceName": "Feliz Navidad.fseq",
+   "mediaName": "01 Feliz Navidad.mp3",
+   "videoOut": "--Default--",
+   "timecode": "Default",
+   "duration": 181.85
+  },
+  {
+   "type": "both",
+   "enabled": 1,
+   "playOnce": 0,
+   "sequenceName": "Jingle Bell Rock.fseq",
+   "mediaName": "01 Jingle Bell Rock.mp3",
+   "videoOut": "--Default--",
+   "timecode": "Default",
+   "duration": 131
+  }
+ ],
+ "leadOut": [],
+ "playlistInfo": {
+  "total_duration": 590.45,
+  "total_items": 3
+ }
+}

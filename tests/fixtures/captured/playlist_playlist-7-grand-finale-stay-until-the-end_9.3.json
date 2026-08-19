@@ -1,0 +1,71 @@
+{
+ "name": "Playlist_7_Grand_Finale_Stay_Until_The_End",
+ "version": 3,
+ "repeat": 0,
+ "loopCount": 0,
+ "empty": false,
+ "desc": "Grand Finale / Stay Until the End (Sequence #7)",
+ "random": 0,
+ "leadIn": [],
+ "mainPlaylist": [
+  {
+   "type": "both",
+   "enabled": 1,
+   "playOnce": 0,
+   "sequenceName": "Christmas Sarajevo 12-24 (Instrumental).fseq",
+   "mediaName": "08 Christmas Sarajevo 12-24 (Instrumental).mp3",
+   "videoOut": "--Default--",
+   "duration": 205
+  },
+  {
+   "type": "both",
+   "enabled": 1,
+   "playOnce": 0,
+   "sequenceName": "Queen of the Winter Night.fseq",
+   "mediaName": "08 Queen of the Winter Night.mp3",
+   "videoOut": "--Default--",
+   "duration": 191
+  },
+  {
+   "type": "both",
+   "enabled": 1,
+   "playOnce": 0,
+   "sequenceName": "Star Wars Imperial March x Carol of The Bells.fseq",
+   "mediaName": "Star Wars Imperial March x Carol of The Bells.mp4",
+   "videoOut": "--Default--",
+   "duration": 209
+  },
+  {
+   "type": "both",
+   "enabled": 1,
+   "playOnce": 0,
+   "sequenceName": "Hallelujah.fseq",
+   "mediaName": "08 Hallelujah.mp3",
+   "videoOut": "--Default--",
+   "duration": 269
+  },
+  {
+   "type": "both",
+   "enabled": 1,
+   "playOnce": 0,
+   "sequenceName": "The Christmas Song (Merry Christmas).fseq",
+   "mediaName": "01 The Christmas Song (Merry Christmas).mp3",
+   "videoOut": "--Default--",
+   "duration": 192
+  },
+  {
+   "type": "both",
+   "enabled": 1,
+   "playOnce": 0,
+   "sequenceName": "Its the Most Wonderful Time of the Year.fseq",
+   "mediaName": "01 - Its the Most Wonderful Time of the Year.mp3",
+   "videoOut": "--Default--",
+   "duration": 154
+  }
+ ],
+ "leadOut": [],
+ "playlistInfo": {
+  "total_duration": 1220,
+  "total_items": 6
+ }
+}

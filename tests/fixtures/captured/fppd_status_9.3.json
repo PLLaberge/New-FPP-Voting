@@ -1,0 +1,97 @@
+{
+ "MQTT": {
+  "configured": false,
+  "connected": false
+ },
+ "branch": "v9.3",
+ "bridging": false,
+ "channelInputsEnabled": true,
+ "channelOutputsEnabled": true,
+ "current_playlist": {
+  "count": "2",
+  "description": "",
+  "index": "1",
+  "playlist": "A_House_Normal",
+  "type": "sequence"
+ },
+ "current_sequence": "House- White.fseq",
+ "current_song": "",
+ "dateStr": "Tue Aug 18",
+ "fppd": "running",
+ "host_description": "Main Year-long Controller",
+ "host_name": "MasterFPP",
+ "milliseconds_elapsed": 4350,
+ "mode": 2,
+ "mode_name": "player",
+ "multisync": true,
+ "next_playlist": {
+  "playlist": "A_Evening_Transition",
+  "start_time": "Tue Aug 18 @ 09:30 PM - (Mask: SMTWT--)"
+ },
+ "platform": "Raspberry Pi",
+ "powerBad": false,
+ "repeat_mode": 1,
+ "scheduler": {
+  "currentPlaylist": {
+   "actualEndTime": 1787113800,
+   "actualEndTimeStr": "Tue Aug 18 @ 09:30 PM",
+   "actualStartTime": 1787109972,
+   "actualStartTimeStr": "Tue Aug 18 @ 08:26 PM",
+   "currentTime": 1787113039,
+   "currentTimeStr": "Wed Dec 31 @ 04:00 PM",
+   "playlistName": "A_House_Normal",
+   "scheduledEndTime": 1787113800,
+   "scheduledEndTimeStr": "Tue Aug 18 @ 09:30 PM",
+   "scheduledStartTime": 1787109972,
+   "scheduledStartTimeStr": "Tue Aug 18 @ 08:26 PM",
+   "secondsRemaining": 761,
+   "stopType": 0,
+   "stopTypeStr": "Graceful"
+  },
+  "enabled": 1,
+  "nextPlaylist": {
+   "playlistName": "A_Evening_Transition",
+   "scheduledStartTime": 1787113800,
+   "scheduledStartTimeStr": "Tue Aug 18 @ 09:30 PM - (Mask: SMTWT--)"
+  },
+  "status": "playing"
+ },
+ "seconds_elapsed": "4",
+ "seconds_played": "4",
+ "seconds_remaining": "55",
+ "sensors": [
+  {
+   "formatted": "50.1",
+   "label": "CPU: ",
+   "postfix": "",
+   "prefix": "",
+   "value": 50.147,
+   "valueType": "Temperature"
+  },
+  {
+   "formatted": "40.5",
+   "label": "Temp: ",
+   "postfix": "",
+   "prefix": "",
+   "value": 40.5,
+   "valueType": "Temperature"
+  }
+ ],
+ "status": 1,
+ "status_name": "playing",
+ "time": "Tue Aug 18 21:17:19 PDT 2026",
+ "timeStr": "09:17 PM",
+ "timeStrFull": "09:17:19 PM",
+ "time_elapsed": "00:04",
+ "time_remaining": "00:55",
+ "uptime": "26 days, 04:04:06",
+ "uptimeDays": 26.16951388888889,
+ "uptimeHours": 4.068333333333333,
+ "uptimeMinutes": 4.1,
+ "uptimeSeconds": 6,
+ "uptimeStr": "26 days, 4 hours, 4 minutes, 6 seconds",
+ "uptimeTotalSeconds": 2261046,
+ "uuid": "M1-1000000026a501ce",
+ "version": "9.3",
+ "volume": 90
+}

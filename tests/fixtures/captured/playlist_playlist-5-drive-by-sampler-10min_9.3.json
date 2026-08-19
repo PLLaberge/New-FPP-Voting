@@ -1,0 +1,67 @@
+{
+ "name": "Playlist_5_Drive_By_Sampler_10min",
+ "version": 3,
+ "repeat": 0,
+ "loopCount": 0,
+ "empty": false,
+ "desc": "Ultra-Short Drive-By Sampler (Sequence #5)",
+ "random": 0,
+ "leadIn": [],
+ "mainPlaylist": [
+  {
+   "type": "both",
+   "enabled": 1,
+   "playOnce": 0,
+   "sequenceName": "Wizards In Winter [Instrumental].fseq",
+   "mediaName": "04 Wizards In Winter [Instrumental].mp3",
+   "videoOut": "--Default--",
+   "timecode": "Default",
+   "duration": 185.95
+  },
+  {
+   "type": "both",
+   "enabled": 1,
+   "playOnce": 0,
+   "sequenceName": "Star Wars Funk final.fseq",
+   "mediaName": "07 Star Wars Funk final.mp3",
+   "videoOut": "--Default--",
+   "timecode": "Default",
+   "duration": 222.4
+  },
+  {
+   "type": "both",
+   "enabled": 1,
+   "playOnce": 0,
+   "sequenceName": "You're a Mean One, Mr Grinch.fseq",
+   "mediaName": "14 You're a Mean One, Mr. Grinch.m4a",
+   "videoOut": "--Default--",
+   "timecode": "Default",
+   "duration": 180
+  },
+  {
+   "type": "both",
+   "enabled": 1,
+   "playOnce": 0,
+   "sequenceName": "Ice Storm.fseq",
+   "mediaName": "14 Ice Storm.mp3",
+   "videoOut": "--Default--",
+   "timecode": "Default",
+   "duration": 187.2
+  },
+  {
+   "type": "both",
+   "enabled": 1,
+   "playOnce": 0,
+   "sequenceName": "CANT STOP THE FEELING Film final.fseq",
+   "mediaName": "01 CAN'T STOP THE FEELING! Film final.mp3",
+   "videoOut": "--Default--",
+   "timecode": "Default",
+   "duration": 234.05
+  }
+ ],
+ "leadOut": [],
+ "playlistInfo": {
+  "total_duration": 1009.5999999999999,
+  "total_items": 5
+ }
+}

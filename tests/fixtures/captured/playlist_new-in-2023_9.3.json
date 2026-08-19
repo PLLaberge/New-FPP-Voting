@@ -1,0 +1,98 @@
+{
+ "name": "New_In_2023",
+ "version": 3,
+ "repeat": 0,
+ "loopCount": 0,
+ "empty": false,
+ "desc": "",
+ "random": 0,
+ "leadIn": [],
+ "mainPlaylist": [
+  {
+   "type": "both",
+   "enabled": 1,
+   "playOnce": 0,
+   "sequenceName": "Mele Kalikimaka.fseq",
+   "mediaName": "12 Mele Kalikimaka (Merry Christmas).mp3",
+   "videoOut": "--Default--",
+   "duration": 175.35
+  },
+  {
+   "type": "both",
+   "enabled": 1,
+   "playOnce": 0,
+   "sequenceName": "Jingle Bells (Epic Version).fseq",
+   "mediaName": "07 Jingle Bells (Epic Version).m4a",
+   "videoOut": "--Default--",
+   "duration": 180.75
+  },
+  {
+   "type": "both",
+   "enabled": 1,
+   "playOnce": 0,
+   "sequenceName": "My Favorite Things.fseq",
+   "mediaName": "03 My Favorite Things.mp3",
+   "videoOut": "--Default--",
+   "duration": 172.45
+  },
+  {
+   "type": "both",
+   "enabled": 1,
+   "playOnce": 0,
+   "sequenceName": "Star Wars Imperial March x Carol of The Bells.fseq",
+   "mediaName": "Star Wars Imperial March x Carol of The Bells.mp4",
+   "videoOut": "--Default--",
+   "duration": 209.3
+  },
+  {
+   "type": "both",
+   "enabled": 1,
+   "playOnce": 0,
+   "sequenceName": "Frosty the Snowman.fseq",
+   "mediaName": "05 Frosty the Snowman.mp3",
+   "videoOut": "--Default--",
+   "duration": 155.3
+  },
+  {
+   "type": "both",
+   "enabled": 1,
+   "playOnce": 0,
+   "sequenceName": "Twelve Days of Christmas - Bob and Doug Mckenzie.fseq",
+   "mediaName": "15 Twelve Days of Christmas.mp3",
+   "videoOut": "--Default--",
+   "duration": 285.7
+  },
+  {
+   "type": "both",
+   "enabled": 1,
+   "playOnce": 0,
+   "sequenceName": "Barbie Girl.fseq",
+   "mediaName": "03 Barbie Girl.mp3",
+   "videoOut": "--Default--",
+   "duration": 197.95
+  },
+  {
+   "type": "both",
+   "enabled": 1,
+   "playOnce": 0,
+   "sequenceName": "Jingle Bell Rock.fseq",
+   "mediaName": "01 Jingle Bell Rock.mp3",
+   "videoOut": "--Default--",
+   "duration": 131
+  },
+  {
+   "type": "both",
+   "enabled": 1,
+   "playOnce": 0,
+   "sequenceName": "Disney Medley - Happily Ever After .fseq",
+   "mediaName": "Happily Ever After v3 .mp3",
+   "videoOut": "--Default--",
+   "duration": 325.7
+  }
+ ],
+ "leadOut": [],
+ "playlistInfo": {
+  "total_duration": 1833.5,
+  "total_items": 9
+ }
+}

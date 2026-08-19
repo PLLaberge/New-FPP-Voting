@@ -1,0 +1,24 @@
+{
+ "name": "Evening_Transition",
+ "version": 3,
+ "repeat": 0,
+ "loopCount": 0,
+ "empty": false,
+ "desc": "",
+ "random": 0,
+ "leadIn": [],
+ "mainPlaylist": [
+  {
+   "type": "sequence",
+   "enabled": 1,
+   "playOnce": 0,
+   "sequenceName": "House- White-NoSecondStory.fseq",
+   "duration": 60
+  }
+ ],
+ "leadOut": [],
+ "playlistInfo": {
+  "total_duration": 60,
+  "total_items": 1
+ }
+}

@@ -1,0 +1,54 @@
+{
+ "name": "NY_Movies",
+ "version": 3,
+ "repeat": 0,
+ "loopCount": 0,
+ "empty": false,
+ "desc": "",
+ "random": 0,
+ "leadIn": [],
+ "mainPlaylist": [
+  {
+   "type": "both",
+   "enabled": 1,
+   "playOnce": 0,
+   "sequenceName": "How Far Ill Go.fseq",
+   "mediaName": "04 How Far I'll Go.mp3",
+   "videoOut": "--Default--",
+   "duration": 160.45
+  },
+  {
+   "type": "both",
+   "enabled": 1,
+   "playOnce": 0,
+   "sequenceName": "Star Wars Funk final.fseq",
+   "mediaName": "07 Star Wars Funk final.mp3",
+   "videoOut": "--Default--",
+   "duration": 222.4
+  },
+  {
+   "type": "both",
+   "enabled": 1,
+   "playOnce": 0,
+   "sequenceName": "FROZEN - Let It Go Sing-along - Official Disney HD.fseq",
+   "mediaName": "FROZEN - Let It Go Sing-along - Official Disney HD.mp3",
+   "videoOut": "--Default--",
+   "duration": 223.25
+  }
+ ],
+ "leadOut": [
+  {
+   "type": "command",
+   "enabled": 1,
+   "playOnce": 0,
+   "command": "Run Script",
+   "args": [
+    "RestartFPPD.sh"
+   ]
+  }
+ ],
+ "playlistInfo": {
+  "total_duration": 606.1,
+  "total_items": 3
+ }
+}

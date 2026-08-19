@@ -1,0 +1,116 @@
+{
+ "name": "Xmas_Kids",
+ "version": 3,
+ "repeat": 0,
+ "loopCount": 0,
+ "empty": false,
+ "desc": "",
+ "random": 0,
+ "leadIn": [],
+ "mainPlaylist": [
+  {
+   "type": "both",
+   "enabled": 1,
+   "playOnce": 0,
+   "sequenceName": "FROZEN - Let It Go Sing-along - Official Disney HD.fseq",
+   "mediaName": "FROZEN - Let It Go Sing-along - Official Disney HD.mp3",
+   "videoOut": "--Default--",
+   "duration": 223.25
+  },
+  {
+   "type": "both",
+   "enabled": 1,
+   "playOnce": 0,
+   "sequenceName": "Linus And Lucy.fseq",
+   "mediaName": "01-04- Linus And Lucy.mp3",
+   "videoOut": "--Default--",
+   "duration": 185.5
+  },
+  {
+   "type": "both",
+   "enabled": 1,
+   "playOnce": 0,
+   "sequenceName": "Star Wars Funk final.fseq",
+   "mediaName": "07 Star Wars Funk final.mp3",
+   "videoOut": "--Default--",
+   "duration": 222.4
+  },
+  {
+   "type": "both",
+   "enabled": 1,
+   "playOnce": 0,
+   "sequenceName": "Trim Up The Tree.fseq",
+   "mediaName": "03 Trim Up The Tree.mp3",
+   "videoOut": "--Default--",
+   "duration": 81.4
+  },
+  {
+   "type": "both",
+   "enabled": 1,
+   "playOnce": 0,
+   "sequenceName": "I Want a Hippopotamus for Christmas.fseq",
+   "mediaName": "01 I Want a Hippopotamus for Christmas.mp3",
+   "videoOut": "--Default--",
+   "duration": 155
+  },
+  {
+   "type": "both",
+   "enabled": 1,
+   "playOnce": 0,
+   "sequenceName": "FROZEN 2 - Into the Unknown.fseq",
+   "mediaName": "03 Frozen - Into the Unknown.mp3",
+   "videoOut": "--Default--",
+   "duration": 194.9
+  },
+  {
+   "type": "both",
+   "enabled": 1,
+   "playOnce": 0,
+   "sequenceName": "Life Is a Highway.fseq",
+   "mediaName": "03 Life Is A Highway (Edit).mp3",
+   "videoOut": "--Default--",
+   "duration": 174.45
+  },
+  {
+   "type": "both",
+   "enabled": 1,
+   "playOnce": 0,
+   "sequenceName": "How Far Ill Go.fseq",
+   "mediaName": "04 How Far I'll Go.mp3",
+   "videoOut": "--Default--",
+   "duration": 160.45
+  },
+  {
+   "type": "both",
+   "enabled": 1,
+   "playOnce": 0,
+   "sequenceName": "You're a Mean One, Mr Grinch.fseq",
+   "mediaName": "14 You're a Mean One, Mr. Grinch.m4a",
+   "videoOut": "--Default--",
+   "duration": 180
+  },
+  {
+   "type": "both",
+   "enabled": 1,
+   "playOnce": 0,
+   "sequenceName": "We Dont Talk About Bruno.fseq",
+   "mediaName": "04 We Dont Talk About Bruno.mp3",
+   "videoOut": "--Default--",
+   "duration": 216.15
+  },
+  {
+   "type": "both",
+   "enabled": 1,
+   "playOnce": 0,
+   "sequenceName": "Under the Sea (The Little Mermaid).fseq",
+   "mediaName": "03 Under the Sea (The Little Mermaid).m4a",
+   "videoOut": "--Default--",
+   "duration": 193.6
+  }
+ ],
+ "leadOut": [],
+ "playlistInfo": {
+  "total_duration": 1987.1000000000001,
+  "total_items": 11
+ }
+}

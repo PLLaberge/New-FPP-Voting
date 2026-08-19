@@ -1,0 +1,34 @@
+{
+ "name": "Default",
+ "version": 3,
+ "repeat": 0,
+ "loopCount": 0,
+ "empty": false,
+ "desc": "",
+ "random": 0,
+ "leadIn": [],
+ "mainPlaylist": [
+  {
+   "type": "sequence",
+   "enabled": 1,
+   "playOnce": 0,
+   "sequenceName": "House- White.fseq",
+   "duration": 30
+  }
+ ],
+ "leadOut": [
+  {
+   "type": "command",
+   "enabled": 1,
+   "playOnce": 0,
+   "command": "Run Script",
+   "args": [
+    "RestartFPPD.sh"
+   ]
+  }
+ ],
+ "playlistInfo": {
+  "total_duration": null,
+  "total_items": 1
+ }
+}

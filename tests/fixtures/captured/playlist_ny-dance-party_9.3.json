@@ -1,0 +1,288 @@
+{
+ "name": "NY_Dance_Party",
+ "version": 3,
+ "repeat": 0,
+ "loopCount": 0,
+ "empty": false,
+ "desc": "All available Christmas songs",
+ "random": 0,
+ "leadIn": [],
+ "mainPlaylist": [
+  {
+   "type": "both",
+   "enabled": 1,
+   "playOnce": 0,
+   "sequenceName": "Darude - Sandstorm.fseq",
+   "mediaName": "01 Darude - Sandstorm.mp3",
+   "videoOut": "--Default--",
+   "timecode": "Default",
+   "duration": 227.55
+  },
+  {
+   "type": "both",
+   "enabled": 1,
+   "playOnce": 0,
+   "sequenceName": "The Movie Medley.fseq",
+   "mediaName": "13 The Movie Medley.mp3",
+   "videoOut": "--Default--",
+   "timecode": "Default",
+   "duration": 348
+  },
+  {
+   "type": "both",
+   "enabled": 1,
+   "playOnce": 0,
+   "sequenceName": "CANT STOP THE FEELING Film final.fseq",
+   "mediaName": "01 CAN'T STOP THE FEELING! Film final.mp3",
+   "videoOut": "--Default--",
+   "timecode": "Default",
+   "duration": 234.05
+  },
+  {
+   "type": "both",
+   "enabled": 1,
+   "playOnce": 0,
+   "sequenceName": "Under the Sea (The Little Mermaid).fseq",
+   "mediaName": "03 Under the Sea (The Little Mermaid).m4a",
+   "videoOut": "--Default--",
+   "timecode": "Default",
+   "duration": 193.6
+  },
+  {
+   "type": "both",
+   "enabled": 1,
+   "playOnce": 0,
+   "sequenceName": "Here Comes the Sun.fseq",
+   "mediaName": "07 Here Comes the Sun.mp3",
+   "videoOut": "--Default--",
+   "timecode": "Default",
+   "duration": 185.8
+  },
+  {
+   "type": "both",
+   "enabled": 1,
+   "playOnce": 0,
+   "sequenceName": "Disney Medley - Happily Ever After .fseq",
+   "mediaName": "Happily Ever After v3 .mp3",
+   "videoOut": "--Default--",
+   "timecode": "Default",
+   "duration": 325.7
+  },
+  {
+   "type": "both",
+   "enabled": 1,
+   "playOnce": 0,
+   "sequenceName": "Star Wars Funk final.fseq",
+   "mediaName": "07 Star Wars Funk final.mp3",
+   "videoOut": "--Default--",
+   "timecode": "Default",
+   "duration": 222.4
+  },
+  {
+   "type": "both",
+   "enabled": 1,
+   "playOnce": 0,
+   "sequenceName": "Barbie Girl.fseq",
+   "mediaName": "03 Barbie Girl.mp3",
+   "videoOut": "--Default--",
+   "timecode": "Default",
+   "duration": 197.95
+  },
+  {
+   "type": "both",
+   "enabled": 1,
+   "playOnce": 0,
+   "sequenceName": "Toccata and Fugue (Paranormal Remix).fseq",
+   "mediaName": "07 Toccata and Fugue (Paranormal Rem.mp3",
+   "videoOut": "--Default--",
+   "timecode": "Default",
+   "duration": 362.5
+  },
+  {
+   "type": "both",
+   "enabled": 1,
+   "playOnce": 0,
+   "sequenceName": "FROZEN - Let It Go Sing-along - Official Disney HD.fseq",
+   "mediaName": "FROZEN - Let It Go Sing-along - Official Disney HD.mp3",
+   "videoOut": "--Default--",
+   "timecode": "Default",
+   "duration": 223.25
+  },
+  {
+   "type": "both",
+   "enabled": 1,
+   "playOnce": 0,
+   "sequenceName": "Anti-Hero.fseq",
+   "mediaName": "01 Anti-Hero (Kungs Remix).mp3",
+   "videoOut": "--Default--",
+   "timecode": "Default",
+   "duration": 194.65
+  },
+  {
+   "type": "both",
+   "enabled": 1,
+   "playOnce": 0,
+   "sequenceName": "What a Wonderful World (Single).fseq",
+   "mediaName": "3-15 What a Wonderful World (Single.mp3",
+   "videoOut": "--Default--",
+   "timecode": "Default",
+   "duration": 143.65
+  },
+  {
+   "type": "both",
+   "enabled": 1,
+   "playOnce": 0,
+   "sequenceName": "Don't Start Now.fseq",
+   "mediaName": "01 Don't Start Now.mp3",
+   "videoOut": "--Default--",
+   "timecode": "Default",
+   "duration": 183.35
+  },
+  {
+   "type": "both",
+   "enabled": 1,
+   "playOnce": 0,
+   "sequenceName": "Music Box Dancer (Radio Version).fseq",
+   "mediaName": "02 Music Box Dancer (Radio Version).mp3",
+   "videoOut": "--Default--",
+   "timecode": "Default",
+   "duration": 193.25
+  },
+  {
+   "type": "both",
+   "enabled": 1,
+   "playOnce": 0,
+   "sequenceName": "Taylor Swift Show.fseq",
+   "mediaName": "taylorshow2a.mp3",
+   "videoOut": "--Default--",
+   "timecode": "Default",
+   "duration": 217.35
+  },
+  {
+   "type": "both",
+   "enabled": 1,
+   "playOnce": 0,
+   "sequenceName": "Life Is a Highway.fseq",
+   "mediaName": "03 Life Is A Highway (Edit).mp3",
+   "videoOut": "--Default--",
+   "timecode": "Default",
+   "duration": 174.45
+  },
+  {
+   "type": "both",
+   "enabled": 1,
+   "playOnce": 0,
+   "sequenceName": "Shut Up and Dance.fseq",
+   "mediaName": "03 Shut Up and Dance.mp3",
+   "videoOut": "--Default--",
+   "timecode": "Default",
+   "duration": 199.1
+  },
+  {
+   "type": "both",
+   "enabled": 1,
+   "playOnce": 0,
+   "sequenceName": "Golden - KPop Demon Hunters.fseq",
+   "mediaName": "KPop Demon Hunters - Golden.mp3",
+   "videoOut": "--Default--",
+   "timecode": "Default",
+   "duration": 169.35
+  },
+  {
+   "type": "both",
+   "enabled": 1,
+   "playOnce": 0,
+   "sequenceName": "First Snow (Instrumental).fseq",
+   "mediaName": "04 First Snow (Instrumental).mp3",
+   "videoOut": "--Default--",
+   "timecode": "Default",
+   "duration": 232.65
+  },
+  {
+   "type": "both",
+   "enabled": 1,
+   "playOnce": 0,
+   "sequenceName": "How Far Ill Go.fseq",
+   "mediaName": "04 How Far I'll Go.mp3",
+   "videoOut": "--Default--",
+   "timecode": "Default",
+   "duration": 160.45
+  },
+  {
+   "type": "both",
+   "enabled": 1,
+   "playOnce": 0,
+   "sequenceName": "Danger Zone - Top Gun.fseq",
+   "mediaName": "01 Danger Zone.mp3",
+   "videoOut": "--Default--",
+   "timecode": "Default",
+   "duration": 216.15
+  },
+  {
+   "type": "both",
+   "enabled": 1,
+   "playOnce": 0,
+   "sequenceName": "Zero.fseq",
+   "mediaName": "01 Zero (From the Original Motion Pi.mp3",
+   "videoOut": "--Default--",
+   "timecode": "Default",
+   "duration": 210.95
+  },
+  {
+   "type": "both",
+   "enabled": 1,
+   "playOnce": 0,
+   "sequenceName": "We Dont Talk About Bruno.fseq",
+   "mediaName": "04 We Dont Talk About Bruno.mp3",
+   "videoOut": "--Default--",
+   "timecode": "Default",
+   "duration": 216.15
+  },
+  {
+   "type": "both",
+   "enabled": 1,
+   "playOnce": 0,
+   "sequenceName": "Believer.fseq",
+   "mediaName": "04 Believer.mp3",
+   "videoOut": "--Default--",
+   "timecode": "Default",
+   "duration": 204
+  },
+  {
+   "type": "both",
+   "enabled": 1,
+   "playOnce": 0,
+   "sequenceName": "I Gotta Feeling.fseq",
+   "mediaName": "I Gotta Feeling.mp3",
+   "videoOut": "--Default--",
+   "timecode": "Default",
+   "duration": 202.125
+  },
+  {
+   "type": "both",
+   "enabled": 1,
+   "playOnce": 0,
+   "sequenceName": "Auld Lang Syne.fseq",
+   "mediaName": "13 Auld Lang Syne-short.mp3",
+   "videoOut": "--Default--",
+   "timecode": "Default",
+   "duration": 152
+  }
+ ],
+ "leadOut": [
+  {
+   "type": "both",
+   "enabled": 1,
+   "playOnce": 0,
+   "sequenceName": "Auld Lang Syne.fseq",
+   "mediaName": "13 Auld Lang Syne-short.mp3",
+   "videoOut": "--Default--",
+   "timecode": "Default",
+   "duration": 152
+  }
+ ],
+ "playlistInfo": {
+  "total_duration": 5590.424999999998,
+  "total_items": 26
+ }
+}
