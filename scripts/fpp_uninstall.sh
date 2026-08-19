@@ -1,7 +1,10 @@
-#!/bin/sh
+#!/bin/bash
 # Undo every side effect fpp_install.sh made OUTSIDE the plugin directory —
 # FPP deletes the directory itself, but nothing else. Idempotent: safe to run
 # twice, and safe to run against a partial/failed install.
+#
+# bash, not sh — see the comment in fpp_install.sh. This one also sources
+# ${FPPDIR}/scripts/common.
 set -e
 . "${FPPDIR}/scripts/common"
 

@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 # No-op on purpose. FPP Voting's whole point is to keep taking votes through
 # an fppd hiccup — see CLAUDE.md's "the playlist should just keep playing" and
 # the adapter's unknown/unreachable handling. Tying its start/stop to fppd's

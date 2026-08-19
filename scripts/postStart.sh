@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 # Self-heal only: if the systemd unit is for some reason not running (a
 # reboot where it raced fppd's start, someone stopped it by hand and forgot),
 # nudge it back on. This is NOT the same as restarting it on every fppd

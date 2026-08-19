@@ -62,10 +62,16 @@ def test_every_lifecycle_script_exists_and_is_executable():
         assert path.stat().st_mode & 0o111, f"scripts/{name} is not executable"
 
 
-def test_every_lifecycle_script_is_valid_posix_shell():
+def test_every_lifecycle_script_is_valid_bash():
+    """bash, not sh: a real install against FPP 9.3 failed with dash choking on
+    FPP's own ${FPPDIR}/scripts/common, which is bash-only. See the comment in
+    fpp_install.sh. `sh -n` would pass that broken shebang right through —
+    checking with bash is what would have caught it."""
     for name in REQUIRED_LIFECYCLE_SCRIPTS:
         path = ROOT / "scripts" / name
-        result = subprocess.run(["sh", "-n", str(path)], capture_output=True, text=True)
+        assert path.read_text().startswith("#!/bin/bash"), \
+            f"scripts/{name} must be #!/bin/bash, not #!/bin/sh"
+        result = subprocess.run(["bash", "-n", str(path)], capture_output=True, text=True)
         assert result.returncode == 0, f"scripts/{name}: {result.stderr}"
 
 

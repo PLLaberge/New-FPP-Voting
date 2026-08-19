@@ -1,6 +1,12 @@
-#!/bin/sh
+#!/bin/bash
 # Runs after FPP clones this repo into $PLUGINDIR/New-FPP-Voting. Must be
 # idempotent — FPP re-runs this on every update, not just the first install.
+#
+# bash, not sh: FPP's own ${FPPDIR}/scripts/common (sourced below) uses
+# bash-only syntax. On Raspberry Pi OS /bin/sh is dash, which cannot parse it
+# — "Syntax error: redirection unexpected" is dash choking on common, not a
+# problem with this script. Confirmed against a real install failure
+# 2026-08-18.
 set -e
 . "${FPPDIR}/scripts/common"
 
