@@ -34,6 +34,28 @@ def test_plugin_info_is_valid_json_with_the_fields_fpp_requires():
             assert field in v
 
 
+def test_plugin_info_version_bands_do_not_leave_a_gap():
+    """maxFPPVersion "0" means unbounded WITHIN that entry's own major
+    version, not "and everything after" -- confirmed against the real FPP UI,
+    which showed a single {min: "8.0", max: "0"} entry as covering only
+    v8.0-v8.999. Covering FPP 9+ (and beyond) needs its own band per major
+    version, the same way fpp-plugin-Template's own example does it. Assert
+    there is no gap between consecutive minor-version ceilings and majors,
+    so a future edit can't reintroduce a version FPP silently refuses.
+    """
+    info = json.loads((ROOT / "pluginInfo.json").read_text())
+    bands = sorted(info["versions"], key=lambda v: float(v["minFPPVersion"]))
+    assert float(bands[0]["minFPPVersion"]) <= 8.0, \
+        "must cover from FPP 8.0, the earliest version this project supports"
+    assert bands[-1]["maxFPPVersion"] == "0", \
+        "the last band must be open-ended, or a future FPP major is silently unsupported"
+    for prev, nxt in zip(bands, bands[1:]):
+        # "8.999" -> next band's min must be "9.0", not "9.1" (a gap) or "8.5"
+        # (an overlap hiding a typo).
+        assert int(float(prev["maxFPPVersion"])) + 1 == int(float(nxt["minFPPVersion"])), \
+            f"gap or overlap between {prev} and {nxt}"
+
+
 def test_plugin_info_does_not_declare_python_deps_installed_system_wide():
     """FPP 10+ installs pluginInfo.json's dependencies.python with
     `pip install --break-system-packages` against the SYSTEM python — exactly
