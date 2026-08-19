@@ -13,7 +13,17 @@ requires-python = ">=3.11"
 # rather than two that drift.
 dependencies = [
     "fastapi==0.115.6",
-    "uvicorn[standard]==0.34.0",
+    # Bare uvicorn, not uvicorn[standard]: the "standard" extra pulls in
+    # uvloop, which has no prebuilt wheel for Raspberry Pi OS's armv7l and has
+    # to compile from C source on install -- and that build needs more scratch
+    # space than a Pi's /tmp (a small RAM-backed tmpfs) has, failing with "No
+    # space left on device" even though the real disk has room. uvloop is a
+    # throughput optimization for many concurrent connections; irrelevant at
+    # 1-3 concurrent voters. websockets is added explicitly instead, since
+    # bare uvicorn has no WebSocket support at all without it -- it's what
+    # /ws needs, and unlike uvloop it has a real ARM wheel.
+    "uvicorn==0.34.0",
+    "websockets==17.0.1",
     "httpx==0.28.1",
     "paho-mqtt==2.1.0",
     "jinja2==3.1.5",
