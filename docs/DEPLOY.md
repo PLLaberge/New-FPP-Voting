@@ -141,18 +141,24 @@ cloudflared tunnel login          # opens a URL — follow it on any browser, no
 cloudflared tunnel create fppvote # writes a credentials file and prints a tunnel ID
 ```
 
-Point a subdomain at it — replace `vote.yourdomain.com` with whatever you
-want printed on the sign:
+Point a hostname at it — a subdomain (`vote.yourdomain.com`) or the bare
+domain both work identically; replace with whichever you want printed on the
+sign:
 
 ```bash
 cloudflared tunnel route dns fppvote vote.yourdomain.com
 ```
 
-Create `/etc/cloudflared/config.yml`:
+Create `/etc/cloudflared/config.yml`. The credentials file path is whatever
+`tunnel create` printed — it lands under the home directory of whichever user
+ran `tunnel login`/`tunnel create` (`/home/fpp/.cloudflared/<id>.json` if you
+ran those as `fpp` without `sudo`, which is the normal case; `/root/.cloudflared/`
+only if you ran them as root). `sudo cloudflared service install` runs the
+service as root regardless, and root can read the file either way:
 
 ```yaml
 tunnel: fppvote
-credentials-file: /root/.cloudflared/<tunnel-id-from-above>.json
+credentials-file: /home/fpp/.cloudflared/<tunnel-id-from-above>.json
 
 ingress:
   - hostname: vote.yourdomain.com
