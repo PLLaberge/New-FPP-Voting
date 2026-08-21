@@ -97,6 +97,22 @@ def test_every_lifecycle_script_is_valid_bash():
         assert result.returncode == 0, f"scripts/{name}: {result.stderr}"
 
 
+def test_the_database_is_chowned_after_it_is_created_not_before():
+    """A real install (2026-08-21) left fppvote.db owned by root: the whole
+    script runs as root under `sudo`, so a chown before init_db.py creates
+    the file does nothing for that file -- init_db.py (still root) creates
+    it as root, and the fppvote.service unit (running as $FPPUSER) can never
+    write to it again. "attempt to write a readonly database" the moment a
+    round tries to open, nothing wrong visible before that."""
+    install = (ROOT / "scripts" / "fpp_install.sh").read_text()
+    # Index the actual command lines, not prose mentioning either name earlier
+    # in a comment -- an easy way for this check to pass for the wrong reason.
+    chown_at = install.index('chown -R "${FPPUSER}')
+    init_db_at = install.index("venv/bin/python tools/init_db.py")
+    assert init_db_at < chown_at, \
+        "chown must run AFTER tools/init_db.py creates the database, not before"
+
+
 def test_install_and_uninstall_reference_files_that_actually_exist():
     """A typo'd path here fails silently on the Pi with no test to catch it
     first — sourced files and scripts fpp_install.sh calls must exist."""

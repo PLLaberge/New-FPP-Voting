@@ -34,9 +34,17 @@ venv/bin/pip install --quiet -r requirements.txt
 # plugindata area, so an uninstall/reinstall (which replaces $PLUGIN_DIR)
 # cannot take vote history or curated categories with it. tools/init_db.py is
 # additive and safe to run on every install — see its own docstring.
+#
+# chown runs AFTER init_db.py, not before. The Plugin Manager runs this whole
+# script as root, so a chown before the database exists does nothing for it —
+# init_db.py (still running as root at that point) creates fppvote.db owned
+# by root, the fppvote.service unit runs as ${FPPUSER}, and the service then
+# cannot write its own database: "attempt to write a readonly database" the
+# moment a round tries to open, with no earlier symptom to catch it sooner.
+# Confirmed against a real install 2026-08-21 — votes silently never counted.
 mkdir -p "$DATA_DIR"
-chown -R "${FPPUSER}:${FPPGROUP}" "$DATA_DIR"
 venv/bin/python tools/init_db.py --db "$DB_PATH"
+chown -R "${FPPUSER}:${FPPGROUP}" "$DATA_DIR"
 
 # Render the systemd unit. sed rather than envsubst — envsubst is not
 # guaranteed present on every FPP image, sed always is.
