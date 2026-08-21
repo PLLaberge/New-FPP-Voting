@@ -14,7 +14,7 @@ next song. Runs entirely on your Pi — no third-party server.
 | Service (FastAPI) | Done, tested |
 | Voter page | Done — live data over WebSocket |
 | Admin page | Done — `/admin`, gated by an optional admin token |
-| Plugin packaging | Done — not yet installed on a real Pi, see `docs/DEPLOY.md` |
+| Plugin packaging | Done — installed and running on the real Pi, live at songvote.ca |
 
 ## Quick start
 
