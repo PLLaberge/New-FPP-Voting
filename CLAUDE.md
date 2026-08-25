@@ -134,8 +134,25 @@ IP-derived identity would merge the whole audience into one voter and break
 voting in precisely the deployment we are shipping.
 
 It must also be **transparent to the viewer** — say in plain language on the
-page what is stored, and offer a way to reset it. The raw token never reaches
-the database. Wire this up at stage 5.
+page what is stored. The raw token never reaches the database. Wire this up
+at stage 5.
+
+**No reset button, by deliberate choice (2026-08-25, reversing an earlier
+one).** The page originally offered "Reset my voting ID," a condition Paulin
+set when he first approved the token approach. It turned out to be the
+easiest possible abuse vector: tap it, get a fresh identity, vote again,
+bypassing the per-round allowance with no technical effort at all — easier
+than anything a bot would need to do. Removing the button trades away that
+original "give the viewer a way out" commitment in exchange for closing the
+one-tap version of that hole; a determined person can still clear cookies or
+open a private window, which is a real but meaningfully higher bar, and
+proportionate to a ~100-votes-a-night show. Do **not** "fix" this by minting
+a new identity automatically on every page load instead — that was floated
+and rejected: reloads happen constantly and involuntarily (a phone waking
+up, a backgrounded tab), so it would reset the allowance by accident for
+ordinary viewers far more often than any bad actor would exploit it on
+purpose, and it would also break "reload the page, still see your vote
+highlighted," which depends on the same token surviving a reload.
 
 ### 9. A second, global tally sits alongside the per-round one.
 `Store.tally(round_id)` (section 7) is operational: it picks what plays next,

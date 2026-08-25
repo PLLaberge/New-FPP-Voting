@@ -275,7 +275,6 @@ body[data-show="nye"] .controls{background:linear-gradient(180deg,rgba(5,9,16,.9
 
 /* ---------- identity note ---------- */
 .privacy{margin-top:14px;font-size:12px;line-height:1.55;color:var(--text-3)}
-.privacy .linkbtn{font-size:12px;padding:0;margin-left:4px}
 </style>
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect x='5' y='12' width='5' height='14' rx='2.5' fill='%23f6c96b'/%3E%3Crect x='13.5' y='5' width='5' height='21' rx='2.5' fill='%23f6c96b'/%3E%3Crect x='22' y='15' width='5' height='11' rx='2.5' fill='%23f6c96b'/%3E%3C/svg%3E">
 </head>
@@ -391,10 +390,10 @@ body[data-show="nye"] .controls{background:linear-gradient(180deg,rgba(5,9,16,.9
     <br><span class="review" id="reviewNote"></span>
     <div class="livestat" id="liveStat"><span class="led"></span><span id="liveMsg">starting</span></div>
     <p class="privacy">
-      Your votes are tied to a random ID this browser made up and keeps. There is no
-      account, no name, and no IP address — the show only ever sees a scrambled version
-      of that ID, so it can tell voters apart without knowing who anyone is.
-      <button class="linkbtn" id="resetId" type="button">Reset my voting ID</button>
+      Your votes are tied to a random ID this browser made up and keeps for the season.
+      There is no account, no name, and no IP address — the show only ever sees a
+      scrambled version of that ID, so it can tell voters apart without knowing who
+      anyone is.
     </p>
   </footer>
 </div>
@@ -432,11 +431,6 @@ function loadToken(){
   }catch(e){ return ""; }        // private mode: the server issues a cookie instead
 }
 let TOKEN = loadToken();     // may start empty; see adoptToken()
-function resetIdentity(){
-  try{ localStorage.removeItem(TOKEN_KEY); }catch(e){}
-  document.cookie = "fppvote_voter=; Max-Age=0; path=/";
-  location.reload();
-}
 
 /* ---------- state ---------- */
 const state = {
@@ -1036,10 +1030,6 @@ $("#chipPrev").onclick=()=>scrollChips(-1);
 $("#chipNext").onclick=()=>scrollChips(1);
 $("#chips").addEventListener("scroll",updateChipNav,{passive:true});
 document.querySelectorAll("#seg button").forEach(b=> b.onclick=()=>{ state.sort=b.dataset.sort; render(); });
-$("#resetId").onclick=()=>{
-  if(confirm("Forget this browser's voting ID? Your votes for the current song will no longer be recognised as yours."))
-    resetIdentity();
-};
 // A phone that was asleep has a stale page and a dead socket; catch up on wake.
 document.addEventListener("visibilitychange",()=>{ if(!document.hidden) refresh(); });
 

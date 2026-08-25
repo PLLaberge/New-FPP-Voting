@@ -71,11 +71,18 @@ def test_the_page_no_longer_lets_a_viewer_pick_the_show_or_the_allowance():
 
 
 # ------------------------------------------------------------- transparency
-def test_the_page_says_what_it_stores_and_offers_to_clear_it():
-    """Paulin's condition when he approved the token: it has to be transparent
-    to the viewer."""
-    assert "resetId" in HTML
-    assert "Reset my voting ID" in HTML
+def test_the_page_says_what_it_stores():
+    """Paulin's original condition when he approved the token: it has to be
+    transparent to the viewer, said in plain language on the page.
+
+    The token used to also be viewer-resettable, in the same spirit — but
+    that turned out to be the easiest abuse vector there is (tap the button,
+    get a fresh allowance), and Paulin deliberately traded that "way out"
+    away for closing it (2026-08-25, CLAUDE.md section 8). Transparency
+    stays; the reset control doesn't.
+    """
+    assert "resetId" not in HTML
+    assert "Reset my voting ID" not in HTML
     body = HTML.lower()
     assert "no ip address" in body
     assert "random id" in body
@@ -83,7 +90,6 @@ def test_the_page_says_what_it_stores_and_offers_to_clear_it():
 
 def test_the_token_lives_in_localstorage_so_it_can_be_inspected():
     assert 'localStorage.getItem(TOKEN_KEY)' in SCRIPT
-    assert 'localStorage.removeItem(TOKEN_KEY)' in SCRIPT
     # and the page survives private mode, where localStorage throws
     assert "catch(e){ return \"\"; }" in SCRIPT
 
@@ -205,8 +211,7 @@ def test_a_failed_update_cannot_freeze_the_page():
     simply out of date.
     """
     code = re.sub(r"/\*.*?\*/", "", SCRIPT, flags=re.S)      # drop comments
-    for allowed in ('try{ localStorage.removeItem(TOKEN_KEY); }catch(e){}',
-                    'try{ socket.close(); }catch(e){}'):
+    for allowed in ('try{ socket.close(); }catch(e){}',):
         code = code.replace(allowed, "")   # nothing to recover from in these
     assert "catch(e){}" not in code, "a silent catch remains in the update path"
     assert "function applySafely(" in SCRIPT
