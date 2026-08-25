@@ -137,6 +137,40 @@ It must also be **transparent to the viewer** — say in plain language on the
 page what is stored, and offer a way to reset it. The raw token never reaches
 the database. Wire this up at stage 5.
 
+### 9. A second, global tally sits alongside the per-round one.
+`Store.tally(round_id)` (section 7) is operational: it picks what plays next,
+resets every song, and is scoped to one show because a round belongs to one
+show. `Store.cumulative_tally()` / `todays_tally()` / `daily_tallies()` are a
+*different* thing — admin-facing analytics, added 2026-08-24 at Paulin's
+request. They are deliberately **global across every show**, not per-show:
+splitting them would need a non-arbitrary way to decide whose tally a vote
+belongs to when a live playlist's songs straddle more than one show, and
+Paulin's own call was that he cares about the total, not the split. Backed by
+the same `votes` table, no new counters: `cumulative_tally` is just
+`created_at >= ?` against `votes`, and "reset" (`reset_tally`) moves that
+marker forward in `settings` rather than deleting anything — every vote ever
+cast stays in `votes`, append-only, per the top of this file.
+
+### 10. Voting can be paused without touching FPP or the follower.
+`settings.voting_enabled` (default on) gates `POST /api/vote` and tells the
+voter page to show a paused message instead of the song list. It does **not**
+stop the follower, close rounds, or touch `fppd` — the show keeps playing and
+rounds keep opening and closing underneath a pause exactly the way they do
+when nobody happens to be voting. Pausing is a presentation and
+vote-acceptance gate only, nothing structural, which is what makes it safe to
+flip mid-show without disturbing anything else.
+
+### 11. The voter page's header text and its four outbound links are
+editorial, not identity. `shows.name` and `shows.note` used to render as a
+small "which show is this" badge; Paulin repurposed them (2026-08-24) into
+two admin-editable announcement lines — larger and smaller respectively —
+that don't have to say a show name or a date at all. The four social/donate
+links (own site, Google review, SCCSS donate, Instagram) are fixed content he
+specified directly, not a general "admin can add arbitrary links" system —
+matching this project's own bias against building generality nothing asked
+for yet. Icons are inlined SVG, not fetched images, for the same reason
+everything else here is self-contained: no third-party request at page load.
+
 ## Reliability is the actual feature
 
 The viewers already like the old broken app. The win is that this one keeps

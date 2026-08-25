@@ -16,6 +16,8 @@ Cloudflare Tunnel every viewer shares the edge address.
 from __future__ import annotations
 
 import asyncio
+import csv
+import io
 import logging
 import secrets
 from contextlib import asynccontextmanager, suppress
@@ -113,11 +115,12 @@ def personal_block(shared: dict, voter_hash: str) -> dict:
 def build_state(store: Store, follower: Follower) -> dict:
     """Everything the voter page needs, in one payload. Blocking; call in a thread."""
     state = follower.state
+    voting_enabled = store.voting_enabled()
     show = store.get_show(state.show_id) if state.show_id else None
     if show is None:
         return {"show": None, "fpp": _fpp_block(state), "songs": [],
                 "categories": [], "now_playing": None, "round_id": None,
-                "_selections": {}}
+                "voting_enabled": voting_enabled, "_selections": {}}
 
     tally = store.tally(state.round_id) if state.round_id else {}
     locked = store.locked_keys(show.show_id)
@@ -165,6 +168,7 @@ def build_state(store: Store, follower: Follower) -> dict:
         "round_id": state.round_id,
         "songs": songs,
         "fpp": _fpp_block(state),
+        "voting_enabled": voting_enabled,
         "_selections": selections,
     }
 
@@ -317,6 +321,10 @@ def create_app(config: Config | None = None, *, store: Store | None = None,
         voter = store.voter_hash(token)
         song_key = str(body.get("song_key") or "")
         round_id = follower.state.round_id
+
+        if not store.voting_enabled():
+            return {"outcome": "voting_stopped", "message":
+                    "Sorry, no voting for songs at this time. Try again later."}
 
         if round_id is None:
             return {"outcome": "no_round", "message":
@@ -471,6 +479,78 @@ def create_app(config: Config | None = None, *, store: Store | None = None,
             "needs_review": report.needs_review,
             "parser_issues": issues,
         }
+
+    # ---------------------------------------------------------- admin: tally
+    @app.get("/api/admin/tally")
+    def admin_get_tally(_: None = Depends(require_admin)):
+        """Cumulative (since the last reset, or all-time) and today's vote
+        counts, global across every show — see Store's own comment on why
+        this is not split per show. Only songs with at least one vote appear;
+        the full catalogue is what /api/admin/shows/{id}/songs is for."""
+        cumulative = store.cumulative_tally()
+        today = store.todays_tally()
+        songs = []
+        for key in set(cumulative) | set(today):
+            song = store.get_song(key)
+            songs.append({"key": key, "title": song.display_title if song else key,
+                          "cumulative": cumulative.get(key, 0), "today": today.get(key, 0)})
+        songs.sort(key=lambda s: (-s["cumulative"], s["title"]))
+        return {
+            "reset_at": store.tally_reset_at(),
+            "voting_enabled": store.voting_enabled(),
+            "viewers": len(app.state.hub.connections),
+            "songs": songs,
+            "daily": store.daily_tallies(),
+        }
+
+    @app.get("/api/admin/tally/export")
+    def admin_export_tally(_: None = Depends(require_admin)):
+        """A CSV of the cumulative and today's counts — for keeping records
+        across seasons, independent of resetting the on-page total."""
+        cumulative = store.cumulative_tally()
+        today = store.todays_tally()
+        buf = io.StringIO()
+        writer = csv.writer(buf)
+        writer.writerow(["song_key", "title", "cumulative_votes", "today_votes"])
+        for key in sorted(set(cumulative) | set(today)):
+            song = store.get_song(key)
+            writer.writerow([key, song.display_title if song else key,
+                             cumulative.get(key, 0), today.get(key, 0)])
+        return Response(
+            content=buf.getvalue(), media_type="text/csv",
+            headers={"Content-Disposition":
+                    'attachment; filename="fppvote-tally.csv"'})
+
+    @app.post("/api/admin/tally/reset")
+    def admin_reset_tally(_: None = Depends(require_admin)):
+        """Move the cumulative total's starting point to now. Nothing is
+        deleted — see Store.reset_tally — so this is safe to undo by hand."""
+        return {"reset_at": store.reset_tally()}
+
+    @app.put("/api/admin/voting")
+    def admin_set_voting(body: dict = Body(...), _: None = Depends(require_admin)):
+        """The Start/Stop Voting control. Stopping does not touch the
+        follower or rounds — FPP keeps playing and rounds keep opening and
+        closing underneath — it only refuses new votes and tells the voter
+        page to show a stopped message instead of the song list."""
+        enabled = bool(body.get("enabled"))
+        store.set_voting_enabled(enabled)
+        return {"voting_enabled": enabled}
+
+    @app.get("/api/admin/activity")
+    def admin_get_activity(_: None = Depends(require_admin)):
+        """The most recent votes, for an at-a-glance is-this-working check
+        during a show — separate from the aggregate tally."""
+        return {"votes": store.recent_votes(limit=50)}
+
+    @app.get("/api/admin/backup")
+    def admin_backup(_: None = Depends(require_admin)):
+        """Download the raw database file — vote history and every curated
+        category, in one file. The Cloudflare tunnel credentials are a
+        separate, unrelated piece of infrastructure this app has no reason to
+        know about; back those up by hand — see docs/DEPLOY.md."""
+        return FileResponse(store.db.path, media_type="application/octet-stream",
+                            filename="fppvote-backup.db")
 
     @app.websocket("/ws")
     async def websocket(socket: WebSocket, token: str | None = Query(default=None)):

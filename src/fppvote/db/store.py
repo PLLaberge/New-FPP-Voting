@@ -37,6 +37,10 @@ from .connection import Database
 # Key under which the voter-identity HMAC salt lives in `settings`.
 VOTER_SALT_KEY = "voter_salt"
 
+# Settings keys for the admin page's tally and voting-pause controls.
+VOTING_ENABLED_KEY = "voting_enabled"
+TALLY_RESET_AT_KEY = "tally_reset_at"
+
 # cast_vote outcomes.
 ACCEPTED = "accepted"            # vote recorded
 MOVED = "moved"                  # allowance 1: previous vote replaced by this one
@@ -910,3 +914,101 @@ class Store:
             (rnd.show_id, round_id),
         ).fetchone()
         return row["song_key"] if row else None
+
+    # ----------------------------------------------------------- admin tally
+    # Everything below is deliberately GLOBAL, not scoped by show_id or
+    # round_id, unlike tally() above. Paulin's call (2026-08-18): a single
+    # persistent tally across every show is more useful to him than one split
+    # per show, and it sidesteps a genuine ambiguity -- when a live playlist's
+    # songs straddle more than one show, there is no non-arbitrary way to pick
+    # whose tally a vote belongs to. `votes` is append-only (see schema.sql),
+    # so nothing here is a stored counter; a "reset" moves where counting
+    # starts rather than deleting anything.
+    def voting_enabled(self) -> bool:
+        """Whether the public page currently accepts votes. Defaults on — an
+        admin has to deliberately stop voting, never the reverse, so a
+        missing setting (a fresh install) never silently blocks a show."""
+        return self.get_setting(VOTING_ENABLED_KEY, "1") == "1"
+
+    def set_voting_enabled(self, enabled: bool) -> None:
+        self.set_setting(VOTING_ENABLED_KEY, "1" if enabled else "0")
+
+    def cumulative_tally(self) -> dict[str, int]:
+        """Vote counts since the last reset (or all time, if never reset)."""
+        since = self.get_setting(TALLY_RESET_AT_KEY)
+        sql = "SELECT song_key, COUNT(*) AS n FROM votes"
+        params: tuple = ()
+        if since:
+            sql += " WHERE created_at >= ?"
+            params = (since,)
+        sql += " GROUP BY song_key"
+        return {r["song_key"]: r["n"] for r in self._q(sql, params)}
+
+    def todays_tally(self) -> dict[str, int]:
+        """Votes cast so far today, in local time. Independent of the reset
+        marker — resetting the cumulative total does not change what "today"
+        means, and today's count is never itself reset early."""
+        return {r["song_key"]: r["n"] for r in self._q(
+            "SELECT song_key, COUNT(*) AS n FROM votes "
+            "WHERE date(created_at, 'localtime') = date('now', 'localtime') "
+            "GROUP BY song_key"
+        )}
+
+    def daily_tallies(self, days: int = 8) -> list[dict]:
+        """[{'date': 'YYYY-MM-DD', 'counts': {song_key: n}}, ...] for the last
+        `days` days, oldest first, local time. `created_at` is stored via
+        SQLite's datetime('now'), which is UTC; the 'localtime' modifier
+        converts it for display the way a person actually experiences "today"
+        rather than wherever UTC midnight happens to fall.
+        """
+        rows = self._q(
+            "SELECT date(created_at, 'localtime') AS day, song_key, COUNT(*) AS n "
+            "FROM votes "
+            "WHERE date(created_at, 'localtime') >= date('now', 'localtime', ?) "
+            "GROUP BY day, song_key",
+            (f"-{days - 1} days",),
+        )
+        by_day: dict[str, dict[str, int]] = {}
+        for r in rows:
+            by_day.setdefault(r["day"], {})[r["song_key"]] = r["n"]
+        return [{"date": d, "counts": c} for d, c in sorted(by_day.items())]
+
+    def tally_reset_at(self) -> str | None:
+        """When the cumulative tally last reset, or None if never."""
+        return self.get_setting(TALLY_RESET_AT_KEY)
+
+    def reset_tally(self) -> str:
+        """Move the cumulative tally's start forward to now and return the new
+        marker. Every vote ever cast stays in `votes` — see schema.sql's
+        append-only design — this only changes where cumulative_tally starts
+        counting from, so a reset is always safe to undo by hand if needed.
+
+        Millisecond precision, not datetime('now')'s default whole seconds:
+        votes.created_at only has second resolution, so a reset landing in
+        the same second as a vote needs the marker to sort strictly after it
+        for cumulative_tally's `created_at >= since` to exclude that vote —
+        a second-precision marker in the same second as the vote would be
+        string-equal and wrongly keep counting it.
+        """
+        now = self._q(
+            "SELECT strftime('%Y-%m-%d %H:%M:%f', 'now') AS now"
+        ).fetchone()["now"]
+        self.set_setting(TALLY_RESET_AT_KEY, now)
+        return now
+
+    def recent_votes(self, limit: int = 50) -> list[dict]:
+        """The most recent votes, newest first — the admin page's activity
+        feed. Titles are joined in so the caller needs no second query."""
+        return [
+            {"created_at": r["created_at"], "song_key": r["song_key"], "title": r["title"]}
+            for r in self._q(
+                """
+                SELECT v.created_at, v.song_key,
+                       COALESCE(s.display_override, s.title) AS title
+                FROM votes v JOIN songs s ON s.song_key = v.song_key
+                ORDER BY v.vote_id DESC
+                LIMIT ?
+                """,
+                (limit,),
+            )
+        ]

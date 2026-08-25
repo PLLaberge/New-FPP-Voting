@@ -230,3 +230,86 @@ def test_the_salt_is_generated_once_and_persists(db_path, store):
     assert reopened.voter_salt() == salt, "a new salt would reset every allowance"
     assert reopened.voter_hash("token") == hashed
     reopened.close()
+
+
+# --------------------------------------------------------------- admin tally
+def test_cumulative_tally_is_global_not_per_show(curated):
+    """Paulin's call (2026-08-18): one tally across every show, not one per
+    show — sidesteps the ambiguity of a live playlist straddling shows."""
+    sync_nye(curated)
+    r1 = curated.ensure_round("christmas", "hallelujah")
+    curated.cast_vote(r1.round_id, "alice", "zero")
+    r2 = curated.ensure_round("nye", "auld-lang-syne")
+    curated.cast_vote(r2.round_id, "bob", "zero")
+    assert curated.cumulative_tally() == {"zero": 2}
+
+
+def test_cumulative_tally_survives_a_round_closing(curated):
+    """Unlike tally(round_id), the cumulative total does not reset when the
+    round that cast the vote closes."""
+    r1 = curated.ensure_round("christmas", "hallelujah")
+    curated.cast_vote(r1.round_id, "alice", "zero")
+    curated.ensure_round("christmas", "believer")   # closes r1
+    assert curated.cumulative_tally() == {"zero": 1}
+
+
+def test_reset_tally_sets_a_marker_and_returns_it(curated):
+    assert curated.get_setting("tally_reset_at") is None
+    returned = curated.reset_tally()
+    assert curated.get_setting("tally_reset_at") == returned
+
+
+def test_reset_moves_the_starting_point_without_deleting_votes(curated):
+    r1 = curated.ensure_round("christmas", "hallelujah")
+    curated.cast_vote(r1.round_id, "alice", "zero")
+
+    # Force the marker forward by hand rather than calling reset_tally() and
+    # racing it: datetime('now') has 1-second resolution, and a fast test can
+    # land the reset and the vote around it in the same wall-clock second,
+    # which two calls to datetime('now') then cannot distinguish. Real resets
+    # are always seconds to hours from the votes around them.
+    curated.set_setting("tally_reset_at", "2999-01-01 00:00:00")
+    r2 = curated.ensure_round("christmas", "believer")
+    curated.cast_vote(r2.round_id, "bob", "zero")
+
+    assert curated.cumulative_tally() == {}, \
+        "nothing has been cast after the (forced) reset marker yet"
+    assert curated.tally(r1.round_id) == {"zero": 1}, \
+        "the original round's own tally is a separate query, untouched by reset"
+
+
+def test_todays_tally_is_not_affected_by_a_reset(curated):
+    r1 = curated.ensure_round("christmas", "hallelujah")
+    curated.cast_vote(r1.round_id, "alice", "zero")
+    curated.reset_tally()
+    assert curated.todays_tally() == {"zero": 1}
+
+
+def test_voting_enabled_defaults_on(curated):
+    """A fresh install, or a setting never touched, must not silently block a
+    show — an admin has to deliberately turn voting off."""
+    assert curated.voting_enabled() is True
+
+
+def test_voting_can_be_stopped_and_started(curated):
+    curated.set_voting_enabled(False)
+    assert curated.voting_enabled() is False
+    curated.set_voting_enabled(True)
+    assert curated.voting_enabled() is True
+
+
+def test_recent_votes_are_newest_first_with_titles(curated):
+    r1 = curated.ensure_round("christmas", "hallelujah")
+    curated.cast_vote(r1.round_id, "alice", "zero")
+    curated.cast_vote(r1.round_id, "alice", "believer")
+    recent = curated.recent_votes(limit=2)
+    assert [row["song_key"] for row in recent] == ["believer", "zero"]
+    assert all(row["title"] for row in recent), "titles must be joined in, not just keys"
+
+
+def test_daily_tallies_group_by_local_date(curated):
+    r1 = curated.ensure_round("christmas", "hallelujah")
+    curated.cast_vote(r1.round_id, "alice", "zero")
+    days = curated.daily_tallies(days=8)
+    assert days, "today's vote should appear in the last-8-days breakdown"
+    assert days[-1]["counts"] == {"zero": 1}, "the most recent day must be last"

@@ -22,7 +22,7 @@ SHOW_DEFS = {
     "christmas": {
         "name": "Christmas 2025",
         "playlist_name": "All_Xmas_Songs - Alphabetic",
-        "tagline": "Tap any song. The winner plays next.",
+        "tagline": "The winner plays next.",
         "note": "",
         "theme": "christmas",
         # Instrumental sits with the other genre chips; Not-So-Christmasy is a
@@ -35,7 +35,7 @@ SHOW_DEFS = {
     "nye": {
         "name": "New Year's Eve 2026",
         "playlist_name": "NY_Dance_Party",
-        "tagline": "Ring it in. The winner plays next.",
+        "tagline": "The winner plays next.",
         "note": "Dec 29 – Jan 3",
         "theme": "nye",
         "categories": ["New this year", "Countdown", "Dance Tunes", "Pop", "Rock",

@@ -281,3 +281,49 @@ def test_the_page_has_a_favicon():
 def test_no_request_the_page_makes_can_404(client):
     for path in ("/", "/api/state", "/api/health"):
         assert client.get(path).status_code == 200, path
+
+
+# ---------------------------------------------------------------- social links
+def test_the_four_social_links_have_the_right_tooltips_and_open_a_new_tab():
+    """The pop-up text on hover, per Paulin's spec (2026-08-24)."""
+    expected = {
+        "https://laberge.christmas": "Visit our website",
+        "https://g.page/r/CSemjcRlg0liEBM/review": "Leave a review",
+        "https://www.sccss.ca/get-involved/donate": "Donate to the Foodbank",
+        "https://www.instagram.com/laberge.christmas/": "Follow us on Instagram",
+    }
+    for href, tooltip in expected.items():
+        assert f'href="{href}"' in HTML, f"missing link to {href}"
+        # title= is what actually renders as the hover pop-up.
+        pattern = re.compile(
+            r'href="' + re.escape(href) + r'"[^>]*title="' + re.escape(tooltip) + r'"')
+        assert pattern.search(HTML), f"{href} is missing the tooltip {tooltip!r}"
+    assert HTML.count('target="_blank"') >= 4, "social links must open in a new tab"
+
+
+# --------------------------------------------------------------- voting paused
+def test_the_page_has_a_message_for_when_voting_is_stopped():
+    assert "Sorry, no voting for songs at this time" in SCRIPT
+    assert "state.votingEnabled" in SCRIPT
+    assert "voting_stopped" in SCRIPT
+
+
+def test_elements_the_script_hides_have_a_hidden_css_override():
+    """A class rule with its own `display:` beats the browser's default
+    `[hidden]{display:none}` at equal specificity, so `el.hidden = true`
+    silently does nothing without an explicit `.class[hidden]{display:none}`
+    override. Caught live: the vote-allowance meter stayed on screen through
+    the new voting-stopped state until `.meter[hidden]` was added. Every
+    class the script sets .hidden on and that also has its own `display:`
+    rule needs this override.
+    """
+    hidden_via_js = set(re.findall(r'\$\("#(\w+)"\)\.hidden\s*=', SCRIPT))
+    for elem_id in hidden_via_js:
+        classes = re.findall(rf'id="{elem_id}"[^>]*class="([^"]+)"', HTML) \
+                + re.findall(rf'class="([^"]+)"[^>]*id="{elem_id}"', HTML)
+        for cls in " ".join(classes).split():
+            has_own_display = re.search(rf'\.{re.escape(cls)}\{{[^}}]*display:', HTML)
+            if has_own_display:
+                assert rf'.{cls}[hidden]' in HTML, \
+                    (f"#{elem_id} is hidden via JS and .{cls} sets its own "
+                     f"display, but .{cls}[hidden]{{display:none}} is missing")

@@ -67,13 +67,25 @@ canvas#snow{position:fixed;inset:0;z-index:-1;pointer-events:none;opacity:.5}
 .mini button[aria-pressed="true"]{background:rgba(255,255,255,.13);color:var(--text);font-weight:500}
 
 /* ---------- masthead ---------- */
-.masthead{padding:24px 0 16px;text-align:center}
-.badge{display:inline-flex;align-items:center;gap:7px;font-size:11px;letter-spacing:.16em;
-  text-transform:uppercase;color:var(--accent);background:color-mix(in srgb,var(--accent) 11%,transparent);
-  border:1px solid color-mix(in srgb,var(--accent) 26%,transparent);padding:5px 12px;border-radius:100px;font-weight:500}
-.dot{width:6px;height:6px;border-radius:50%;background:var(--accent);animation:pulse 2s var(--ease) infinite}
-@keyframes pulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.35;transform:scale(.7)}}
-.masthead h1{font-size:clamp(26px,7vw,37px);line-height:1.12;margin:13px 0 6px;font-weight:600;letter-spacing:-.02em;
+.masthead{padding:20px 0 16px;text-align:center}
+
+/* ---------- social / link icons ---------- */
+.socials{display:flex;align-items:center;justify-content:center;gap:10px;margin-bottom:16px}
+.socials .gap{width:20px}
+.social{width:34px;height:34px;flex:0 0 auto;border-radius:50%;display:flex;align-items:center;justify-content:center;
+  background:var(--card);border:1px solid var(--stroke);color:var(--text-2);text-decoration:none;
+  transition:all .18s var(--ease);overflow:hidden}
+.social:hover{border-color:var(--stroke-hi);background:var(--card-hi);transform:translateY(-1px)}
+.social svg{display:block;width:100%;height:100%}
+
+/* Dynamic1 / Dynamic2: admin-set headline text, larger-then-smaller, in
+   place of what used to be a fixed "show name" badge + date-range line. */
+.show-name{margin:0;font-size:19px;font-weight:600;letter-spacing:-.01em;color:var(--text)}
+.show-name:empty{display:none}
+.show-note{margin:4px 0 0;font-size:13px;letter-spacing:.03em;color:var(--text-3);font-weight:300}
+.show-note:empty{display:none}
+
+.masthead h1{font-size:clamp(23px,6.2vw,33px);line-height:1.14;margin:14px 0 6px;font-weight:600;letter-spacing:-.02em;
   background:linear-gradient(180deg,#ffffff 15%,#c6d2ea 100%);-webkit-background-clip:text;background-clip:text;color:transparent}
 .masthead p{margin:0;color:var(--text-2);font-size:15px;font-weight:300}
 
@@ -104,6 +116,11 @@ canvas#snow{position:fixed;inset:0;z-index:-1;pointer-events:none;opacity:.5}
 /* ---------- vote allowance meter ---------- */
 .meter{display:flex;align-items:center;justify-content:center;gap:9px;margin-bottom:14px;
   padding:9px 14px;border-radius:100px;background:var(--card);border:1px solid var(--stroke);font-size:13px}
+/* An explicit display: on the class beats the browser's default [hidden]
+   rule at equal specificity, so `el.hidden = true` alone silently does
+   nothing here without this — caught live: the "3 votes left" pill stayed
+   on screen through the new voting-stopped state until this was added. */
+.meter[hidden]{display:none}
 .pips{display:flex;gap:5px}
 .pip{width:9px;height:9px;border-radius:50%;border:1.5px solid var(--text-3);transition:all .25s var(--ease)}
 .pip.used{background:var(--green);border-color:var(--green);box-shadow:0 0 9px color-mix(in srgb,var(--green) 55%,transparent)}
@@ -115,6 +132,7 @@ canvas#snow{position:fixed;inset:0;z-index:-1;pointer-events:none;opacity:.5}
 .controls{position:sticky;top:0;z-index:20;padding:10px 16px 8px;margin:0 -16px;
   background:linear-gradient(180deg,rgba(7,11,22,.97) 62%,rgba(7,11,22,0) 100%);
   backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px)}
+.controls[hidden]{display:none}
 body[data-show="halloween"] .controls{background:linear-gradient(180deg,rgba(13,8,5,.97) 62%,rgba(13,8,5,0) 100%)}
 body[data-show="nye"] .controls{background:linear-gradient(180deg,rgba(5,9,16,.97) 62%,rgba(5,9,16,0) 100%)}
 .search{position:relative;margin-bottom:9px}
@@ -224,8 +242,6 @@ body[data-show="nye"] .controls{background:linear-gradient(180deg,rgba(5,9,16,.9
 .toast.warn{border-color:rgba(255,255,255,.25)}
 .toast.warn .tico{color:var(--accent)}
 
-.run{margin:8px 0 0;font-size:12px;letter-spacing:.1em;text-transform:uppercase;color:var(--text-3);font-weight:400}
-.run:empty{display:none}
 .nocat{text-align:center;padding:44px 24px;background:var(--card);border:1px dashed var(--stroke-hi);
   border-radius:var(--radius);color:var(--text-3);font-size:14px;line-height:1.7}
 .nocat strong{display:block;color:var(--text-2);font-size:17px;font-weight:500;margin-bottom:8px}
@@ -269,10 +285,38 @@ body[data-show="nye"] .controls{background:linear-gradient(180deg,rgba(5,9,16,.9
 <div class="wrap">
 
   <header class="masthead">
-    <span class="badge"><span class="dot"></span> <span id="showName">Christmas 2025</span></span>
-    <p class="run" id="showNote"></p>
+    <nav class="socials" aria-label="More from the show">
+      <a class="social" href="https://laberge.christmas" target="_blank" rel="noopener" title="Visit our website" aria-label="Visit our website">
+        <svg viewBox="0 0 24 24" fill="#f6c96b"><path d="M12 2.5 8.5 8h1.8L7 13h2.3L6 18h5v3h2v-3h5l-3.3-5H17l-3.3-5h1.8z"/></svg>
+      </a>
+      <a class="social" href="https://g.page/r/CSemjcRlg0liEBM/review" target="_blank" rel="noopener" title="Leave a review" aria-label="Leave a review">
+        <svg viewBox="0 0 48 48">
+          <path fill="#FFC107" d="M43.6 20.5H42V20H24v8h11.3C33.7 32.9 29.3 36 24 36c-6.6 0-12-5.4-12-12s5.4-12 12-12c3.1 0 5.9 1.2 8 3.1l5.7-5.7C34.6 6.5 29.6 4 24 4 12.9 4 4 12.9 4 24s8.9 20 20 20 20-8.9 20-20c0-1.3-.1-2.7-.4-3.5z"/>
+          <path fill="#FF3D00" d="M6.3 14.7l6.6 4.8C14.5 15.1 18.9 12 24 12c3.1 0 5.9 1.2 8 3.1l5.7-5.7C34.6 6.5 29.6 4 24 4c-7.7 0-14.4 4.3-17.7 10.7z"/>
+          <path fill="#4CAF50" d="M24 44c5.2 0 10-2 13.6-5.2l-6.3-5.3C29.4 35.4 26.8 36 24 36c-5.2 0-9.6-3.3-11.3-7.9l-6.6 5.1C9.5 39.6 16.2 44 24 44z"/>
+          <path fill="#1976D2" d="M43.6 20.5H42V20H24v8h11.3c-.8 2.3-2.3 4.3-4.1 5.7l6.3 5.3C39.9 37.5 44 31.3 44 24c0-1.3-.1-2.7-.4-3.5z"/>
+        </svg>
+      </a>
+      <span class="gap" aria-hidden="true"></span>
+      <a class="social" href="https://www.sccss.ca/get-involved/donate" target="_blank" rel="noopener" title="Donate to the Foodbank" aria-label="Donate to the Foodbank">
+        <svg viewBox="0 0 24 24" fill="#e8788a"><path d="M12 21s-7.5-4.6-10-9.3C.5 8.4 2.3 5 5.8 5c2 0 3.5 1.1 4.2 2.6C10.7 6.1 12.2 5 14.2 5c3.5 0 5.3 3.4 3.8 6.7C19.5 16.4 12 21 12 21z"/></svg>
+      </a>
+      <a class="social" href="https://www.instagram.com/laberge.christmas/" target="_blank" rel="noopener" title="Follow us on Instagram" aria-label="Follow us on Instagram">
+        <svg viewBox="0 0 24 24">
+          <defs><linearGradient id="igGrad" x1="0" y1="1" x2="1" y2="0">
+            <stop offset="0%" stop-color="#FEDA75"/><stop offset="30%" stop-color="#FA7E1E"/>
+            <stop offset="60%" stop-color="#D62976"/><stop offset="100%" stop-color="#962FBF"/>
+          </linearGradient></defs>
+          <rect x="1" y="1" width="22" height="22" rx="6" fill="url(#igGrad)"/>
+          <circle cx="12" cy="12" r="5" fill="none" stroke="#fff" stroke-width="1.8"/>
+          <circle cx="17.3" cy="6.7" r="1.1" fill="#fff"/>
+        </svg>
+      </a>
+    </nav>
+    <p class="show-name" id="showName"></p>
+    <p class="show-note" id="showNote"></p>
     <h1>Vote for the next song</h1>
-    <p id="tagline">Tap any song. The winner plays next.</p>
+    <p id="tagline">The winner plays next.</p>
   </header>
 
   <div class="banner" id="banner" hidden role="status" aria-live="polite">
@@ -397,7 +441,7 @@ function resetIdentity(){
 const state = {
   q:"", cats:new Set(), sort:"votes",
   show:null, categories:[], songs:[], nowPlaying:null, roundId:null,
-  you:{selection:[], votes_used:0, votes_left:3},
+  you:{selection:[], votes_used:0, votes_left:3}, votingEnabled:true,
   fpp:{reachable:true}, connected:false, loaded:false, broken:false, lastApplied:0,
   clock:null,                    // interpolates the progress bar between updates
 };
@@ -451,6 +495,7 @@ function applyState(data){
   state.fpp = data.fpp || {reachable:false};
   state.you = data.you || {selection:[], votes_used:0, votes_left:maxVotes()};
   state.roundId = data.round_id;
+  state.votingEnabled = data.voting_enabled !== false;
 
   if(data.show){
     state.show = data.show;
@@ -721,10 +766,26 @@ function reconcile(box, wanted){
 
 /* ---------- render ---------- */
 function render(){
+  const box=$("#list");
+
+  if(!state.votingEnabled){
+    $("#meter").hidden = true;
+    $("#controls").hidden = true;
+    $("#hiddenVotes").hidden = true;
+    rowCache.clear(); headCache.clear();
+    box.innerHTML="";
+    const e=el("div","nocat");
+    const st=el("strong"); st.textContent="Voting is paused";
+    e.append(st, document.createTextNode("Sorry, no voting for songs at this time. Try again later."));
+    box.appendChild(e);
+    setText($("#countLabel"), "");
+    updateReviewNote();
+    return;
+  }
+
   const has = state.songs.length>0;
   $("#meter").hidden    = !has;
   $("#controls").hidden = !has;
-  const box=$("#list");
 
   if(!has){
     rowCache.clear(); headCache.clear();
@@ -819,6 +880,7 @@ const OUTCOMES = {
   round_closed:  () => ["The song just changed — try again", "warn"],
   no_round:      () => ["Voting opens when the show starts", "warn"],
   not_voted:     () => ["No vote to remove", "warn"],
+  voting_stopped: () => ["Sorry, no voting for songs at this time. Try again later.", "warn"],
 };
 
 let voting = false;

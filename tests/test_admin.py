@@ -220,3 +220,97 @@ def test_reconcile_reports_when_fpp_cannot_be_reached(curated, db_path):
         c.app.state.adapter.go_offline()
         r = c.post("/api/admin/shows/christmas/reconcile")
     assert r.status_code == 502
+
+
+# ----------------------------------------------------------------- tally
+def cast(client, song_key):
+    state = client.get("/api/state").json()
+    token = state["you"]["token"]
+    client.post("/api/vote", json={"song_key": song_key},
+               headers={"X-Voter-Token": token})
+    return token
+
+
+def test_tally_reflects_cast_votes(client):
+    cast(client, "mele-kalikimaka")
+    r = client.get("/api/admin/tally")
+    assert r.status_code == 200
+    body = r.json()
+    row = next(s for s in body["songs"] if s["key"] == "mele-kalikimaka")
+    assert row["cumulative"] == 1
+    assert row["today"] == 1
+    assert body["voting_enabled"] is True
+    assert body["reset_at"] is None
+    assert "viewers" in body
+    assert "daily" in body
+
+
+def test_tally_export_is_a_csv(client):
+    cast(client, "mele-kalikimaka")
+    r = client.get("/api/admin/tally/export")
+    assert r.status_code == 200
+    assert r.headers["content-type"].startswith("text/csv")
+    assert "mele-kalikimaka" in r.text
+    assert "song_key,title,cumulative_votes,today_votes" in r.text
+
+
+def test_tally_reset_returns_a_marker_and_clears_cumulative(client):
+    cast(client, "mele-kalikimaka")
+    r = client.post("/api/admin/tally/reset")
+    assert r.status_code == 200
+    assert r.json()["reset_at"]
+    body = client.get("/api/admin/tally").json()
+    row = next(s for s in body["songs"] if s["key"] == "mele-kalikimaka")
+    assert row["cumulative"] == 0, "cumulative resets"
+    assert row["today"] == 1, "today's count is independent of the reset marker"
+
+
+def test_voting_can_be_stopped_and_started_via_admin(client):
+    r = client.put("/api/admin/voting", json={"enabled": False})
+    assert r.status_code == 200
+    assert r.json() == {"voting_enabled": False}
+    assert client.get("/api/admin/tally").json()["voting_enabled"] is False
+
+    r = client.put("/api/admin/voting", json={"enabled": True})
+    assert r.json() == {"voting_enabled": True}
+
+
+def test_stopped_voting_refuses_new_votes_with_a_clear_message(client):
+    client.put("/api/admin/voting", json={"enabled": False})
+    state = client.get("/api/state").json()
+    assert state["voting_enabled"] is False
+    token = state["you"]["token"]
+    r = client.post("/api/vote", json={"song_key": "mele-kalikimaka"},
+                    headers={"X-Voter-Token": token})
+    body = r.json()
+    assert body["outcome"] == "voting_stopped"
+    assert "no voting" in body["message"].lower()
+
+
+def test_activity_feed_lists_recent_votes_newest_first(client):
+    cast(client, "mele-kalikimaka")
+    cast(client, "frosty-the-snowman")
+    r = client.get("/api/admin/activity")
+    assert r.status_code == 200
+    votes = r.json()["votes"]
+    assert votes[0]["song_key"] == "frosty-the-snowman"
+    assert votes[0]["title"]
+
+
+def test_backup_downloads_the_database_file(client):
+    r = client.get("/api/admin/backup")
+    assert r.status_code == 200
+    assert r.headers["content-type"] == "application/octet-stream"
+    assert "fppvote-backup.db" in r.headers["content-disposition"]
+    assert r.content[:16] == b"SQLite format 3\x00"
+
+
+def test_tally_endpoints_require_the_admin_token_when_configured(curated, db_path):
+    app = build_app(curated, admin_token="secret")
+    with TestClient(app) as c:
+        assert c.get("/api/admin/tally").status_code == 401
+        assert c.get("/api/admin/tally/export").status_code == 401
+        assert c.post("/api/admin/tally/reset").status_code == 401
+        assert c.put("/api/admin/voting", json={"enabled": False}).status_code == 401
+        assert c.get("/api/admin/activity").status_code == 401
+        assert c.get("/api/admin/backup").status_code == 401
