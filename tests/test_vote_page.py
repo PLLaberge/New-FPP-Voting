@@ -301,6 +301,17 @@ def test_the_four_social_links_have_the_right_tooltips_and_open_a_new_tab():
     assert HTML.count('target="_blank"') >= 4, "social links must open in a new tab"
 
 
+def test_the_site_and_donate_icons_are_pauls_real_logos_not_placeholder_art():
+    """Replaced 2026-08-25 with his actual laberge.christmas and SCCSS logos
+    (small embedded JPEGs, self-contained rather than fetched at runtime) —
+    the earlier hand-drawn tree/heart SVGs must be gone."""
+    assert 'data:image/jpeg;base64,' in HTML
+    assert HTML.count('data:image/jpeg;base64,') >= 2
+    for gone in ('M12 2.5 8.5 8h1.8L7 13h2.3L6 18h5v3h2v-3h5l-3.3-5H17l-3.3-5h1.8z',
+                'M12 21s-7.5-4.6-10-9.3C.5 8.4 2.3 5 5.8 5c2 0 3.5 1.1 4.2 2.6'):
+        assert gone not in HTML, "placeholder icon artwork should have been replaced"
+
+
 # --------------------------------------------------------------- voting paused
 def test_the_page_has_a_message_for_when_voting_is_stopped():
     assert "Sorry, no voting for songs at this time" in SCRIPT

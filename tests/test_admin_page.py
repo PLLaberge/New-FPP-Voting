@@ -93,3 +93,31 @@ def test_reconcile_never_sends_categories_the_server_would_have_to_invent():
                   SCRIPT.index('/* ---------- songs')]
     assert 'method:"POST"' in body
     assert '"categories"' not in body
+
+
+# ----------------------------------------------------------- header text card
+def test_the_header_text_fields_are_unmistakable_not_buried_in_settings():
+    """Paulin's exact complaint (2026-08-25): 'Name'/'Note' inside the generic
+    Settings grid didn't read as 'the two dynamic text fields' at all. They
+    now live in their own labeled card with their own save button."""
+    assert "Voter Page Header Text" in HTML
+    assert "Line 1" in HTML and "Line 2" in HTML
+    assert 'id="saveHeaderBtn"' in HTML
+    assert 'id="headerMsg"' in HTML
+
+
+def test_saving_header_text_does_not_also_resubmit_the_rest_of_settings():
+    """The two save buttons must stay independent — saving the header text
+    should not require (or silently touch) playlist name, tagline, votes per
+    round, and so on, and vice versa."""
+    header_body = SCRIPT[SCRIPT.index('$("#saveHeaderBtn").onclick'):
+                         SCRIPT.index('/* ---------- settings')]
+    assert '"name"' not in header_body and "name:" in header_body
+    assert "playlist_name" not in header_body
+    assert "votes_per_round" not in header_body
+
+    settings_body = SCRIPT[SCRIPT.index('$("#saveSettingsBtn").onclick'):]
+    settings_body = settings_body[:settings_body.index("};")]
+    assert "playlist_name" in settings_body
+    assert not re.search(r'(?<![a-z_])name:', settings_body)
+    assert "note:" not in settings_body
