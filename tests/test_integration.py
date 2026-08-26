@@ -31,8 +31,8 @@ def follow(store, fpp, show_id="christmas"):
     if status.status == STATUS_PLAYING and status.sequence_name:
         return store.ensure_round(show_id, slugify(status.sequence_name))
     if status.status == STATUS_IDLE:
-        store.close_open_round(show_id)
-    return store.current_round(show_id)          # unknown: leave it alone
+        store.close_open_round()
+    return store.current_round()          # unknown: leave it alone
 
 
 def test_a_played_song_becomes_a_round(curated):
@@ -126,7 +126,7 @@ def _play_evening(store, fpp, rounds, choose):
     for _ in range(rounds):
         rnd = follow(store, fpp)
         played.append(rnd.song_key)
-        locked = store.locked_keys("christmas")
+        locked = store.locked_keys()
         candidates = [s.key for s in store.list_show_songs("christmas")
                       if s.key not in locked]
         for key in choose(candidates):
@@ -149,7 +149,7 @@ def test_no_song_repeats_inside_the_cooldown_window(curated):
     fpp = build(curated)
     played = _play_evening(curated, fpp, 20, lambda candidates: candidates[:1])
 
-    window = curated.get_show("christmas").cooldown_songs + 1
+    window = curated.cooldown_songs() + 1
     for start in range(len(played) - window + 1):
         chunk = played[start:start + window]
         assert len(set(chunk)) == window, f"repeat inside the cooldown: {chunk}"
@@ -184,7 +184,7 @@ def test_low_turnout_still_reaches_deep_into_the_catalogue(curated):
 
     def choose(candidates):
         # the store's own history, not a tally kept on the side
-        history = curated.last_played_round("christmas")
+        history = curated.last_played_round()
         return [min(candidates, key=lambda key: history.get(key, -1))]
 
     played = _play_evening(curated, fpp, 20, choose)

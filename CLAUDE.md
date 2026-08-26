@@ -46,6 +46,12 @@ different jobs and different fields.
 One database, not one per show: 20 of 26 New Year's songs are also in the
 Christmas playlist. Separate databases would duplicate them and drift.
 
+A voter no longer sees one show's `show_songs` categories in isolation —
+since section 12, the categories on screen are the union across every show
+that curates a song, and which songs appear at all follows the live playlist,
+not a chosen show. `show_songs` itself and its per-show vocabulary are
+unchanged; see section 12 for what changed above them.
+
 ### 4. Categories are editorial and never touched by the parser.
 The parser can say a song exists; it can never say it is "Traditional".
 Reconciliation is **additive and idempotent** — see `catalog/reconcile.py`.
@@ -98,6 +104,8 @@ FPP publishes `playlist/sequence/status`, `playlist/media/title`,
 But MQTT is optional in FPP settings, so it can never be the only path.
 
 ### 7. Voting rules
+Global across the whole install since section 12, not per show — one
+allowance, one cooldown, one set of rounds.
 - Votes **reset every song**. Enforced by attaching votes to a `round`.
 - Vote allowance is 1–3 per round, configurable. Default 3 — at 1–3 concurrent
   voters, one vote each makes the winner nearly random.
@@ -188,6 +196,71 @@ matching this project's own bias against building generality nothing asked
 for yet. Icons are inlined SVG, not fetched images, for the same reason
 everything else here is self-contained: no third-party request at page load.
 
+### 12. The app accepts any FPP playlist. A show no longer gatekeeps voting.
+(2026-08-25) Originally a playlist had to name-match one of a fixed set of
+`shows` before anyone could vote at all. That was the wrong shape once Paulin
+wanted to point the service at whatever playlist FPP happens to be running,
+built or renamed on the Pi, with no database change required to match it.
+Voting is now driven entirely by what FPP reports playing, computed fresh by
+the follower every tick (`Follower._tick`, `voteable_keys_from_entries`,
+`Store.voteable_catalog`):
+
+- **Voteable** = the live playlist's main section (leadIn/leadOut are already
+  excluded — `parse_playlist` only ever reads `mainPlaylist`), filtered to
+  entries with real media (an animation-only sequence simply has no
+  `mediaName` in FPP's JSON at all — that is the only signal, and it is
+  reliable), filtered again to sequences that already exist in `songs` — i.e.
+  have been reconciled at some point. The currently-*playing* sequence still
+  gets a minimal `songs` row auto-upserted if it has none
+  (`Follower._ensure_song_catalogued`, via `catalog.parser.clean_title`), so
+  `rounds.song_key`'s foreign key is always satisfiable — that does not make
+  it voteable, since the media/animation filter runs first and an
+  animation-only entry never reaches the database step at all.
+- Nothing voteable at all -> the voter page says **"No songs to vote on at
+  this time."**, not "waiting for the show" — that phrase means something
+  different (FPP isn't playing a playlist at all) and reusing it would tell a
+  viewer the wrong thing about what to expect.
+- **`votes_per_round` / `cooldown_songs` are global settings** now
+  (`Store.votes_per_round()` / `cooldown_songs()`, backed by the existing
+  `settings` table — no schema migration), not columns on `shows`. One
+  allowance, one cooldown, for the whole install, edited on the admin page's
+  Voting card rather than per show. `shows.votes_per_round` and
+  `shows.cooldown_songs` still exist on disk — no destructive migration for
+  two now-unused columns — but nothing in the code reads or writes them any
+  more.
+- **A song's displayed categories are the union** of whatever every show that
+  curates it has assigned it (`Store.voteable_catalog`). The **chip list** a
+  voter sees is filtered further still, to only categories actually carried by
+  tonight's voteable songs — the same "a chip with nothing behind it is a dead
+  end" rule from section 4, now computed over the live playlist instead of one
+  show's catalogue.
+- **Rounds, votes, the locked set and the play-history tie-break are all
+  global**, not scoped by show — one open round for the whole install
+  (`Store.current_round()` takes no `show_id`; likewise `locked_keys()` and
+  `last_played_round()`). `rounds.show_id` / `votes.show_id` stay `NOT NULL`
+  in the schema and every round still records one — resolved by
+  `Follower.resolve_display_show`, a majority-content-match over
+  `Store.show_overlap_counts` (sticky when ambiguous, so the header does not
+  flicker) — but purely as a best-guess label for the header text and visual
+  theme, never as a filter anything downstream applies. Paulin's call
+  (2026-08-25): the aggregate matters to him, not a per-show split, which
+  sidesteps a genuine ambiguity — whose tally a vote belongs to when a live
+  playlist's songs straddle more than one show — the same reasoning as
+  section 9's global tally, now applied one level deeper.
+- **Accepted edge case, knowingly.** Because "recently played" is now one
+  shared history instead of one per former "show," a song that played at the
+  very end of one season can stay locked into the start of the next if the two
+  share it — real, since 20 of 26 New Year's songs are also at Christmas.
+  Paulin's call: infrequent, fully under his control, and clearable by hand (a
+  few real rounds on the new playlist push it back out of the cooldown
+  window), which he judged simpler than resurrecting a per-show split once
+  "which show" stops being a clean boundary to split by.
+- `shows` still exists and still matters, just for **curation only**: the
+  category vocabulary each show's admin tab edits, its per-show header text
+  (section 11's two dynamic lines) and theme, and `playlist_name` as the
+  target the admin page's "Reconcile with FPP" button pulls against. It is
+  never consulted to decide who can vote for what.
+
 ## Reliability is the actual feature
 
 The viewers already like the old broken app. The win is that this one keeps
@@ -219,11 +292,13 @@ Python enforces PEP 668 externally-managed environments.
    `service/config.py`, `follower.py`, `server.py`. Handlers are sync `def` so
    FastAPI's threadpool meets the store's thread-local connections; the
    follower is an async task that offloads each pass with `asyncio.to_thread`.
-   The show is derived from the playlist FPP reports playing, matched against
-   `shows.playlist_name` — no admin toggle, right after a restart. FPP keeps
+   The header's show label is a best guess at which catalogue the live
+   playlist's songs mostly belong to (see section 12) — no admin toggle, right
+   after a restart, and no playlist-name matching any more either. FPP keeps
    playlists as `~/media/playlists/<name>.json` and refers to them without the
-   suffix; matching forgives the suffix and case but nothing else, since
-   underscores, spaces and hyphens are all meaningful in a real name. The module
+   suffix; `normalise_playlist_name` still forgives the suffix and case for the
+   playlist-entries cache, since underscores, spaces and hyphens are all
+   meaningful in a real name, but nothing gates on a name match today. The module
    is `server.py`, never `app.py`: a submodule named `app` shadows the package
    `__getattr__` that builds the ASGI app, and uvicorn then fails with
    "'module' object is not callable" at the first request.

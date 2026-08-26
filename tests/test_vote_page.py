@@ -118,6 +118,16 @@ def test_the_page_has_a_message_for_every_way_it_can_lose_the_show():
         assert phrase in SCRIPT, f"no banner copy for: {phrase}"
 
 
+def test_the_page_distinguishes_no_songs_from_no_show():
+    """2026-08-25: something playing with nothing voteable in it (an
+    animation-only playlist, or songs nobody has reconciled yet) is a
+    different situation from FPP simply not running a playlist at all, and
+    needs its own message rather than reusing 'Waiting for the show' — see
+    CLAUDE.md."""
+    assert "No songs to vote on at this time." in SCRIPT
+    assert "if(state.nowPlaying){" in SCRIPT
+
+
 def test_polling_backs_up_the_websocket():
     """The socket is an optimisation, never the only way to be right — the same
     shape as MQTT sitting on top of HTTP in the adapter."""

@@ -46,7 +46,12 @@ def main():
     args.db.parent.mkdir(parents=True, exist_ok=True)
     fresh = not args.db.exists()
     store = Store.open(args.db)
-    print(f"{'created' if fresh else 'opened'} {args.db}\n")
+    print(f"{'created' if fresh else 'opened'} {args.db}")
+    # Global since 2026-08-25 (see CLAUDE.md) -- one allowance and one
+    # cooldown for the whole install, not per show, so this line moved out of
+    # the per-show loop below.
+    print(f"voting rules (global): {store.votes_per_round()} vote(s)/round, "
+          f"cooldown {store.cooldown_songs()}\n")
 
     skipped = []
 
@@ -59,8 +64,7 @@ def main():
         orphaned = store.set_show_categories(show_id, cfg["categories"])
         show = store.get_show(show_id)
         print(f"[{show_id}] {show.name} — {outcome}"
-              f", {len(cfg['categories'])} categories, "
-              f"{show.votes_per_round} vote(s)/round, cooldown {show.cooldown_songs}")
+              f", {len(cfg['categories'])} categories")
         print(f"    playlist: {show.playlist_name!r}")
         if before and before.playlist_name != show.playlist_name:
             # The one field where a silent no-op would cost an evening of

@@ -460,13 +460,15 @@ let TOKEN = loadToken();     // may start empty; see adoptToken()
 /* ---------- state ---------- */
 const state = {
   q:"", cats:new Set(), sort:"votes",
-  show:null, categories:[], songs:[], nowPlaying:null, roundId:null,
+  show:null, votesPerRound:3, categories:[], songs:[], nowPlaying:null, roundId:null,
   you:{selection:[], votes_used:0, votes_left:3}, votingEnabled:true,
   fpp:{reachable:true}, connected:false, loaded:false, broken:false, lastApplied:0,
   clock:null,                    // interpolates the progress bar between updates
 };
 
-const maxVotes  = () => state.show ? state.show.votes_per_round : 3;
+// votes_per_round is a global setting now (2026-08-25), not tied to a
+// resolved show — see CLAUDE.md — so it lives on state directly.
+const maxVotes  = () => state.votesPerRound;
 const votesUsed = () => state.you.votes_used;
 const votesLeft = () => state.you.votes_left;
 
@@ -513,25 +515,27 @@ function applyState(data){
   adoptToken(data);
   state.loaded = true;
   state.fpp = data.fpp || {reachable:false};
+  state.votesPerRound = data.votes_per_round || 3;
   state.you = data.you || {selection:[], votes_used:0, votes_left:maxVotes()};
   state.roundId = data.round_id;
   state.votingEnabled = data.voting_enabled !== false;
 
-  if(data.show){
-    state.show = data.show;
-    state.categories = data.categories || [];
-    document.body.dataset.show = data.show.theme || "christmas";
-    const chosen = new Set(state.you.selection || []);
-    state.songs = (data.songs||[]).map(s => ({
-      ...s,
-      sortTitle: stripArticle(s.title||""),
-      voted: chosen.has(s.key),
-      lastPlayed: s.last_played == null ? -1 : s.last_played,
-    }));
-    // A chip that was filtering on something no longer offered would hide
-    // every song with no way back, so drop filters the show has stopped using.
-    for(const c of [...state.cats]) if(!state.categories.includes(c)) state.cats.delete(c);
-  }
+  // The song list follows the live playlist, not a resolved show (2026-08-25,
+  // see CLAUDE.md) — it updates whether or not `data.show` could be guessed.
+  // `state.show` itself is display-only from here (header text, theme).
+  state.show = data.show || null;
+  document.body.dataset.show = (data.show && data.show.theme) || "christmas";
+  state.categories = data.categories || [];
+  const chosen = new Set(state.you.selection || []);
+  state.songs = (data.songs||[]).map(s => ({
+    ...s,
+    sortTitle: stripArticle(s.title||""),
+    voted: chosen.has(s.key),
+    lastPlayed: s.last_played == null ? -1 : s.last_played,
+  }));
+  // A chip that was filtering on something no longer offered would hide
+  // every song with no way back, so drop filters tonight's playlist dropped.
+  for(const c of [...state.cats]) if(!state.categories.includes(c)) state.cats.delete(c);
 
   // Keep the last known song on screen when FPP drops out. Blanking it would
   // look like the show stopped, when the playlist is almost certainly fine.
@@ -562,7 +566,7 @@ function paintBanner(){
   if(state.broken)                  msg = "<b>Something went wrong on this page.</b> Pull down to refresh, or reload it — your votes are safely recorded either way.";
   else if(!state.loaded)            msg = "Connecting to the show…";
   else if(!state.fpp.reachable)     msg = "<b>Can’t see the show right now.</b> The lights keep playing — your votes are safe and still counting.";
-  else if(!state.show)              msg = "<b>Waiting for the show to start.</b> The song list appears once a playlist is running.";
+  else if(!state.nowPlaying)        msg = "<b>Waiting for the show to start.</b> The song list appears once a playlist is running.";
   else if(!state.connected)         msg = "<b>Live updates disconnected.</b> Reconnecting — votes still work.";
   if(msg){ m.innerHTML = msg; b.hidden = false; } else { b.hidden = true; }
 }
@@ -812,10 +816,19 @@ function render(){
     box.innerHTML="";
     const e=el("div","nocat");
     const st=el("strong");
-    st.textContent = state.show ? "No catalog yet" : "Waiting for the show";
-    e.append(st, document.createTextNode(state.show
-      ? state.show.name+" has not been built yet. Once its playlist exists and its songs are categorised, they appear here."
-      : "The song list appears as soon as a playlist starts running."));
+    // Something is playing but none of it is voteable — an animation-only
+    // sequence, or a song nobody has reconciled into the catalogue yet — is a
+    // different situation from FPP simply not running a playlist, and reads
+    // very differently to someone standing in the driveway (CLAUDE.md).
+    if(state.nowPlaying){
+      st.textContent = "No songs to vote on at this time.";
+      e.append(st, document.createTextNode(
+        "What's playing right now isn't anything voters can pick from — an animation sequence, or a song not yet added to the catalogue."));
+    } else {
+      st.textContent = "Waiting for the show";
+      e.append(st, document.createTextNode(
+        "The song list appears as soon as a playlist starts running."));
+    }
     box.appendChild(e);
     setText($("#countLabel"), "");
     updateReviewNote();

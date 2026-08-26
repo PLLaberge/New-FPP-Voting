@@ -64,22 +64,18 @@ def test_shows_listing_includes_every_show_and_a_review_count(client, curated):
     data = client.get("/api/admin/shows").json()
     show = next(s for s in data if s["id"] == "christmas")
     for field in ("id", "name", "playlist_name", "tagline", "note", "theme",
-                  "votes_per_round", "cooldown_songs", "active", "categories",
-                  "category_counts", "songs_total", "needs_review"):
+                  "active", "categories", "category_counts", "songs_total",
+                  "needs_review"):
         assert field in show, f"admin page needs {field} but the payload lacks it"
     assert show["songs_total"] == len(curated.list_show_songs("christmas"))
     assert show["needs_review"] == 0     # `curated` is fully categorised
 
 
 def test_updating_show_settings_writes_through_the_store(client, curated):
-    r = client.patch("/api/admin/shows/christmas", json={
-        "votes_per_round": 1, "cooldown_songs": 2, "tagline": "New tagline",
-    })
+    r = client.patch("/api/admin/shows/christmas", json={"tagline": "New tagline"})
     assert r.status_code == 200
-    assert r.json()["votes_per_round"] == 1
+    assert r.json()["tagline"] == "New tagline"
     show = curated.get_show("christmas")
-    assert show.votes_per_round == 1
-    assert show.cooldown_songs == 2
     assert show.tagline == "New tagline"
 
 
@@ -88,8 +84,23 @@ def test_an_unknown_show_field_is_a_400_not_a_500(client):
     assert r.status_code == 400
 
 
+# ------------------------------------------------------------ voting rules
+# Global since 2026-08-25 (see CLAUDE.md), so these live under their own
+# route rather than a per-show one -- see test_updating_show_settings_writes
+# _through_the_store above for what is still per-show.
+def test_voting_rules_are_global_not_per_show(client, curated):
+    r = client.put("/api/admin/voting-rules",
+                   json={"votes_per_round": 1, "cooldown_songs": 2})
+    assert r.status_code == 200
+    assert r.json() == {"votes_per_round": 1, "cooldown_songs": 2}
+    assert curated.votes_per_round() == 1
+    assert curated.cooldown_songs() == 2
+    assert client.get("/api/admin/voting-rules").json() == \
+        {"votes_per_round": 1, "cooldown_songs": 2}
+
+
 def test_an_out_of_range_vote_allowance_is_a_400(client):
-    r = client.patch("/api/admin/shows/christmas", json={"votes_per_round": 9})
+    r = client.put("/api/admin/voting-rules", json={"votes_per_round": 9})
     assert r.status_code == 400
 
 

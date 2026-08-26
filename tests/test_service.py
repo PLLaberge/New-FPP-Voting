@@ -15,6 +15,7 @@ from fppvote.catalog.parser import slugify
 from fppvote.fpp import from_catalog
 from fppvote.service import Config, Follower, build_state, create_app
 from fppvote.service.follower import normalise_playlist_name
+from tests.conftest import curate_nye, sync_nye
 from tests.fixtures.playlists import CHRISTMAS
 
 PLAYLIST = "Christmas 2025"
@@ -58,6 +59,10 @@ def playing_key(fpp):
 
 
 # ------------------------------------------------------------ show resolution
+# 2026-08-25: the app accepts any playlist FPP hands it (CLAUDE.md). There is
+# no more name-matching gate between a playlist and a show — `show_id` is now
+# only a best guess at "what does tonight feel like", resolved from which
+# show's catalogue the currently-playing songs mostly belong to.
 def test_the_show_is_derived_from_the_playlist_fpp_is_playing(follower, curated):
     """No admin toggle and no date rule — it is right after a restart and right
     when the playlist changes mid-evening."""
@@ -66,57 +71,47 @@ def test_the_show_is_derived_from_the_playlist_fpp_is_playing(follower, curated)
     assert state.round_id is not None
 
 
-def test_an_unrecognised_playlist_falls_back_when_there_is_only_one_show(
-        curated, fpp, config):
-    """The playlist names were guesses until someone checked them against the
-    Pi. With a single show there is nothing to be ambiguous about, so run and
-    warn rather than refusing — a name mismatch must not mean a dead page on
-    the first cold night."""
-    curated.update_show("christmas", playlist_name="Something Else")
+def test_any_playlist_name_works_regardless_of_the_configured_name(curated, config):
+    """The whole point of this redesign: nothing gates voting on a playlist's
+    name matching a show any more. As long as the songs it contains have
+    already been reconciled into the catalogue, they are voteable under a
+    playlist called anything at all."""
+    curated.update_show("christmas", playlist_name="Something Else Entirely")
+    fpp = from_catalog({"A Totally Unconfigured Name": list(CHRISTMAS)})
+    fpp.start_at_item("A Totally Unconfigured Name", 1)
     follower = Follower(curated, fpp, config)
-    fpp.start_at_item(PLAYLIST, 1)
-    assert follower.tick().show_id == "christmas"
-
-
-def test_an_unrecognised_playlist_is_reported_when_it_is_ambiguous(
-        curated, fpp, config):
-    """Two shows and neither matches: say so instead of picking one."""
-    curated.update_show("christmas", playlist_name="Something Else")
-    curated.create_show("nye", "New Year's", "Another Thing")
-    follower = Follower(curated, fpp, config)
-    fpp.start_at_item(PLAYLIST, 1)
     state = follower.tick()
-    assert state.show_id is None
-    assert "matches no configured show" in state.last_error
+    assert state.round_id is not None
+    assert len(state.voteable_keys) == 65
+    assert state.show_id == "christmas"      # still resolved, by content
 
 
-@pytest.mark.parametrize("stored,reported", [
-    ("NY_Dance_Party", "NY_Dance_Party"),
-    ("NY_Dance_Party", "NY_Dance_Party.json"),          # FPP included the suffix
-    ("NY_Dance_Party.json", "NY_Dance_Party"),          # someone pasted the filename
-    ("All_Xmas_Songs - Alphabetic", "All_Xmas_Songs - Alphabetic"),
-    ("All_Xmas_Songs - Alphabetic", "all_xmas_songs - alphabetic"),
-    ("All_Xmas_Songs - Alphabetic", "  All_Xmas_Songs - Alphabetic  "),
-])
-def test_real_playlist_names_match_in_either_form(curated, config, stored, reported):
-    """FPP keeps playlists as ~/media/playlists/<name>.json and refers to them
-    without the suffix. Both forms match, so pasting the filename works too."""
-    curated.update_show("christmas", playlist_name=stored)
-    fpp = from_catalog({reported.strip(): list(CHRISTMAS)})
-    fpp.start_at_item(reported.strip(), 1)
+def test_display_show_follows_whichever_catalogue_dominates(curated, fpp, config):
+    """Two shows sharing songs: the display show (header text and theme only —
+    never gating, see CLAUDE.md) follows whichever show's active catalogue
+    covers the most of what's actually playing tonight."""
+    sync_nye(curated)
+    curate_nye(curated)
     follower = Follower(curated, fpp, config)
+    fpp.start_at_item(PLAYLIST, 1)      # the full 65-song Christmas catalogue
+    state = follower.tick()
+    assert state.show_id == "christmas"
+
+
+def test_display_show_is_sticky_when_nothing_is_recognised(curated, config):
+    """A resolved display show does not reset to nothing just because one poll
+    hits an unfamiliar playlist — it stays put until something else takes the
+    lead, so the header does not flicker."""
+    follower = Follower(curated, from_catalog({PLAYLIST: list(CHRISTMAS)}), config)
+    follower.adapter.start_at_item(PLAYLIST, 1)
     assert follower.tick().show_id == "christmas"
 
-
-def test_similar_playlist_names_are_not_conflated(curated, config):
-    """Underscores, spaces and hyphens are meaningful; only .json and case are
-    forgiven. Two shows, so there is no single-show fallback to mask this."""
-    curated.update_show("christmas", playlist_name="All_Xmas_Songs - Alphabetic")
-    curated.create_show("nye", "New Year's", "NY_Dance_Party")
-    fpp = from_catalog({"All Xmas Songs Alphabetic": list(CHRISTMAS)})
-    fpp.start_at_item("All Xmas Songs Alphabetic", 1)
-    follower = Follower(curated, fpp, config)
-    assert follower.tick().show_id is None
+    unknown = from_catalog({"Mystery Playlist": [
+        ("totally-unknown-sequence", "Totally Unknown Song", "0:30"),
+    ]})
+    unknown.start_at_item("Mystery Playlist", 1)
+    follower.adapter = unknown
+    assert follower.tick().show_id == "christmas"
 
 
 def test_normalise_playlist_name_only_strips_json_and_case():
@@ -139,7 +134,7 @@ def test_the_state_payload_has_what_the_page_needs(follower, curated):
     state = build_state(curated, follower)
 
     assert state["show"]["name"] == "Christmas 2025"
-    assert state["show"]["votes_per_round"] == 3
+    assert state["votes_per_round"] == 3
     assert len(state["songs"]) == 65
     assert state["now_playing"]["key"] == "christmas-vacation"
     assert state["now_playing"]["seconds_total"] > 0
@@ -253,9 +248,9 @@ def test_the_winner_takes_over_a_beat_before_the_song_ends(follower, curated, fp
     """Paulin's choice: clip the outgoing song's fade rather than cut away from
     a second of the wrong song."""
     follower.tick()
-    rnd = curated.current_round("christmas")
+    rnd = curated.current_round()
     winner = next(s.key for s in curated.list_show_songs("christmas")
-                  if s.key not in curated.locked_keys("christmas"))
+                  if s.key not in curated.locked_keys())
     curated.cast_vote(rnd.round_id, "alice", winner)
 
     # not yet — plenty of song left
@@ -272,9 +267,9 @@ def test_the_winner_takes_over_a_beat_before_the_song_ends(follower, curated, fp
 
 def test_the_handover_fires_once_not_every_poll(follower, curated, fpp):
     follower.tick()
-    rnd = curated.current_round("christmas")
+    rnd = curated.current_round()
     winner = next(s.key for s in curated.list_show_songs("christmas")
-                  if s.key not in curated.locked_keys("christmas"))
+                  if s.key not in curated.locked_keys())
     curated.cast_vote(rnd.round_id, "alice", winner)
 
     entry = fpp.current_entry()
@@ -299,9 +294,9 @@ def test_a_missed_window_still_plays_the_winner(curated, fpp, config):
     follower = Follower(curated, fpp, config)
     fpp.start_at_item(PLAYLIST, 1)
     follower.tick()
-    rnd = curated.current_round("christmas")
+    rnd = curated.current_round()
     winner = next(s.key for s in curated.list_show_songs("christmas")
-                  if s.key not in curated.locked_keys("christmas"))
+                  if s.key not in curated.locked_keys())
     curated.cast_vote(rnd.round_id, "alice", winner)
 
     # jump clean over the lead window, as a skipped poll would
@@ -314,9 +309,9 @@ def test_a_missed_window_still_plays_the_winner(curated, fpp, config):
 
 def test_votes_survive_fpp_vanishing_mid_song(follower, curated, fpp):
     follower.tick()
-    rnd = curated.current_round("christmas")
+    rnd = curated.current_round()
     key = next(s.key for s in curated.list_show_songs("christmas")
-               if s.key not in curated.locked_keys("christmas"))
+               if s.key not in curated.locked_keys())
     curated.cast_vote(rnd.round_id, "alice", key)
 
     fpp.go_offline()
@@ -330,11 +325,11 @@ def test_votes_survive_fpp_vanishing_mid_song(follower, curated, fpp):
 
 def test_an_idle_fpp_closes_the_round(follower, curated, fpp):
     follower.tick()
-    rnd = curated.current_round("christmas")
+    rnd = curated.current_round()
     fpp.stop()
     follower.tick()
     assert curated.get_round(rnd.round_id).is_open is False
-    assert curated.current_round("christmas") is None
+    assert curated.current_round() is None
 
 
 # --------------------------------------------------------------------- health

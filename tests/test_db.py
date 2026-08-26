@@ -83,13 +83,20 @@ def test_nested_rollback_discards_everything(store):
 
 
 def test_vote_allowance_range_is_structural(store):
-    """1-3 is a product rule; the schema should not let anything else in."""
+    """1-3 is a product rule; the schema should not let anything else in.
+
+    shows.votes_per_round stays on the table even though nothing reads it any
+    more (2026-08-25, see CLAUDE.md -- votes_per_round is a global setting
+    now) since there was no destructive migration for two now-unused columns.
+    The CHECK constraint is still worth pinning; set_votes_per_round is the
+    path that actually enforces the range today.
+    """
     store.create_show("x", "X", "P")
     with pytest.raises(sqlite3.IntegrityError):
         store.db.connection.execute(
             "UPDATE shows SET votes_per_round = 9 WHERE show_id = 'x'")
     with pytest.raises(ValueError):
-        store.update_show("x", votes_per_round=0)
+        store.set_votes_per_round(0)
 
 
 def test_unknown_show_field_is_rejected(store):

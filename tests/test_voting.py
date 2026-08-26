@@ -30,7 +30,7 @@ def test_a_new_song_closes_the_old_round_and_opens_one(curated):
     second = curated.ensure_round("christmas", "believer")
     assert second.round_id != first.round_id
     assert curated.get_round(first.round_id).is_open is False
-    assert curated.current_round("christmas").round_id == second.round_id
+    assert curated.current_round().round_id == second.round_id
 
 
 def test_votes_reset_every_song(curated):
@@ -77,7 +77,7 @@ def test_voting_twice_for_one_song_is_refused_but_can_be_retracted(curated):
 
 
 def test_at_allowance_one_a_new_tap_moves_the_vote(curated):
-    curated.update_show("christmas", votes_per_round=1)
+    curated.set_votes_per_round(1)
     rnd = curated.ensure_round("christmas", "hallelujah")
     curated.cast_vote(rnd.round_id, "voter", "zero")
     moved = curated.cast_vote(rnd.round_id, "voter", "believer")
@@ -119,12 +119,12 @@ def test_the_playing_song_and_the_last_four_are_locked(curated):
     played = ["zero", "believer", "barbie-girl", "feliz-navidad", "hallelujah"]
     for key in played:
         curated.ensure_round("christmas", key)
-    assert curated.locked_keys("christmas") == set(played)
+    assert curated.locked_keys() == set(played)
 
     curated.ensure_round("christmas", "my-favorite-things")
     # six songs played, cooldown 4 + the one playing = five locked
-    assert curated.locked_keys("christmas") == set(played[1:] + ["my-favorite-things"])
-    assert "zero" not in curated.locked_keys("christmas")
+    assert curated.locked_keys() == set(played[1:] + ["my-favorite-things"])
+    assert "zero" not in curated.locked_keys()
 
 
 def test_a_locked_song_cannot_be_voted_for(curated):
@@ -133,19 +133,23 @@ def test_a_locked_song_cannot_be_voted_for(curated):
     assert curated.tally(rnd.round_id) == {}
 
 
-def test_cooldown_length_follows_the_show_setting(curated):
-    curated.update_show("christmas", cooldown_songs=0)
+def test_cooldown_length_follows_the_global_setting(curated):
+    curated.set_cooldown_songs(0)
     for key in ("zero", "believer"):
         curated.ensure_round("christmas", key)
-    assert curated.locked_keys("christmas") == {"believer"}
+    assert curated.locked_keys() == {"believer"}
 
 
 # ------------------------------------------------------------- unknown songs
-def test_a_song_from_another_show_is_refused(curated):
-    sync_nye(curated)
+def test_a_song_not_in_the_live_playlist_is_refused(curated):
+    """The store no longer knows "which show" a song belongs to when casting
+    a vote (2026-08-25) -- the caller says what is actually voteable right
+    now via valid_keys, computed by the follower from the live FPP playlist.
+    A deactivated song, or one from a playlist that isn't currently playing,
+    is excluded the same way: by not being in that set."""
     rnd = curated.ensure_round("christmas", "hallelujah")
-    # NYE-only; never in the Christmas playlist
-    assert curated.cast_vote(rnd.round_id, "voter", "auld-lang-syne").outcome == NOT_IN_SHOW
+    result = curated.cast_vote(rnd.round_id, "voter", "zero", valid_keys={"believer"})
+    assert result.outcome == NOT_IN_SHOW
 
 
 def test_a_song_that_does_not_exist_is_refused(curated):
@@ -153,10 +157,13 @@ def test_a_song_that_does_not_exist_is_refused(curated):
     assert curated.cast_vote(rnd.round_id, "voter", "no-such-song").outcome == UNKNOWN_SONG
 
 
-def test_a_deactivated_song_is_refused(curated):
-    curated.sync_show("christmas", christmas_rows(exclude={"barbie-girl"}))
+def test_without_valid_keys_any_known_song_is_accepted(curated):
+    """valid_keys is optional -- omitting it means "trust the caller", which
+    is what the rest of this file does to exercise the allowance/lock/tie
+    logic without needing a live playlist. The real server always supplies
+    it; see test_service.py."""
     rnd = curated.ensure_round("christmas", "hallelujah")
-    assert curated.cast_vote(rnd.round_id, "voter", "barbie-girl").outcome == NOT_IN_SHOW
+    assert curated.cast_vote(rnd.round_id, "voter", "zero", locked=FREE).outcome == ACCEPTED
 
 
 def test_show_id_on_a_vote_comes_from_the_round(curated):
@@ -204,12 +211,14 @@ def test_a_never_played_song_wins_a_tie(curated):
     assert curated.winner(rnd.round_id) == "barbie-girl"
 
 
-def test_play_history_is_per_show(curated):
-    """A song played to death at Christmas starts New Year's fresh."""
+def test_play_history_is_global(curated):
+    """Global since 2026-08-25 -- one shared "recently played" history for
+    the whole install, not one per former "show" (see CLAUDE.md). Paulin's
+    accepted edge case: a song shared between two playlists carries its play
+    history across from one to the other, rather than starting fresh."""
     for key in ("zero", "believer"):
         curated.ensure_round("christmas", key)
-    assert curated.last_played_round("nye") == {}
-    assert set(curated.last_played_round("christmas")) == {"zero", "believer"}
+    assert set(curated.last_played_round()) == {"zero", "believer"}
 
 
 # ---------------------------------------------------------- voter identity

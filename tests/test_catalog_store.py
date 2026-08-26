@@ -216,11 +216,13 @@ def test_songs_in_both_shows_agree_on_being_instrumental(curated):
 
 
 # ------------------------------------------------------------------ shows
-def test_seeding_again_does_not_reset_admin_settings(christmas):
-    christmas.update_show("christmas", votes_per_round=1, cooldown_songs=7)
+def test_seeding_again_does_not_reset_global_voting_rules(christmas):
+    """votes_per_round/cooldown_songs are global settings (2026-08-25), not
+    columns on `shows` -- create_show can never touch them, seed or reseed."""
+    christmas.set_votes_per_round(1)
+    christmas.set_cooldown_songs(7)
     assert christmas.create_show("christmas", "Christmas 2025", "Christmas 2025") is False
-    show = christmas.get_show("christmas")
-    assert show.votes_per_round == 1 and show.cooldown_songs == 7
+    assert christmas.votes_per_round() == 1 and christmas.cooldown_songs() == 7
 
 
 # ------------------------------------------------------------- renamed fseq
@@ -256,21 +258,22 @@ def test_nye_curation_is_independent_of_christmas(curated):
     assert nye["zero"].categories == ["Rock", "Pop"]
 
 
-def test_seeding_refreshes_the_playlist_name_but_not_the_allowance(christmas):
+def test_seeding_refreshes_the_playlist_name_but_not_global_voting_rules(christmas):
     """Editing SHOW_DEFS has to actually reach an existing database.
 
     An insert-only seed would mean changing the playlist name in the file,
     re-running init_db.py, and silently getting nothing — an evening of
-    debugging for a one-line change. Descriptive fields refresh; anything
-    tuned on the admin page survives.
+    debugging for a one-line change. Descriptive fields refresh; voting rules
+    are global settings define_show never touches at all (2026-08-25).
     """
-    christmas.update_show("christmas", votes_per_round=1, cooldown_songs=7)
+    christmas.set_votes_per_round(1)
+    christmas.set_cooldown_songs(7)
 
     assert christmas.define_show("christmas", "Christmas 2025",
                                  "All_Xmas_Songs - Alphabetic") == "updated"
     show = christmas.get_show("christmas")
     assert show.playlist_name == "All_Xmas_Songs - Alphabetic"
-    assert show.votes_per_round == 1 and show.cooldown_songs == 7
+    assert christmas.votes_per_round() == 1 and christmas.cooldown_songs() == 7
 
     assert christmas.define_show("christmas", "Christmas 2025",
                                  "All_Xmas_Songs - Alphabetic") == "unchanged"

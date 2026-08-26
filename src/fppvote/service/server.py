@@ -106,35 +106,45 @@ def personal_block(shared: dict, voter_hash: str) -> dict:
     """The per-viewer slice. Computed from the shared payload's precomputed
     per-voter map so a broadcast is one query, not one per connection."""
     selection = (shared.get("_selections") or {}).get(voter_hash, [])
-    allowance = (shared.get("show") or {}).get("votes_per_round", 3)
+    allowance = shared.get("votes_per_round", 3)
     return {"selection": selection,
             "votes_used": len(selection),
             "votes_left": max(0, allowance - len(selection))}
 
 
 def build_state(store: Store, follower: Follower) -> dict:
-    """Everything the voter page needs, in one payload. Blocking; call in a thread."""
+    """Everything the voter page needs, in one payload. Blocking; call in a thread.
+
+    2026-08-25: the song list is no longer one show's curated catalogue — it
+    is whatever the live FPP playlist actually contains, filtered by the
+    follower to entries with real media that already exist in `songs` (see
+    CLAUDE.md). `show` is carried only as a best-guess display label (header
+    text, theme); an unresolved show does not hide the songs, since voting no
+    longer needs one.
+    """
     state = follower.state
     voting_enabled = store.voting_enabled()
     show = store.get_show(state.show_id) if state.show_id else None
-    if show is None:
-        return {"show": None, "fpp": _fpp_block(state), "songs": [],
-                "categories": [], "now_playing": None, "round_id": None,
-                "voting_enabled": voting_enabled, "_selections": {}}
 
+    catalog = store.voteable_catalog(state.voteable_keys)
+    locked = store.locked_keys()
     tally = store.tally(state.round_id) if state.round_id else {}
-    locked = store.locked_keys(show.show_id)
     # last_played goes to the page so its "Top" ordering breaks ties the same
     # way winner() does. Without it the row at the top of the list can differ
     # from the song that actually plays next, which reads as the vote lying.
-    history = store.last_played_round(show.show_id)
+    history = store.last_played_round()
+    # Playlist order, not alphabetical — state.voteable_keys already carries
+    # it (see Follower), and the page's "Playing order" sort depends on it.
     songs = [
-        {"key": s.key, "title": s.title, "artist": s.artist, "year": s.year,
-         "categories": s.categories, "index": s.playlist_index,
-         "votes": tally.get(s.key, 0), "locked": s.key in locked,
-         "last_played": history.get(s.key, -1)}
-        for s in store.list_show_songs(show.show_id)
+        {"key": key, "title": catalog[key]["title"], "artist": catalog[key]["artist"],
+         "year": catalog[key]["year"], "categories": catalog[key]["categories"],
+         "index": i, "votes": tally.get(key, 0), "locked": key in locked,
+         "last_played": history.get(key, -1)}
+        for i, key in enumerate(state.voteable_keys) if key in catalog
     ]
+    # The chip list voters see, not the full vocabulary of every show: only
+    # categories actually carried by a song in tonight's playlist.
+    categories = sorted({c for info in catalog.values() for c in info["categories"]})
 
     status = state.status
     playing_key = None
@@ -151,10 +161,9 @@ def build_state(store: Store, follower: Follower) -> dict:
 
     return {
         "show": {"id": show.show_id, "name": show.name, "tagline": show.tagline,
-                 "note": show.note, "theme": show.theme,
-                 "votes_per_round": show.votes_per_round,
-                 "cooldown_songs": show.cooldown_songs},
-        "categories": store.list_categories(show.show_id, non_empty=True),
+                 "note": show.note, "theme": show.theme} if show else None,
+        "votes_per_round": store.votes_per_round(),
+        "categories": categories,
         "now_playing": {
             "key": playing_key,
             "title": playing_song.display_title if playing_song else
@@ -186,7 +195,6 @@ def _admin_show_block(store: Store, show) -> dict:
     return {
         "id": show.show_id, "name": show.name, "playlist_name": show.playlist_name,
         "tagline": show.tagline, "note": show.note, "theme": show.theme,
-        "votes_per_round": show.votes_per_round, "cooldown_songs": show.cooldown_songs,
         "active": show.active,
         "categories": store.list_categories(show.show_id),
         # include_inactive=True: a deactivated song still carries a category
@@ -334,7 +342,8 @@ def create_app(config: Config | None = None, *, store: Store | None = None,
             removed = store.retract_vote(round_id, voter, song_key)
             outcome = "retracted" if removed else "not_voted"
         else:
-            result = store.cast_vote(round_id, voter, song_key)
+            result = store.cast_vote(round_id, voter, song_key,
+                                     valid_keys=follower.state.voteable_keys)
             outcome = result.outcome
 
         payload = build_state(store, follower)
@@ -536,6 +545,25 @@ def create_app(config: Config | None = None, *, store: Store | None = None,
         enabled = bool(body.get("enabled"))
         store.set_voting_enabled(enabled)
         return {"voting_enabled": enabled}
+
+    @app.get("/api/admin/voting-rules")
+    def admin_get_voting_rules(_: None = Depends(require_admin)):
+        """Allowance and cooldown — global since 2026-08-25, one setting for
+        the whole install rather than one per show. See CLAUDE.md."""
+        return {"votes_per_round": store.votes_per_round(),
+                "cooldown_songs": store.cooldown_songs()}
+
+    @app.put("/api/admin/voting-rules")
+    def admin_set_voting_rules(body: dict = Body(...), _: None = Depends(require_admin)):
+        try:
+            if "votes_per_round" in body:
+                store.set_votes_per_round(body["votes_per_round"])
+            if "cooldown_songs" in body:
+                store.set_cooldown_songs(body["cooldown_songs"])
+        except (ValueError, TypeError) as e:
+            raise HTTPException(400, str(e))
+        return {"votes_per_round": store.votes_per_round(),
+                "cooldown_songs": store.cooldown_songs()}
 
     @app.get("/api/admin/activity")
     def admin_get_activity(_: None = Depends(require_admin)):

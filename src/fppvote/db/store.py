@@ -41,6 +41,12 @@ VOTER_SALT_KEY = "voter_salt"
 VOTING_ENABLED_KEY = "voting_enabled"
 TALLY_RESET_AT_KEY = "tally_reset_at"
 
+# Global voting rules (2026-08-25) — moved off `shows` once a show no longer
+# gatekeeps voting at all. One allowance and one cooldown for the whole
+# install, not one per show.
+VOTES_PER_ROUND_KEY = "votes_per_round"
+COOLDOWN_SONGS_KEY = "cooldown_songs"
+
 # cast_vote outcomes.
 ACCEPTED = "accepted"            # vote recorded
 MOVED = "moved"                  # allowance 1: previous vote replaced by this one
@@ -59,13 +65,18 @@ _UNSET = object()   # distinguishes "argument omitted" from "set this to None"
 # --------------------------------------------------------------------- rows
 @dataclass(frozen=True)
 class Show:
+    """A curation-side grouping — category vocabulary, header text, reconcile
+    target. NOT a runtime voting concept any more: votes_per_round and
+    cooldown_songs moved to global settings (2026-08-25, see CLAUDE.md) once
+    the voter page stopped requiring a name-matched show to vote at all.
+    schema.sql's shows.votes_per_round/cooldown_songs columns still exist on
+    disk (no destructive migration for two now-unused columns) but nothing
+    in this module reads or writes them any more."""
     show_id: str
     name: str
     playlist_name: str
     tagline: str | None
     note: str | None
-    votes_per_round: int
-    cooldown_songs: int
     theme: str
     active: bool
 
@@ -156,7 +167,6 @@ def _show(row) -> Show:
     return Show(
         show_id=row["show_id"], name=row["name"], playlist_name=row["playlist_name"],
         tagline=row["tagline"], note=row["note"],
-        votes_per_round=row["votes_per_round"], cooldown_songs=row["cooldown_songs"],
         theme=row["theme"], active=bool(row["active"]),
     )
 
@@ -242,20 +252,19 @@ class Store:
     def create_show(
         self, show_id: str, name: str, playlist_name: str, *,
         tagline: str | None = None, note: str | None = None,
-        votes_per_round: int = 3, cooldown_songs: int = 4, theme: str = "christmas",
+        theme: str = "christmas",
     ) -> bool:
         """Insert a show if it is missing. True if created, False if it existed.
 
         Insert-only on purpose. Seeding runs again every time the catalog is
-        rebuilt, and an upsert here would quietly reset votes_per_round and
-        cooldown_songs back to the defaults every time — undoing whatever was
-        set on the admin page. Use update_show to change a show.
+        rebuilt, and an upsert here would quietly reset the descriptive fields
+        every time — undoing whatever was set on the admin page. Use
+        update_show to change a show.
         """
         cur = self._q(
             "INSERT OR IGNORE INTO shows(show_id, name, playlist_name, tagline, note,"
-            " votes_per_round, cooldown_songs, theme) VALUES(?,?,?,?,?,?,?,?)",
-            (show_id, name, playlist_name, tagline, note,
-             votes_per_round, cooldown_songs, theme),
+            " theme) VALUES(?,?,?,?,?,?)",
+            (show_id, name, playlist_name, tagline, note, theme),
         )
         return cur.rowcount > 0
 
@@ -292,19 +301,16 @@ class Store:
         return "updated"
 
     def update_show(self, show_id: str, **fields) -> None:
-        """Change show settings. The admin page's write path."""
-        allowed = {"name", "playlist_name", "tagline", "note", "votes_per_round",
-                   "cooldown_songs", "theme", "active"}
+        """Change show settings. The admin page's write path.
+
+        votes_per_round/cooldown_songs are NOT here — they're global settings
+        now (set_votes_per_round/set_cooldown_songs below), not per-show."""
+        allowed = {"name", "playlist_name", "tagline", "note", "theme", "active"}
         unknown = set(fields) - allowed
         if unknown:
             raise ValueError(f"unknown show fields: {sorted(unknown)}")
         if not fields:
             return
-        if "votes_per_round" in fields and not 1 <= int(fields["votes_per_round"]) <= 3:
-            # Also a CHECK in the schema; caught here to give a usable message.
-            raise ValueError("votes_per_round must be between 1 and 3")
-        if "cooldown_songs" in fields and int(fields["cooldown_songs"]) < 0:
-            raise ValueError("cooldown_songs must not be negative")
         if "active" in fields:
             fields["active"] = int(bool(fields["active"]))
         assignments = ", ".join(f"{k} = ?" for k in fields)
@@ -677,16 +683,73 @@ class Store:
             for r in self._q(sql, (show_id,))
         ]
 
+    # --------------------------------------------------- live-playlist voting
+    # Since 2026-08-25 the voteable set comes from whatever FPP is actually
+    # playing, not the per-show curated catalog above (list_show_songs is
+    # still used for admin curation, unchanged) -- these two queries are what
+    # the follower uses to turn "these sequence keys are in tonight's
+    # playlist" into something the voter page can render. See CLAUDE.md.
+    def voteable_catalog(self, keys: Iterable[str]) -> dict[str, dict]:
+        """For each of `keys` (already resolved through aliases, already
+        filtered by the caller to entries FPP reports having real media) that
+        exists in `songs`, its display info and the UNION of its categories
+        across every show that curates it. A key with no matching song is
+        simply omitted — it just isn't voteable yet, the same "a curation gap
+        never hides a song, it just has no chips" idea as before, one level
+        earlier: here the song has not been reconciled into the catalogue at
+        all yet, so there is nothing to show.
+        """
+        keys = list(dict.fromkeys(keys))       # de-dupe, keep order
+        if not keys:
+            return {}
+        placeholders = ",".join("?" * len(keys))
+        songs = {r["song_key"]: r for r in self._q(
+            f"SELECT * FROM songs WHERE song_key IN ({placeholders})", keys)}
+        if not songs:
+            return {}
+        cats: dict[str, set[str]] = {k: set() for k in songs}
+        for r in self._q(
+            f"SELECT song_key, categories FROM show_songs "
+            f"WHERE song_key IN ({placeholders})", keys):
+            if r["song_key"] in cats:
+                cats[r["song_key"]].update(json.loads(r["categories"]))
+        return {
+            key: {"key": key, "title": song.display_title, "artist": song.artist,
+                 "year": song.year, "categories": sorted(cats[key])}
+            for key, row in songs.items()
+            for song in [_song(row)]
+        }
+
+    def show_overlap_counts(self, keys: Iterable[str]) -> dict[str, int]:
+        """For each show, how many of `keys` it curates as an active member.
+        Used only to guess "what does tonight feel like" for the header text
+        and visual theme (Follower.resolve_display_show) — not load-bearing
+        for voting, which no longer needs to resolve a show at all."""
+        keys = list(dict.fromkeys(keys))
+        if not keys:
+            return {}
+        placeholders = ",".join("?" * len(keys))
+        return {
+            r["show_id"]: r["n"] for r in self._q(
+                f"SELECT show_id, COUNT(*) AS n FROM show_songs "
+                f"WHERE song_key IN ({placeholders}) AND active = 1 "
+                f"GROUP BY show_id", keys)
+        }
+
     # -------------------------------------------------------------- rounds
+    # Global, not per-show, since 2026-08-25 -- one open round at a time for
+    # the whole install, matching votes/tallies. `rounds.show_id` stays
+    # NOT NULL in the schema and every round still records one (see
+    # Follower.resolve_display_show), but it is informational now: a best
+    # guess at "what did this feel like" for history's sake, never something
+    # a query filters by.
     def get_round(self, round_id: int) -> Round | None:
         row = self._q("SELECT * FROM rounds WHERE round_id = ?", (round_id,)).fetchone()
         return _round(row) if row else None
 
-    def current_round(self, show_id: str) -> Round | None:
+    def current_round(self) -> Round | None:
         row = self._q(
-            "SELECT * FROM rounds WHERE show_id = ? AND ended_at IS NULL "
-            "ORDER BY round_id DESC LIMIT 1",
-            (show_id,),
+            "SELECT * FROM rounds WHERE ended_at IS NULL ORDER BY round_id DESC LIMIT 1",
         ).fetchone()
         return _round(row) if row else None
 
@@ -707,10 +770,13 @@ class Store:
         continues the same round instead of starting a second one. With
         cooldown_songs >= 1 a voted-for song cannot repeat, so this only
         affects a manual replay.
+
+        `show_id` is written but not read back for gating — see the section
+        comment above.
         """
         key = self.resolve_key(song_key)
         with self.db.transaction():
-            current = self.current_round(show_id)
+            current = self.current_round()
             if current is not None and current.song_key == key:
                 return current
             if current is not None:
@@ -723,9 +789,9 @@ class Store:
             )
             return self.get_round(cur.lastrowid)
 
-    def close_open_round(self, show_id: str, winner_key: str | None = None) -> None:
+    def close_open_round(self, winner_key: str | None = None) -> None:
         """End the open round — the show stopped, or the night is over."""
-        current = self.current_round(show_id)
+        current = self.current_round()
         if current is None:
             return
         self._q(
@@ -741,42 +807,43 @@ class Store:
             (winner_key and self.resolve_key(winner_key), round_id),
         )
 
-    def recent_song_keys(self, show_id: str, limit: int) -> list[str]:
+    def recent_song_keys(self, limit: int) -> list[str]:
         """Song keys from the last `limit` rounds, most recent first."""
         return [r["song_key"] for r in self._q(
-            "SELECT song_key FROM rounds WHERE show_id = ? AND song_key IS NOT NULL "
+            "SELECT song_key FROM rounds WHERE song_key IS NOT NULL "
             "ORDER BY round_id DESC LIMIT ?",
-            (show_id, limit),
+            (limit,),
         )]
 
-    def locked_keys(self, show_id: str) -> set[str]:
+    def locked_keys(self) -> set[str]:
         """What a voter cannot vote for: playing now, plus the cooldown window.
 
         Derived from `rounds` every time rather than tracked, so it is correct
         after a restart with no state to rebuild.
         """
-        show = self.get_show(show_id)
-        cooldown = show.cooldown_songs if show else 4
-        return set(self.recent_song_keys(show_id, cooldown + 1))
+        return set(self.recent_song_keys(self.cooldown_songs() + 1))
 
-    def last_played_round(self, show_id: str) -> dict[str, int]:
+    def last_played_round(self) -> dict[str, int]:
         """song_key -> the most recent round it played in. Drives the tie-break.
 
-        Per show on purpose. A song shared between Christmas and New Year's
-        counts as never-played when the New Year's show starts, so the first
-        night rotates through the catalogue instead of inheriting December's
-        history.
+        Global since 2026-08-25 (was per-show). Paulin's call, accepting the
+        edge case knowingly: a song shared between two former "shows" can
+        stay locked into the start of a new season if it played right at the
+        end of the last one, where it used to count as never-played. He can
+        clear it by hand (a few real rounds push it out of the window) and
+        judged that simpler than resurrecting a per-show history split once
+        "which show" is no longer a clean boundary — see CLAUDE.md.
         """
         return {r["song_key"]: r["last_round"] for r in self._q(
             "SELECT song_key, MAX(round_id) AS last_round FROM rounds "
-            "WHERE show_id = ? AND song_key IS NOT NULL GROUP BY song_key",
-            (show_id,),
+            "WHERE song_key IS NOT NULL GROUP BY song_key",
         )}
 
     # --------------------------------------------------------------- votes
     def cast_vote(
         self, round_id: int, voter_hash: str, song_key: str, *,
         allowance: int | None = None, locked: Iterable[str] | None = None,
+        valid_keys: Iterable[str] | None = None,
     ) -> VoteResult:
         """Record one vote. Atomic: check and insert happen in one transaction.
 
@@ -788,6 +855,15 @@ class Store:
         At allowance 1 a vote for a different song MOVES the existing one
         rather than being refused: with one vote each and 1-3 people watching,
         refusing the change is just a worse experience for no gain.
+
+        `valid_keys`, if given, is "what's actually voteable right now" —
+        computed by the follower from the live FPP playlist's content
+        (2026-08-25; see CLAUDE.md). This store no longer decides that from a
+        static per-show membership table: a song not currently in the
+        playing playlist is excluded by simply not being in this set,
+        whether it's from a different occasion or was just deactivated by a
+        reconcile. Omitted, the check is skipped — used by tests that exercise
+        the allowance/lock/tie-break logic without a live playlist.
         """
         with self.db.transaction():
             rnd = self.get_round(round_id)
@@ -797,25 +873,20 @@ class Store:
             key = self.resolve_key(song_key)
             # show_id comes from the round, never from the caller. votes.show_id
             # is denormalised and this is what stops it drifting from
-            # rounds.show_id.
+            # rounds.show_id. Informational only now -- see current_round.
             show_id = rnd.show_id
 
-            member = self._q(
-                "SELECT active FROM show_songs WHERE show_id = ? AND song_key = ?",
-                (show_id, key),
-            ).fetchone()
-            if member is None:
-                exists = self._q("SELECT 1 FROM songs WHERE song_key = ?",
-                                 (key,)).fetchone()
-                return VoteResult(NOT_IN_SHOW if exists else UNKNOWN_SONG, key)
-            if not member["active"]:
+            exists = self._q("SELECT 1 FROM songs WHERE song_key = ?",
+                             (key,)).fetchone()
+            if exists is None:
+                return VoteResult(UNKNOWN_SONG, key)
+            if valid_keys is not None and key not in set(valid_keys):
                 return VoteResult(NOT_IN_SHOW, key)
 
             if allowance is None:
-                show = self.get_show(show_id)
-                allowance = show.votes_per_round if show else 3
+                allowance = self.votes_per_round()
             if locked is None:
-                locked = self.locked_keys(show_id)
+                locked = self.locked_keys()
 
             existing = [r["song_key"] for r in self._q(
                 "SELECT song_key FROM votes WHERE round_id = ? AND voter_hash = ? "
@@ -893,15 +964,12 @@ class Store:
         Returning None rather than picking something is deliberate — the
         service lets the playlist carry on by itself.
         """
-        rnd = self.get_round(round_id)
-        if rnd is None:
-            return None
         row = self._q(
             """
             SELECT v.song_key,
                    COUNT(*) AS votes,
                    COALESCE((SELECT MAX(r.round_id) FROM rounds r
-                             WHERE r.show_id = ? AND r.song_key = v.song_key), -1)
+                             WHERE r.song_key = v.song_key), -1)
                        AS last_played,
                    s.title AS title
             FROM votes v
@@ -911,9 +979,34 @@ class Store:
             ORDER BY votes DESC, last_played ASC, title ASC
             LIMIT 1
             """,
-            (rnd.show_id, round_id),
+            (round_id,),
         ).fetchone()
         return row["song_key"] if row else None
+
+    # --------------------------------------------------------- voting rules
+    def votes_per_round(self) -> int:
+        """The vote allowance, global across every show (2026-08-25) — see
+        the Show dataclass's own docstring for why this moved off `shows`."""
+        return int(self.get_setting(VOTES_PER_ROUND_KEY, "3"))
+
+    def set_votes_per_round(self, n: int) -> None:
+        n = int(n)
+        if not 1 <= n <= 3:
+            # The 1-3 allowance is a product rule (CLAUDE.md section 7), not
+            # an arbitrary bound -- caught here for a usable error message.
+            raise ValueError("votes_per_round must be between 1 and 3")
+        self.set_setting(VOTES_PER_ROUND_KEY, n)
+
+    def cooldown_songs(self) -> int:
+        """How many recently-played songs stay locked, global across every
+        show (2026-08-25)."""
+        return int(self.get_setting(COOLDOWN_SONGS_KEY, "4"))
+
+    def set_cooldown_songs(self, n: int) -> None:
+        n = int(n)
+        if n < 0:
+            raise ValueError("cooldown_songs must not be negative")
+        self.set_setting(COOLDOWN_SONGS_KEY, n)
 
     # ----------------------------------------------------------- admin tally
     # Everything below is deliberately GLOBAL, not scoped by show_id or
