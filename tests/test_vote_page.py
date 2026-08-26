@@ -88,6 +88,21 @@ def test_the_page_says_what_it_stores():
     assert "random id" in body
 
 
+def test_the_privacy_notice_is_a_popup_not_always_on_screen():
+    """2026-08-25: the full paragraph used to sit permanently in the footer;
+    now it's a "Privacy Notice" link that opens a modal with the same text,
+    so the footer stays short."""
+    assert 'id="privacyBtn"' in HTML
+    assert ">Privacy Notice<" in HTML
+    assert 'id="privacyOverlay" hidden' in HTML, "must start closed"
+    assert 'id="privacyCloseBtn"' in HTML
+    assert "privacyOverlay.hidden = false" in SCRIPT
+    assert "privacyOverlay.hidden = true" in SCRIPT
+    # closable via backdrop click and Escape, not just the Close button
+    assert "e.target === privacyOverlay" in SCRIPT
+    assert 'e.key === "Escape"' in SCRIPT
+
+
 def test_the_token_lives_in_localstorage_so_it_can_be_inspected():
     assert 'localStorage.getItem(TOKEN_KEY)' in SCRIPT
     # and the page survives private mode, where localStorage throws

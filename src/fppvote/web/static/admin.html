@@ -27,6 +27,7 @@ body{font-family:'Outfit',-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,san
 .wrap{max-width:1040px;margin:0 auto;padding:22px 18px 60px}
 a{color:var(--accent)}
 h1{font-size:21px;font-weight:600;margin:0}
+.voterlink{font-size:13px;font-weight:500;margin-left:14px;vertical-align:2px}
 h2{font-size:15px;font-weight:600;margin:0 0 12px;letter-spacing:-.01em}
 .topbar{display:flex;align-items:center;justify-content:space-between;gap:12px;
   padding-bottom:16px;margin-bottom:18px;border-bottom:1px solid var(--stroke);flex-wrap:wrap}
@@ -154,7 +155,9 @@ th.num{text-align:right}
 <div class="wrap">
 
   <header class="topbar">
-    <h1>FPP Voting <span class="adminbadge">Admin</span></h1>
+    <h1>FPP Voting <span class="adminbadge">Admin</span>
+      <a class="linkbtn voterlink" id="voterPageLink" href="/" target="_blank" rel="noopener">Open voter page ↗</a>
+    </h1>
     <div class="tokenbox">
       <span id="tokenStatus">no admin token set</span>
       <button class="linkbtn" id="setTokenBtn" type="button">Set admin token</button>

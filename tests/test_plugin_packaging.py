@@ -153,9 +153,11 @@ def test_the_systemd_unit_restarts_on_failure():
 
 # ---------------------------------------------------------------------- menu
 def test_menu_entries_point_at_routes_the_service_actually_serves():
+    """FPP's own menu links straight to /admin (2026-08-25: Paulin wanted one
+    admin-facing entry point, not a separate voter-page link too) — the
+    voter page is reachable from inside admin.html instead, checked in
+    test_admin_page.py."""
     menu = (ROOT / "menu.inc").read_text()
-    assert '$base/"' in menu or "$base/'" in menu \
-        or '"$base/"' in menu, "no link to the voter page"
     assert "$base/admin" in menu, "no link to the admin page"
 
 

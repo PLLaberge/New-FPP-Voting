@@ -121,3 +121,13 @@ def test_saving_header_text_does_not_also_resubmit_the_rest_of_settings():
     assert "playlist_name" in settings_body
     assert not re.search(r'(?<![a-z_])name:', settings_body)
     assert "note:" not in settings_body
+
+
+# ------------------------------------------------------------- voter page link
+def test_the_voter_page_is_reachable_from_inside_admin():
+    """2026-08-25: FPP's own Status menu now points straight at /admin (see
+    menu.inc) instead of the voter page, so the voter page's URL has to be
+    reachable from inside the admin page itself, not just from FPP's menu."""
+    assert 'id="voterPageLink"' in HTML
+    assert 'href="/"' in HTML
+    assert 'target="_blank"' in HTML

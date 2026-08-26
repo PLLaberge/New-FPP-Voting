@@ -18,14 +18,8 @@ $base = "http://$hostOnly:$port";
 
 $menuEntries = Array(
 	Array(
-		'text' => 'Voting - Open Voting Page',
-		'type' => 'status',
-		'page' => "$base/",
-		'wrap' => 0
-	),
-	Array(
 		'text' => 'Voting - Admin',
-		'type' => 'content',
+		'type' => 'status',
 		'page' => "$base/admin",
 		'wrap' => 0
 	),
@@ -36,6 +30,10 @@ $menuEntries = Array(
 		'wrap' => 0
 	)
 );
+# The voter page itself (formerly its own Status entry here) is now a link
+# inside /admin instead — see web/static/admin.html. One admin-facing entry
+# point from FPP's menu, per Paulin's 2026-08-25 request, rather than two
+# links that both led somewhere voting-related.
 
 ##############################################################################
 # Display the menu entries for this plugin.

@@ -286,7 +286,11 @@ Python enforces PEP 668 externally-managed environments.
    `menu.inc` links to the running service by absolute `http://` URL rather
    than a PHP page, since the plugin has no PHP UI of its own — FPP renders
    any `menu.inc` entry beginning `http(s)://` as a plain external link
-   instead of routing it through `plugin.php`.
+   instead of routing it through `plugin.php`. FPP's Status menu points
+   straight at `/admin` (2026-08-25) rather than the voter page — Paulin
+   wanted one admin-facing entry point from FPP, not two voting-related
+   links. The voter page's URL lives inside `/admin` instead
+   (`#voterPageLink`), not anywhere in FPP's own menu.
 
    **Still open, and Paulin's call, not something to guess at:** the domain
    for the tunnel. `docs/DEPLOY.md` is written generically

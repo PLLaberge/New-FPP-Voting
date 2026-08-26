@@ -275,6 +275,21 @@ body[data-show="nye"] .controls{background:linear-gradient(180deg,rgba(5,9,16,.9
 
 /* ---------- identity note ---------- */
 .privacy{margin-top:14px;font-size:12px;line-height:1.55;color:var(--text-3)}
+.privacy .linkbtn{font-size:12px}
+
+/* ---------- privacy notice popup ---------- */
+.modal-overlay{position:fixed;inset:0;z-index:100;display:flex;align-items:center;
+  justify-content:center;padding:20px;background:rgba(4,7,14,.72);
+  backdrop-filter:blur(4px);-webkit-backdrop-filter:blur(4px)}
+.modal-overlay[hidden]{display:none}
+.modal{max-width:400px;width:100%;background:#0c1224;border:1px solid var(--stroke-hi);
+  border-radius:var(--radius);padding:26px 24px;box-shadow:var(--shadow)}
+.modal h2{margin:0 0 12px;font-size:18px;font-weight:600;color:var(--text)}
+.modal p{margin:0 0 20px;font-size:14px;line-height:1.6;color:var(--text-2);font-weight:300}
+.modal .btn-close{font:inherit;font-size:13.5px;font-weight:500;padding:9px 18px;
+  border-radius:100px;border:1px solid var(--stroke-hi);background:var(--card);
+  color:var(--text);cursor:pointer;transition:all .18s var(--ease)}
+.modal .btn-close:hover{background:var(--card-hi);border-color:var(--stroke-hi)}
 </style>
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect x='5' y='12' width='5' height='14' rx='2.5' fill='%23f6c96b'/%3E%3Crect x='13.5' y='5' width='5' height='21' rx='2.5' fill='%23f6c96b'/%3E%3Crect x='22' y='15' width='5' height='11' rx='2.5' fill='%23f6c96b'/%3E%3C/svg%3E">
 </head>
@@ -390,10 +405,7 @@ body[data-show="nye"] .controls{background:linear-gradient(180deg,rgba(5,9,16,.9
     <br><span class="review" id="reviewNote"></span>
     <div class="livestat" id="liveStat"><span class="led"></span><span id="liveMsg">starting</span></div>
     <p class="privacy">
-      Your votes are tied to a random ID this browser made up and keeps for the season.
-      There is no account, no name, and no IP address — the show only ever sees a
-      scrambled version of that ID, so it can tell voters apart without knowing who
-      anyone is.
+      <button class="linkbtn" id="privacyBtn" type="button">Privacy Notice</button>
     </p>
   </footer>
 </div>
@@ -401,6 +413,19 @@ body[data-show="nye"] .controls{background:linear-gradient(180deg,rgba(5,9,16,.9
 <div class="toast" id="toast" role="status" aria-live="polite">
   <span class="tico" id="toastIco"></span>
   <span id="toastMsg">Vote counted</span>
+</div>
+
+<div class="modal-overlay" id="privacyOverlay" hidden>
+  <div class="modal" role="dialog" aria-modal="true" aria-labelledby="privacyTitle">
+    <h2 id="privacyTitle">Privacy Notice</h2>
+    <p>
+      Your votes are tied to a random ID this browser made up and keeps for the season.
+      There is no account, no name, and no IP address — the show only ever sees a
+      scrambled version of that ID, so it can tell voters apart without knowing who
+      anyone is.
+    </p>
+    <button class="btn-close" id="privacyCloseBtn" type="button">Close</button>
+  </div>
 </div>
 
 <script>
@@ -1030,6 +1055,14 @@ $("#chipPrev").onclick=()=>scrollChips(-1);
 $("#chipNext").onclick=()=>scrollChips(1);
 $("#chips").addEventListener("scroll",updateChipNav,{passive:true});
 document.querySelectorAll("#seg button").forEach(b=> b.onclick=()=>{ state.sort=b.dataset.sort; render(); });
+
+/* ---------- privacy notice popup ---------- */
+const privacyOverlay = $("#privacyOverlay");
+$("#privacyBtn").onclick = () => { privacyOverlay.hidden = false; };
+$("#privacyCloseBtn").onclick = () => { privacyOverlay.hidden = true; };
+privacyOverlay.addEventListener("click", e => { if(e.target === privacyOverlay) privacyOverlay.hidden = true; });
+document.addEventListener("keydown", e => { if(e.key === "Escape" && !privacyOverlay.hidden) privacyOverlay.hidden = true; });
+
 // A phone that was asleep has a stale page and a dead socket; catch up on wake.
 document.addEventListener("visibilitychange",()=>{ if(!document.hidden) refresh(); });
 
