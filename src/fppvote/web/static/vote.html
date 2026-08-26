@@ -37,21 +37,13 @@ body{
   background:var(--bg-0);color:var(--text);font-weight:400;line-height:1.45;
   min-height:100dvh;overflow-x:hidden;-webkit-font-smoothing:antialiased;
 }
-.bg{position:fixed;inset:0;z-index:-2;transition:background .6s var(--ease);background:
+/* Same background for every theme, deliberately (Paulin, 2026-08-25) — only
+   the accent color and the floating particles change between shows. */
+.bg{position:fixed;inset:0;z-index:-2;background:
    radial-gradient(1100px 700px at 12% -10%, #1d2a52 0%, transparent 60%),
    radial-gradient(900px 620px at 100% 0%, #35204a 0%, transparent 55%),
    radial-gradient(800px 700px at 50% 110%, #123a3a 0%, transparent 60%),
    linear-gradient(180deg,#080d1b 0%,#0a1022 45%,#070b16 100%);}
-body[data-show="halloween"] .bg{background:
-   radial-gradient(1100px 700px at 12% -10%, #4a2410 0%, transparent 60%),
-   radial-gradient(900px 620px at 100% 0%, #3a1840 0%, transparent 55%),
-   radial-gradient(800px 700px at 50% 110%, #2a1a06 0%, transparent 60%),
-   linear-gradient(180deg,#140c08 0%,#160f0c 45%,#0d0805 100%);}
-body[data-show="nye"] .bg{background:
-   radial-gradient(1100px 700px at 12% -10%, #16305c 0%, transparent 60%),
-   radial-gradient(900px 620px at 100% 0%, #21324f 0%, transparent 55%),
-   radial-gradient(800px 700px at 50% 110%, #10263f 0%, transparent 60%),
-   linear-gradient(180deg,#060c16 0%,#08111f 45%,#050910 100%);}
 canvas#snow{position:fixed;inset:0;z-index:-1;pointer-events:none;opacity:.5}
 
 .wrap{max-width:680px;margin:0 auto;padding:0 16px calc(40px + env(safe-area-inset-bottom))}
@@ -134,8 +126,6 @@ canvas#snow{position:fixed;inset:0;z-index:-1;pointer-events:none;opacity:.5}
   background:linear-gradient(180deg,rgba(7,11,22,.97) 62%,rgba(7,11,22,0) 100%);
   backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px)}
 .controls[hidden]{display:none}
-body[data-show="halloween"] .controls{background:linear-gradient(180deg,rgba(13,8,5,.97) 62%,rgba(13,8,5,0) 100%)}
-body[data-show="nye"] .controls{background:linear-gradient(180deg,rgba(5,9,16,.97) 62%,rgba(5,9,16,0) 100%)}
 .search{position:relative;margin-bottom:9px}
 .search .ico{position:absolute;left:14px;top:50%;transform:translateY(-50%);color:var(--text-3);pointer-events:none;line-height:0}
 .search input{width:100%;padding:13px 40px 13px 42px;font:inherit;font-size:16px;color:var(--text);
@@ -1032,28 +1022,85 @@ function hardRender(data){
   applyState(data);
 }
 
-/* ---------- snow / embers ---------- */
+/* ---------- snow / ghosts / fireworks ----------
+   One canvas, three unrelated animations picked by the current theme —
+   simplest to keep as one closure since they share the resize handling and
+   only one is ever drawn at a time. */
+function drawGhost(ctx, cx, cy, r, alpha){
+  ctx.save();
+  ctx.globalAlpha = alpha;
+  ctx.fillStyle = "rgba(235,238,245,.9)";
+  ctx.beginPath();
+  ctx.arc(cx, cy, r, Math.PI, 0, false);           // domed head
+  ctx.lineTo(cx+r, cy+r*1.15);
+  const humps = 3, hw = (r*2)/humps;                // wavy hem, three scallops
+  for(let i=0;i<humps;i++){
+    const midX = cx+r - hw*(i+.5), endX = cx+r - hw*(i+1);
+    ctx.quadraticCurveTo(midX, cy+r*1.45, endX, cy+r*1.15);
+  }
+  ctx.closePath();
+  ctx.fill();
+  ctx.fillStyle = "rgba(30,22,15,.8)";
+  ctx.beginPath(); ctx.arc(cx-r*.35, cy-r*.05, r*.13, 0, 6.283); ctx.fill();
+  ctx.beginPath(); ctx.arc(cx+r*.35, cy-r*.05, r*.13, 0, 6.283); ctx.fill();
+  ctx.restore();
+}
 (function particles(){
-  const c=document.getElementById("snow"), x=c.getContext("2d");
-  let bits=[],w,h;
+  const c=document.getElementById("snow"), ctx=c.getContext("2d");
+  let snow=[], ghosts=[], fireworks=[], w, h;
   function size(){
     w=c.width=innerWidth; h=c.height=innerHeight;
-    bits=Array.from({length:Math.round(w/22)},()=>({
+    snow=Array.from({length:Math.round(w/22)},()=>({
       x:Math.random()*w,y:Math.random()*h,r:Math.random()*1.9+.5,
       d:Math.random()*.5+.18,s:Math.random()*.5+.15}));
+    ghosts=Array.from({length:Math.max(4,Math.round(w/150))},()=>({
+      x:Math.random()*w,y:Math.random()*h,r:Math.random()*10+14,
+      d:Math.random()*.12+.05,s:Math.random()*.4+.15,phase:Math.random()*6.283}));
   }
   size(); addEventListener("resize",()=>{size();updateChipNav();});
+
+  function spawnFirework(){
+    const n=14;
+    return {
+      x:w*.15+Math.random()*w*.7, y:h*.12+Math.random()*h*.4, t:0,
+      gold: Math.random()<.45,
+      angles: Array.from({length:n},(_,i)=> (i/n)*6.283 + Math.random()*.25),
+    };
+  }
+
   (function draw(){
-    x.clearRect(0,0,w,h);
+    ctx.clearRect(0,0,w,h);
     const show=document.body.dataset.show;
-    x.fillStyle = show==="halloween" ? "rgba(255,170,90,.55)"
-                : show==="nye"       ? "rgba(180,205,255,.6)"
-                                     : "rgba(255,255,255,.75)";
-    for(const f of bits){
-      x.beginPath(); x.arc(f.x,f.y,f.r,0,6.283); x.fill();
-      if(show==="halloween"){ f.y-=f.d*.8; if(f.y<-4){f.y=h+4;f.x=Math.random()*w;} }
-      else { f.y+=f.d; if(f.y>h){f.y=-4;f.x=Math.random()*w;} }
-      f.x+=Math.sin(f.y/45)*f.s;
+
+    if(show==="halloween"){
+      for(const g of ghosts){
+        g.phase += .015;
+        drawGhost(ctx, g.x+Math.sin(g.y/60)*g.s*10, g.y+Math.sin(g.phase)*6, g.r, .5);
+        g.y -= g.d;
+        if(g.y < -g.r*2){ g.y = h+g.r*2; g.x = Math.random()*w; }
+      }
+    } else if(show==="nye"){
+      // Slowly exploding fireworks — a handful of sparks drifting outward
+      // from a point and fading, one new burst every second or so.
+      if(fireworks.length<3 && Math.random()<.012) fireworks.push(spawnFirework());
+      fireworks = fireworks.filter(f=>{
+        f.t += .006;
+        const radius=f.t*100, alpha=Math.max(0,1-f.t*1.05);
+        ctx.fillStyle = f.gold ? `rgba(246,201,107,${alpha})` : `rgba(180,205,255,${alpha})`;
+        for(const a of f.angles){
+          ctx.beginPath();
+          ctx.arc(f.x+Math.cos(a)*radius, f.y+Math.sin(a)*radius, 1.6, 0, 6.283);
+          ctx.fill();
+        }
+        return f.t < 1.15;
+      });
+    } else {
+      ctx.fillStyle="rgba(255,255,255,.75)";
+      for(const f of snow){
+        ctx.beginPath(); ctx.arc(f.x,f.y,f.r,0,6.283); ctx.fill();
+        f.y+=f.d; if(f.y>h){f.y=-4;f.x=Math.random()*w;}
+        f.x+=Math.sin(f.y/45)*f.s;
+      }
     }
     requestAnimationFrame(draw);
   })();
