@@ -113,7 +113,6 @@ tbody tr.needs-review td:first-child{box-shadow:inset 3px 0 0 0 var(--accent)}
 .tag{display:inline-block;padding:1px 7px;border-radius:5px;font-size:10.5px}
 .tag.inactive{background:rgba(255,255,255,.06);color:var(--text-3)}
 .tag.review{background:color-mix(in srgb,var(--accent) 16%,transparent);color:var(--accent)}
-.tag.suggested{background:color-mix(in srgb,var(--green) 14%,transparent);color:var(--green)}
 .empty-state{text-align:center;padding:40px;color:var(--text-3)}
 
 /* ---------- header ---------- */
@@ -215,6 +214,22 @@ th.num{text-align:right}
     <button class="btn" id="backupBtn" type="button">Download backup</button>
   </div>
 
+  <div class="card">
+    <h2>Categories</h2>
+    <p class="hint">One set of chips for the whole install, not per show — a song carries the
+      same categories no matter which playlist it's currently in. Order here is chip order.
+      Removing a category that songs still carry does not touch those songs — it just stops
+      rendering a chip for them, so check the warning below before saving.</p>
+    <div class="catlist" id="catList"></div>
+    <div class="addcat">
+      <input type="text" id="newCat" placeholder="New category name">
+      <button class="btn small" id="addCatBtn" type="button">Add</button>
+    </div>
+    <button class="btn primary" id="saveCatsBtn" type="button">Save category list</button>
+    <span class="msg" id="catsMsg"></span>
+    <div class="warn-box" id="orphanWarning" hidden></div>
+  </div>
+
   <nav class="showtabs" id="showTabs" role="tablist" aria-label="Shows"></nav>
 
   <div class="empty-state" id="loadingMsg">Loading shows…</div>
@@ -244,21 +259,6 @@ th.num{text-align:right}
       </div>
       <button class="btn primary" id="saveSettingsBtn" type="button">Save settings</button>
       <span class="msg" id="settingsMsg"></span>
-    </div>
-
-    <div class="card">
-      <h2>Categories</h2>
-      <p class="hint">The chips voters see for this show. Order here is chip order. Removing a
-        category that songs still carry does not touch those songs — it just stops rendering a
-        chip for them, so check the warning below before saving.</p>
-      <div class="catlist" id="catList"></div>
-      <div class="addcat">
-        <input type="text" id="newCat" placeholder="New category name">
-        <button class="btn small" id="addCatBtn" type="button">Add</button>
-      </div>
-      <button class="btn primary" id="saveCatsBtn" type="button">Save category list</button>
-      <span class="msg" id="catsMsg"></span>
-      <div class="warn-box" id="orphanWarning" hidden></div>
     </div>
 
     <div class="card">
@@ -360,13 +360,15 @@ async function downloadBlob(path, filename){
    live without a manual refresh during a show. */
 async function loadGlobalPanel(){
   try{
-    const [tally, activity, rules] = await Promise.all([
+    const [tally, activity, rules, cats] = await Promise.all([
       api("/api/admin/tally"), api("/api/admin/activity"), api("/api/admin/voting-rules"),
+      api("/api/admin/categories"),
     ]);
     renderVoting(tally);
     renderTally(tally);
     renderActivity(activity.votes);
     renderVotingRules(rules);
+    adoptCategories(cats);
   }catch(e){
     // Quiet failure on a background poll — the token prompt (if that's the
     // cause) already surfaced itself via api()'s own 401 handling.
@@ -479,6 +481,21 @@ let selectedId = null;
 let songs = [];
 let songQuery = "";
 let editableCats = [];     // working copy while editing the vocabulary
+let categoryVocabulary = [];   // last-saved vocabulary — what song chips offer
+let categoryCounts = {};   // global (2026-08-26) — not per show any more
+let categoriesLoaded = false;   // renderCatList mid-edit must not be clobbered
+
+/* ---------- categories (global, 2026-08-26 — see CLAUDE.md) ---------- */
+function adoptCategories(cats){
+  categoryVocabulary = cats.categories;
+  categoryCounts = cats.counts;
+  if(!categoriesLoaded){         // don't stomp an in-progress edit on a background poll
+    editableCats = [...cats.categories];
+    categoriesLoaded = true;
+  }
+  renderCatList(categoryCounts);
+  renderSongRows();              // chip choices follow the vocabulary
+}
 
 /* ---------- shows ---------- */
 async function loadShows(){
@@ -523,11 +540,6 @@ async function selectShow(id){
   $("#f_active").checked = !!show.active;
   setText($("#settingsMsg"), "");
   setText($("#headerMsg"), "");
-
-  editableCats = [...show.categories];
-  renderCatList(show.category_counts || {});
-  setText($("#catsMsg"), "");
-  $("#orphanWarning").hidden = true;
 
   $("#reconcileResult").hidden = true;
   setText($("#reconcileMsg"), "");
@@ -602,17 +614,16 @@ $("#addCatBtn").onclick = () => {
   if(!name || editableCats.includes(name)) return;
   editableCats.push(name);
   input.value = "";
-  renderCatList(shows.find(s=>s.id===selectedId).category_counts || {});
+  renderCatList(categoryCounts);
 };
 $("#saveCatsBtn").onclick = async () => {
   const msg = $("#catsMsg");
   try{
-    const result = await api("/api/admin/shows/" + encodeURIComponent(selectedId) + "/categories", {
+    const result = await api("/api/admin/categories", {
       method:"PUT", body: JSON.stringify({categories: editableCats}),
     });
-    const show = shows.find(s=>s.id===selectedId);
-    show.categories = result.categories;
-    show.category_counts = result.counts;
+    categoryVocabulary = result.categories;
+    categoryCounts = result.counts;
     editableCats = [...result.categories];
     renderCatList(result.counts);
     msg.className = "msg ok"; setText(msg, "Saved");
@@ -650,7 +661,7 @@ $("#reconcileBtn").onclick = async () => {
     const dl = el("dl","");
     const rows = [["Added", r.added.length], ["Reactivated", r.reactivated.length],
                   ["Deactivated", r.deactivated.length], ["Unchanged", r.unchanged],
-                  ["Suggested categories", r.suggested.length], ["Still need review", r.needs_review.length]];
+                  ["Still need review", r.needs_review.length]];
     rows.forEach(([k,v])=>{ const dt=el("dt",""); dt.textContent=k; const dd=el("dd",""); dd.textContent=v; dl.append(dt,dd); });
     box.appendChild(dl);
     if(r.needs_review.length){
@@ -688,8 +699,7 @@ function visibleSongs(){
 
 function renderSongRows(){
   const body = $("#songRows"); body.innerHTML = "";
-  const show = shows.find(s=>s.id===selectedId);
-  const vocab = show ? show.categories : [];
+  const vocab = categoryVocabulary;    // global vocabulary (2026-08-26), not per show
   const list = visibleSongs();
   if(!list.length){
     const tr = el("tr",""); const td = el("td",""); td.colSpan = 5;
@@ -728,7 +738,6 @@ function renderSongRows(){
     const badges = el("div","status-badges");
     if(!s.active){ const t=el("span","tag inactive"); t.textContent="inactive"; badges.appendChild(t); }
     if(s.needs_review){ const t=el("span","tag review"); t.textContent="needs review"; badges.appendChild(t); }
-    if(s.source === "suggested"){ const t=el("span","tag suggested"); t.textContent="suggested"; badges.appendChild(t); }
     statusTd.appendChild(badges);
     tr.appendChild(statusTd);
 
@@ -746,8 +755,7 @@ async function toggleCategory(song, cat, chipEl){
       "/api/admin/shows/" + encodeURIComponent(selectedId) + "/songs/" + encodeURIComponent(song.key) + "/categories",
       {method:"PUT", body: JSON.stringify({categories: next})});
     Object.assign(song, r.song);
-    const show = shows.find(s=>s.id===selectedId);
-    if(show) show.category_counts = r.counts;
+    categoryCounts = r.counts;
     renderSongRows();
     renderCatList(r.counts);
   }catch(e){

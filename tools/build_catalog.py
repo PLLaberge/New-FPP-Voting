@@ -4,23 +4,20 @@ from pathlib import Path
 sys.path[:0] = [str(Path(__file__).resolve().parents[1] / "src"), str(Path(__file__).resolve().parents[1])]
 from tests.fixtures.playlists import CHRISTMAS, NYE
 from fppvote.catalog.parser import parse_playlist
-from fppvote.catalog.metadata import (META, CHRISTMAS_CATS, NYE_CATS, SHOW_DEFS,
+from fppvote.catalog.metadata import (META, CATEGORIES, SHOW_DEFS, SONG_CATEGORIES,
                                       PREVIOUSLY_LISTED_NOT_IN_PLAYLIST)
 
-# Show copy and category order come from SHOW_DEFS so this script and
-# init_db.py cannot drift; only the playlist entries and the category
-# assignments are joined in here.
-SHOWS = {
-  sid: {**SHOW_DEFS[sid], "entries": entries, "cats": cats,
-        "order": SHOW_DEFS[sid]["categories"]}
-  for sid, entries, cats in (("christmas", CHRISTMAS, CHRISTMAS_CATS),
-                             ("nye", NYE, NYE_CATS))
-}
+# Show copy comes from SHOW_DEFS so this script and init_db.py cannot drift.
+# Categories are global now (2026-08-26, see CLAUDE.md) -- CATEGORIES/
+# SONG_CATEGORIES, not one vocabulary per show -- only the playlist entries
+# are joined in per show here.
+PLAYLISTS = {"christmas": CHRISTMAS, "nye": NYE}
 
 catalog, shows, report = {}, {}, []
 
-for sid, cfg in SHOWS.items():
-    rows, issues = parse_playlist(cfg["entries"])
+for sid, entries in PLAYLISTS.items():
+    cfg = SHOW_DEFS[sid]
+    rows, issues = parse_playlist(entries)
     members = []
     for r in rows:
         key = r["key"]
@@ -32,30 +29,32 @@ for sid, cfg in SHOWS.items():
         prev = catalog.get(key)
         if prev and prev["title"] != r["title"]:
             report.append(("conflict", sid, f"{key}: '{prev['title']}' vs '{r['title']}'"))
-        catalog[key] = {"title": r["title"], "artist": artist, "year": year,
-                        "sequence": r["sequence"], "media": r["media"], "length": r["length"]}
-        cats = cfg["cats"].get(key)
+        cats = SONG_CATEGORIES.get(key)
         if cats is None:
             cats = []
             report.append(("needs_categories", sid, f"{key} ({r['title']})"))
+        catalog[key] = {"title": r["title"], "artist": artist, "year": year,
+                        "sequence": r["sequence"], "media": r["media"], "length": r["length"],
+                        "categories": cats}
         members.append({"key": key, "categories": cats})
         if artist is None:
             report.append(("needs_artist", sid, f"{key} ({r['title']})"))
         if year is None:
             report.append(("needs_year", sid, f"{key} ({r['title']})"))
-    shows[sid] = {"name":cfg["name"],"tagline":cfg["tagline"],"note":cfg["note"],
-                  "cats":cfg["order"],"songs":members}
+    shows[sid] = {"name": cfg["name"], "tagline": cfg["tagline"], "note": cfg["note"],
+                 "songs": members}
     for i in issues:
         report.append((i["type"], sid, i["detail"]))
     for t in PREVIOUSLY_LISTED_NOT_IN_PLAYLIST.get(sid, []):
         report.append(("in_list_not_in_playlist", sid, t))
 
 _h = SHOW_DEFS["halloween"]
-shows["halloween"] = {"name":_h["name"],"tagline":_h["tagline"],
-                      "note":_h["note"],"cats":_h["categories"],"songs":[]}
+shows["halloween"] = {"name": _h["name"], "tagline": _h["tagline"],
+                      "note": _h["note"], "songs": []}
 
 OUT = Path(__file__).resolve().parents[1] / "data" / "catalog.json"
-json.dump({"songs":catalog,"shows":shows}, open(OUT,"w"), indent=1, ensure_ascii=False)
+json.dump({"songs": catalog, "categories": CATEGORIES, "shows": shows},
+         open(OUT, "w"), indent=1, ensure_ascii=False)
 
 xk = {m["key"] for m in shows["christmas"]["songs"]}
 nk = {m["key"] for m in shows["nye"]["songs"]}

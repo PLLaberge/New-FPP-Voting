@@ -7,15 +7,10 @@ entirely the wrong reason.
 """
 import pytest
 
-from fppvote.catalog.metadata import CHRISTMAS_CATS, META, NYE_CATS, SHOW_DEFS
+from fppvote.catalog.metadata import CATEGORIES, META, SONG_CATEGORIES
 from fppvote.catalog.parser import parse_playlist
 from fppvote.db import Store
 from tests.fixtures.playlists import CHRISTMAS, NYE
-
-# Taken from SHOW_DEFS rather than restated, so the fixtures cannot drift from
-# the vocabulary the seed script actually installs.
-XCATS = SHOW_DEFS["christmas"]["categories"]
-NCATS = SHOW_DEFS["nye"]["categories"]
 
 
 def christmas_rows(exclude=()):
@@ -39,10 +34,13 @@ def store(db_path):
 
 @pytest.fixture
 def christmas(store):
-    """A seeded but empty Christmas show."""
+    """A seeded but empty Christmas show. Also seeds the global category
+    vocabulary (2026-08-26, see CLAUDE.md) — categories are no longer per
+    show, so this is where every fixture built on top of `christmas` gets a
+    vocabulary to assign against."""
     store.create_show("christmas", "Christmas 2025", "Christmas 2025",
                       tagline="Tap any song. The winner plays next.")
-    store.set_show_categories("christmas", XCATS)
+    store.set_category_vocabulary(CATEGORIES)
     return store
 
 
@@ -54,23 +52,24 @@ def synced(christmas):
     return christmas
 
 
-def _curate(store, show_id, assignments):
-    """Apply curated categories, skipping any outside the show's vocabulary.
+def _curate(store, assignments):
+    """Apply curated categories, skipping any outside the vocabulary.
 
-    The skip exists because the real Christmas data assigns "Instrumental" to
-    300-violin-orchestra and that is a New Year's chip — see
-    test_a_category_outside_the_vocabulary_is_refused. These fixtures model a
-    VALID curated state, so they filter rather than carry the error in.
+    Global since 2026-08-26 — no show_id. The skip exists because a song not
+    yet synced (e.g. an NYE-only key when only Christmas has been synced)
+    simply has no row to update; set_categories no-ops rather than erroring.
     """
-    valid = set(store.list_categories(show_id))
+    valid = set(store.list_categories())
     for key, cats in assignments.items():
-        store.set_categories(show_id, key, [c for c in cats if c in valid])
+        if store.get_song(key) is None:
+            continue
+        store.set_categories(key, [c for c in cats if c in valid])
 
 
 @pytest.fixture
 def curated(synced):
     """Christmas, synced and fully categorised — the steady state."""
-    _curate(synced, "christmas", CHRISTMAS_CATS)
+    _curate(synced, SONG_CATEGORIES)
     return synced
 
 
@@ -78,10 +77,9 @@ def sync_nye(store):
     """Add the New Year's show and sync its playlist."""
     store.create_show("nye", "New Year's Eve 2026", "New Years 2026",
                       note="Dec 29 - Jan 3", theme="nye")
-    store.set_show_categories("nye", NCATS)
     rows, _ = parse_playlist(NYE)
     return store.sync_show("nye", rows, metadata=META)
 
 
 def curate_nye(store):
-    _curate(store, "nye", NYE_CATS)
+    _curate(store, SONG_CATEGORIES)

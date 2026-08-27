@@ -1,62 +1,34 @@
 """
-reconcile.py — where categories actually come from.
+reconcile.py — playlist membership, additive and idempotent.
 
 The parser reads the FPP playlist. It can tell you a song EXISTS; it can never
-tell you a song is "Traditional" — that is editorial judgement and lives in the
-database, set once by hand.
+tell you a song is "Traditional" — that is editorial judgement, and since
+2026-08-26 it lives on the song itself (`songs.categories`, global, not per
+show — see CLAUDE.md), set once by hand on the admin page. This module no
+longer touches categories at all; it only tracks whether a song is currently
+part of a given show's playlist.
 
-Reconciliation is therefore additive and idempotent:
+Reconciliation is additive and idempotent:
 
-    parser output  +  what's already curated  =  new state
+    parser output  +  what's already a member  =  new membership state
 
 Rules
 -----
-1. Categories already stored for (show, song) are NEVER overwritten by a re-run.
-   Running reconcile 100 times changes nothing after the first.
-2. A song that leaves the playlist is marked inactive, not deleted. Its
-   categories and its vote history survive, so putting it back next season
-   restores everything.
-3. A song new to THIS show but already categorised in ANOTHER show gets those
-   categories proposed (mapped through CATEGORY_ALIASES), marked `suggested`.
-   Suggestions are applied but flagged, so you can accept or fix them.
-4. A song nobody has ever categorised lands in `needs_review` with zero
-   categories — and still appears to voters under "All". Curation gaps never
-   hide a song from the people voting.
+1. A song that leaves the playlist is marked inactive, not deleted. Its
+   categories (on `songs`, untouched by this module) and its vote history
+   survive, so putting it back next season restores everything.
+2. A song nobody has categorised yet still appears to voters under "All" —
+   enforced downstream (Store.voteable_catalog), not here. A curation gap
+   never hides a song from the people voting.
 """
 from dataclasses import dataclass, field
-
-# Same idea in two shows under different names. Used only to seed suggestions.
-CATEGORY_ALIASES = {
-    ("christmas", "nye"): {
-        "Rock & Roll": "Rock",
-        "Contemporary": "Pop",
-        "Kids & Movies": "Kids & Movies",
-        "New this year": "New this year",
-        "Not-So-Christmasy": "Pop",
-        "Instrumental": "Instrumental",
-    },
-    ("nye", "christmas"): {
-        "Rock": "Rock & Roll",
-        "Pop": "Contemporary",
-        "Kids & Movies": "Kids & Movies",
-        "New this year": "New this year",
-        "Dance Tunes": "Contemporary",
-        # Christmas gained its own Instrumental chip, so this maps straight
-        # across now instead of degrading to Contemporary.
-        "Instrumental": "Instrumental",
-        "Throwback": "Crooners",
-        "Countdown": "Contemporary",
-    },
-}
 
 
 @dataclass
 class Membership:
     show_id: str
     key: str
-    categories: list
     active: bool = True
-    source: str = "curated"        # curated | suggested | needs_review
     playlist_index: int = 0
 
 
@@ -66,34 +38,24 @@ class Report:
     reactivated: list = field(default_factory=list)
     deactivated: list = field(default_factory=list)
     unchanged: int = 0
-    suggested: list = field(default_factory=list)
-    needs_review: list = field(default_factory=list)
+    needs_review: list = field(default_factory=list)   # filled by Store.sync_show
 
     def summary(self):
         return (f"+{len(self.added)} added, {len(self.reactivated)} reactivated, "
                 f"-{len(self.deactivated)} deactivated, {self.unchanged} unchanged, "
-                f"{len(self.suggested)} suggested, {len(self.needs_review)} need review")
+                f"{len(self.needs_review)} need review")
 
 
-def suggest_from_other_shows(key, show_id, store, valid):
-    """Propose categories for a song already curated in a different show."""
-    for (sid, k), m in store.items():
-        if k != key or sid == show_id or not m.categories:
-            continue
-        table = CATEGORY_ALIASES.get((sid, show_id), {})
-        mapped = []
-        for c in m.categories:
-            t = table.get(c)
-            if t and t in valid and t not in mapped:
-                mapped.append(t)
-        if mapped:
-            return mapped, sid
-    return [], None
-
-
-def reconcile(show_id, parsed_rows, store, valid_categories):
+def reconcile(show_id, parsed_rows, store):
     """store: {(show_id, key): Membership} — stands in for the show_songs table.
-    Mutates store in place and returns a Report."""
+    Mutates store in place and returns a Report.
+
+    needs_review is left empty here — this module has no view into
+    `songs.categories` any more (deliberately: categories are global and pure
+    membership tracking should not need to know about them). Store.sync_show
+    fills that field in after calling this, by checking which of the rows it
+    just wrote actually have categories set.
+    """
     rep = Report()
     seen = set()
 
@@ -106,24 +68,15 @@ def reconcile(show_id, parsed_rows, store, valid_categories):
             existing.playlist_index = row["playlist_index"]
             if not existing.active:
                 existing.active = True
-                rep.reactivated.append(key)          # categories & votes intact
+                rep.reactivated.append(key)          # votes intact
             else:
                 rep.unchanged += 1
-            if not existing.categories:
-                rep.needs_review.append(key)
             continue
 
-        cats, borrowed = suggest_from_other_shows(key, show_id, store, valid_categories)
         store[(show_id, key)] = Membership(
-            show_id, key, cats,
-            source="suggested" if cats else "needs_review",
-            playlist_index=row["playlist_index"],
+            show_id, key, playlist_index=row["playlist_index"],
         )
         rep.added.append(key)
-        if cats:
-            rep.suggested.append((key, cats, borrowed))
-        else:
-            rep.needs_review.append(key)
 
     for (sid, key), m in store.items():
         if sid == show_id and key not in seen and m.active:

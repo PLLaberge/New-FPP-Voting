@@ -91,16 +91,24 @@ class Song:
     media_name: str | None
     duration_seconds: float | None
     display_override: str | None
+    categories: list[str]          # global since 2026-08-26 — see CLAUDE.md
 
     @property
     def display_title(self) -> str:
         """What a voter sees. The override wins when an admin has set one."""
         return self.display_override or self.title
 
+    @property
+    def needs_review(self) -> bool:
+        return not self.categories
+
 
 @dataclass(frozen=True)
 class ShowSong:
-    """A song as it appears in one show — the songs/show_songs join."""
+    """A song as it appears in one show — the songs/show_songs join.
+
+    categories is carried here too (read straight off `songs`, not per-show
+    any more) purely so admin per-show views don't need a second lookup."""
     key: str
     title: str
     artist: str | None
@@ -108,7 +116,6 @@ class ShowSong:
     categories: list[str]
     active: bool
     playlist_index: int | None
-    source: str
 
     @property
     def needs_review(self) -> bool:
@@ -176,6 +183,7 @@ def _song(row) -> Song:
         key=row["song_key"], title=row["title"], artist=row["artist"], year=row["year"],
         sequence_name=row["sequence_name"], media_name=row["media_name"],
         duration_seconds=row["duration_seconds"], display_override=row["display_override"],
+        categories=json.loads(row["categories"]),
     )
 
 
@@ -329,60 +337,62 @@ class Store:
         return [_show(r) for r in self._q(sql)]
 
     # ---------------------------------------------------------- categories
-    def set_show_categories(self, show_id: str, names: Sequence[str]) -> list[str]:
-        """Replace a show's controlled vocabulary, keeping the given order.
+    # Global since 2026-08-26 (see CLAUDE.md) — one vocabulary for the whole
+    # install, not one per show. A per-show vocabulary was "a legacy of the
+    # per playlist approach" (Paulin): categories are a fact about a song,
+    # like artist or year, not about which show is currently playing it.
+    def set_category_vocabulary(self, names: Sequence[str]) -> list[str]:
+        """Replace the controlled vocabulary, keeping the given order.
 
-        Returns any category still assigned to songs but no longer in the
-        vocabulary. show_songs.categories is a JSON array with no foreign key
-        to lean on, so dropping a category silently orphans assignments — the
+        Returns any category still assigned to a song but no longer in the
+        vocabulary. songs.categories is a JSON array with no foreign key to
+        lean on, so dropping a category silently orphans assignments — the
         admin page needs to be told, not left to notice missing chips.
         """
         with self.db.transaction():
-            self._q("DELETE FROM show_categories WHERE show_id = ?", (show_id,))
+            self._q("DELETE FROM categories")
             for order, name in enumerate(names):
                 self._q(
-                    "INSERT INTO show_categories(show_id, name, sort_order) VALUES(?,?,?)",
-                    (show_id, name, order),
+                    "INSERT INTO categories(name, sort_order) VALUES(?,?)",
+                    (name, order),
                 )
             assigned: set[str] = set()
-            for row in self._q("SELECT categories FROM show_songs WHERE show_id = ?",
-                               (show_id,)):
+            for row in self._q("SELECT categories FROM songs"):
                 assigned.update(json.loads(row["categories"]))
         return sorted(assigned - set(names))
 
-    def list_categories(self, show_id: str, *, non_empty: bool = False) -> list[str]:
-        """This show's chips, in chip order.
+    def list_categories(self, *, non_empty: bool = False) -> list[str]:
+        """The chip vocabulary, in chip order.
 
-        non_empty=True drops any category no song in the current playlist
-        actually carries — what the voter page wants. The full vocabulary is
-        what the admin page wants, so it stays the default.
+        non_empty=True drops any category no song currently carries — the
+        voter page filters further still, to only tonight's live playlist
+        (see build_state). The full vocabulary is what the admin page wants,
+        so it stays the default.
         """
         if non_empty:
-            return [c for c, n in self.category_counts(show_id).items() if n]
-        return [r["name"] for r in self._q(
-            "SELECT name FROM show_categories WHERE show_id = ? ORDER BY sort_order",
-            (show_id,),
-        )]
+            return [c for c, n in self.category_counts().items() if n]
+        return [r["name"] for r in self._q("SELECT name FROM categories ORDER BY sort_order")]
 
-    def category_counts(self, show_id: str, *,
-                        include_inactive: bool = False) -> dict[str, int]:
+    def category_counts(self, *, include_inactive: bool = False) -> dict[str, int]:
         """Chip -> how many songs carry it, in chip order, zeros included.
 
-        Categories are per show and a show only has the ones that suit it:
-        Halloween might be Scary / Spooky / Funny and share no chip at all with
-        Christmas. But a vocabulary can also outlive its songs — a chip stays
-        after the last song carrying it leaves the playlist, and a new show's
-        chips exist before anything is categorised. Rendering "Crooners (0)" to
-        a viewer is a dead end they can only tap to see nothing, so the voter
-        page asks for non-empty chips and the admin page asks for all of them.
+        A vocabulary can outlive its songs — a chip stays after the last song
+        carrying it leaves every playlist, and a brand new chip exists before
+        anything is categorised. Rendering "Crooners (0)" to a viewer is a
+        dead end they can only tap to see nothing, which is why the voter
+        page asks for non-empty chips; the admin page asks for all of them.
 
-        Counted over active songs only, so a chip disappears from the voter page
-        when its last song leaves the playlist and returns when it comes back —
-        without touching the vocabulary, which stays curated.
+        Counted over songs active in at least one show by default, so a chip
+        disappears once nothing carrying it is in any live playlist — without
+        touching the vocabulary itself, which stays curated.
         """
-        counts = {name: 0 for name in self.list_categories(show_id)}
-        for song in self.list_show_songs(show_id, include_inactive=include_inactive):
-            for category in song.categories:
+        counts = {name: 0 for name in self.list_categories()}
+        sql = "SELECT categories FROM songs s"
+        if not include_inactive:
+            sql += (" WHERE EXISTS (SELECT 1 FROM show_songs ss "
+                    "WHERE ss.song_key = s.song_key AND ss.active = 1)")
+        for row in self._q(sql):
+            for category in json.loads(row["categories"]):
                 if category in counts:
                     counts[category] += 1
         return counts
@@ -496,17 +506,26 @@ class Store:
         history would fork across two rows. Merging moves all of it onto the
         surviving key.
 
-        Categories: the surviving row's win, except where it has none, in which
-        case the old row's are adopted. A union would invent combinations no
-        one curated.
+        Categories (global, on `songs`, since 2026-08-26): the surviving row's
+        win, except where it has none, in which case the old row's are
+        adopted. A union would invent combinations no one curated.
         """
         old, new = self.resolve_key(old_key), self.resolve_key(new_key)
         if old == new:
             return
-        if self._q("SELECT 1 FROM songs WHERE song_key = ?", (new,)).fetchone() is None:
+        new_row = self._q("SELECT categories FROM songs WHERE song_key = ?",
+                          (new,)).fetchone()
+        if new_row is None:
             raise ValueError(f"no such song: {new_key!r}")
 
         with self.db.transaction():
+            if not json.loads(new_row["categories"]):
+                old_row = self._q("SELECT categories FROM songs WHERE song_key = ?",
+                                  (old,)).fetchone()
+                if old_row and json.loads(old_row["categories"]):
+                    self._q("UPDATE songs SET categories = ? WHERE song_key = ?",
+                            (old_row["categories"], new))
+
             for row in self._q("SELECT * FROM show_songs WHERE song_key = ?", (old,)):
                 surviving = self._q(
                     "SELECT * FROM show_songs WHERE show_id = ? AND song_key = ?",
@@ -519,16 +538,9 @@ class Store:
                         (new, row["show_id"], old),
                     )
                     continue
-                categories = surviving["categories"]
-                source = surviving["source"]
-                if not json.loads(categories):
-                    categories, source = row["categories"], row["source"]
                 self._q(
-                    "UPDATE show_songs SET categories = ?, source = ?, active = ? "
-                    "WHERE show_id = ? AND song_key = ?",
-                    (categories, source,
-                     int(bool(surviving["active"] or row["active"])),
-                     row["show_id"], new),
+                    "UPDATE show_songs SET active = ? WHERE show_id = ? AND song_key = ?",
+                    (int(bool(surviving["active"] or row["active"])), row["show_id"], new),
                 )
                 self._q("DELETE FROM show_songs WHERE show_id = ? AND song_key = ?",
                         (row["show_id"], old))
@@ -544,22 +556,14 @@ class Store:
 
     # --------------------------------------------------------- memberships
     def load_memberships(self) -> dict[tuple[str, str], Membership]:
-        """Every show's memberships, in the shape reconcile() expects.
-
-        ALL shows, deliberately — not just the one being reconciled.
-        reconcile()'s suggest_from_other_shows scans this dict for the same
-        song under a different show_id, which is how 20 of the 26 New Year's
-        songs arrive pre-categorised. Filtering by show here would silently
-        turn that feature off.
-        """
+        """Every show's memberships, in the shape reconcile() expects."""
         store: dict[tuple[str, str], Membership] = {}
-        for row in self._q("SELECT * FROM show_songs"):
+        for row in self._q(
+                "SELECT show_id, song_key, active, playlist_index FROM show_songs"):
             store[(row["show_id"], row["song_key"])] = Membership(
                 show_id=row["show_id"],
                 key=row["song_key"],
-                categories=json.loads(row["categories"]),
                 active=bool(row["active"]),
-                source=row["source"],
                 playlist_index=row["playlist_index"] or 0,
             )
         return store
@@ -577,48 +581,42 @@ class Store:
             for (show_id, key), m in store.items():
                 self._q(
                     """
-                    INSERT INTO show_songs(show_id, song_key, categories, active,
-                                           playlist_index, source, last_seen)
-                    VALUES(?,?,?,?,?,?, CASE WHEN ? THEN datetime('now') END)
+                    INSERT INTO show_songs(show_id, song_key, active,
+                                           playlist_index, last_seen)
+                    VALUES(?,?,?,?, CASE WHEN ? THEN datetime('now') END)
                     ON CONFLICT(show_id, song_key) DO UPDATE SET
-                        categories     = excluded.categories,
                         active         = excluded.active,
                         playlist_index = excluded.playlist_index,
-                        source         = excluded.source,
                         last_seen      = CASE WHEN excluded.active = 1
                                               THEN datetime('now')
                                               ELSE show_songs.last_seen END
                     """,
-                    (show_id, key, json.dumps(m.categories), int(m.active),
-                     m.playlist_index, m.source, int(m.active)),
+                    (show_id, key, int(m.active), m.playlist_index, int(m.active)),
                 )
 
-    def set_categories(self, show_id: str, key: str, categories: Sequence[str],
-                       *, source: str = "curated") -> None:
-        """Assign categories by hand. The admin page's write path, and the only
-        way a membership becomes 'curated'.
+    def set_categories(self, key: str, categories: Sequence[str]) -> None:
+        """Assign categories by hand. The admin page's write path.
 
-        Categories outside the show's vocabulary are refused. Enforcing it here
-        is the whole point of having a controlled vocabulary: an unrecognised
-        name produces no chip, so the song silently drops out of every filtered
-        view while still appearing under "All" — a bug that is invisible until
-        someone asks why a song never shows up under Instrumental.
-
-        This is not hypothetical. The curated Christmas data assigns
-        "Instrumental" to 300-violin-orchestra, which is a New Year's chip and
-        has never existed at Christmas.
+        Global since 2026-08-26 (see CLAUDE.md) — one set of categories per
+        song, not one per show. Categories outside the vocabulary are
+        refused. Enforcing it here is the whole point of having a controlled
+        vocabulary: an unrecognised name produces no chip, so the song
+        silently drops out of every filtered view while still appearing
+        under "All" — a bug that is invisible until someone asks why a song
+        never shows up under Instrumental.
         """
         categories = list(categories)
-        unknown = [c for c in categories if c not in set(self.list_categories(show_id))]
+        unknown = [c for c in categories if c not in set(self.list_categories())]
         if unknown:
             raise ValueError(
-                f"{show_id} has no categor{'y' if len(unknown) == 1 else 'ies'} "
-                f"{unknown!r}; add it to the show's vocabulary first"
+                f"no such categor{'y' if len(unknown) == 1 else 'ies'} "
+                f"{unknown!r}; add {'it' if len(unknown) == 1 else 'them'} to "
+                f"the vocabulary first"
             )
         self._q(
-            "UPDATE show_songs SET categories = ?, source = ? "
-            "WHERE show_id = ? AND song_key = ?",
-            (json.dumps(categories), source, show_id, self.resolve_key(key)),
+            "UPDATE songs SET categories = ?, updated_at = datetime('now') "
+            "WHERE song_key = ?",
+            (json.dumps(categories), self.resolve_key(key)),
         )
 
     def sync_show(
@@ -647,8 +645,20 @@ class Store:
                     artist=artist, year=year,
                 )
             store = self.load_memberships()
-            report = reconcile(show_id, rows, store, self.list_categories(show_id))
+            report = reconcile(show_id, rows, store)
             self.save_memberships(store)
+            # reconcile() no longer has any view of categories — they are
+            # global, on `songs`, not this per-show membership store — so
+            # needs_review is filled in here instead, from what actually
+            # landed for every row just synced.
+            keys = {row["key"] for row in rows}
+            if keys:
+                placeholders = ",".join("?" * len(keys))
+                report.needs_review = [
+                    r["song_key"] for r in self._q(
+                        f"SELECT song_key FROM songs WHERE song_key IN ({placeholders}) "
+                        f"AND categories = '[]'", list(keys))
+                ]
         return report
 
     # ------------------------------------------------------- voter-facing
@@ -661,8 +671,8 @@ class Store:
         gap in curation must never hide a song from the people voting.
         """
         sql = """
-            SELECT ss.song_key, ss.categories, ss.active, ss.playlist_index, ss.source,
-                   s.title, s.display_override, s.artist, s.year
+            SELECT ss.song_key, ss.active, ss.playlist_index,
+                   s.title, s.display_override, s.artist, s.year, s.categories
             FROM show_songs ss
             JOIN songs s ON s.song_key = ss.song_key
             WHERE ss.show_id = ?
@@ -678,7 +688,6 @@ class Store:
                 categories=json.loads(r["categories"]),
                 active=bool(r["active"]),
                 playlist_index=r["playlist_index"],
-                source=r["source"],
             )
             for r in self._q(sql, (show_id,))
         ]
@@ -686,38 +695,28 @@ class Store:
     # --------------------------------------------------- live-playlist voting
     # Since 2026-08-25 the voteable set comes from whatever FPP is actually
     # playing, not the per-show curated catalog above (list_show_songs is
-    # still used for admin curation, unchanged) -- these two queries are what
-    # the follower uses to turn "these sequence keys are in tonight's
-    # playlist" into something the voter page can render. See CLAUDE.md.
+    # still used for admin curation, unchanged) -- this is what the follower
+    # uses to turn "these sequence keys are in tonight's playlist" into
+    # something the voter page can render. See CLAUDE.md.
     def voteable_catalog(self, keys: Iterable[str]) -> dict[str, dict]:
         """For each of `keys` (already resolved through aliases, already
         filtered by the caller to entries FPP reports having real media) that
-        exists in `songs`, its display info and the UNION of its categories
-        across every show that curates it. A key with no matching song is
-        simply omitted — it just isn't voteable yet, the same "a curation gap
-        never hides a song, it just has no chips" idea as before, one level
-        earlier: here the song has not been reconciled into the catalogue at
-        all yet, so there is nothing to show.
+        exists in `songs`, its display info and categories. A key with no
+        matching song is simply omitted — it just isn't voteable yet, the
+        same "a curation gap never hides a song, it just has no chips" idea
+        as before, one level earlier: here the song has not been reconciled
+        into the catalogue at all yet, so there is nothing to show.
         """
         keys = list(dict.fromkeys(keys))       # de-dupe, keep order
         if not keys:
             return {}
         placeholders = ",".join("?" * len(keys))
-        songs = {r["song_key"]: r for r in self._q(
+        songs = {r["song_key"]: _song(r) for r in self._q(
             f"SELECT * FROM songs WHERE song_key IN ({placeholders})", keys)}
-        if not songs:
-            return {}
-        cats: dict[str, set[str]] = {k: set() for k in songs}
-        for r in self._q(
-            f"SELECT song_key, categories FROM show_songs "
-            f"WHERE song_key IN ({placeholders})", keys):
-            if r["song_key"] in cats:
-                cats[r["song_key"]].update(json.loads(r["categories"]))
         return {
             key: {"key": key, "title": song.display_title, "artist": song.artist,
-                 "year": song.year, "categories": sorted(cats[key])}
-            for key, row in songs.items()
-            for song in [_song(row)]
+                 "year": song.year, "categories": song.categories}
+            for key, song in songs.items()
         }
 
     def show_overlap_counts(self, keys: Iterable[str]) -> dict[str, int]:

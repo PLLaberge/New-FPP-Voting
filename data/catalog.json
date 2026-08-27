@@ -6,7 +6,11 @@
    "year": null,
    "sequence": "Christmas Vacation.fseq",
    "media": "Christmas Vacation with Intro 2024.mp3",
-   "length": "03:34"
+   "length": "03:34",
+   "categories": [
+    "Sing-Along",
+    "Not-So-Christmasy"
+   ]
   },
   "christmas-sarajevo-12-24-instrumental": {
    "title": "Christmas Eve / Sarajevo 12/24",
@@ -14,7 +18,12 @@
    "year": 1996,
    "sequence": "Christmas Sarajevo 12-24 (Instrumental).fseq",
    "media": "08 Christmas Sarajevo 12-24 (Instrumental).mp3",
-   "length": "03:25"
+   "length": "03:25",
+   "categories": [
+    "Traditional",
+    "Rock & Roll",
+    "Instrumental"
+   ]
   },
   "let-it-snow-baby-its-cold-outside": {
    "title": "Let It Snow, Baby; It's Cold Outside",
@@ -22,7 +31,10 @@
    "year": null,
    "sequence": "Let It Snow Baby - Its Cold Outside.fseq",
    "media": "01 Let It Snow Baby - It's Cold Outside.mp3",
-   "length": "02:09"
+   "length": "02:09",
+   "categories": [
+    "Contemporary"
+   ]
   },
   "under-the-sea-the-little-mermaid": {
    "title": "Under the Sea (The Little Mermaid)",
@@ -30,7 +42,11 @@
    "year": 1989,
    "sequence": "Under the Sea (The Little Mermaid).fseq",
    "media": "03 Under the Sea (The Little Mermaid).m4a",
-   "length": "03:13"
+   "length": "03:13",
+   "categories": [
+    "Kids & Movies",
+    "Not-So-Christmasy"
+   ]
   },
   "we-three-kings": {
    "title": "We Three Kings",
@@ -38,7 +54,11 @@
    "year": null,
    "sequence": "We Three Kings.fseq",
    "media": "01 We Three Kings (feat. Casey Abram.m4a",
-   "length": "03:47"
+   "length": "03:47",
+   "categories": [
+    "Traditional",
+    "Spiritual"
+   ]
   },
   "frosty-the-snowman": {
    "title": "Frosty the Snowman",
@@ -46,7 +66,12 @@
    "year": 2022,
    "sequence": "Frosty the Snowman.fseq",
    "media": "05 Frosty the Snowman.mp3",
-   "length": "02:35"
+   "length": "02:35",
+   "categories": [
+    "Contemporary",
+    "Crooners",
+    "Kids & Movies"
+   ]
   },
   "frozen-let-it-go-sing-along-official-disney-hd": {
    "title": "Let It Go",
@@ -54,7 +79,12 @@
    "year": 2013,
    "sequence": "FROZEN - Let It Go Sing-along - Official Disney HD.fseq",
    "media": "FROZEN - Let It Go Sing-along - Official Disney HD.mp3",
-   "length": "03:43"
+   "length": "03:43",
+   "categories": [
+    "Sing-Along",
+    "Kids & Movies",
+    "Not-So-Christmasy"
+   ]
   },
   "carol-of-the-bells": {
    "title": "Carol of the Bells",
@@ -62,7 +92,10 @@
    "year": null,
    "sequence": "Carol of the Bells.fseq",
    "media": "01 - Carol of the Bells.mp3",
-   "length": "02:25"
+   "length": "02:25",
+   "categories": [
+    "Traditional"
+   ]
   },
   "feliz-navidad": {
    "title": "Feliz Navidad",
@@ -70,7 +103,11 @@
    "year": 1970,
    "sequence": "Feliz Navidad.fseq",
    "media": "01 Feliz Navidad.mp3",
-   "length": "03:01"
+   "length": "03:01",
+   "categories": [
+    "Contemporary",
+    "Sing-Along"
+   ]
   },
   "jingle-bell-rock": {
    "title": "Jingle Bell Rock",
@@ -78,7 +115,11 @@
    "year": 1957,
    "sequence": "Jingle Bell Rock.fseq",
    "media": "01 Jingle Bell Rock.mp3",
-   "length": "02:11"
+   "length": "02:11",
+   "categories": [
+    "Rock & Roll",
+    "Sing-Along"
+   ]
   },
   "silent-night-feat-reba-mcentire": {
    "title": "Silent Night",
@@ -86,7 +127,11 @@
    "year": 2021,
    "sequence": "Silent Night (feat. Reba McEntire).fseq",
    "media": "14 Silent Night (feat. Reba McEntire).mp3",
-   "length": "04:09"
+   "length": "04:09",
+   "categories": [
+    "Contemporary",
+    "Spiritual"
+   ]
   },
   "golden-kpop-demon-hunters": {
    "title": "Golden",
@@ -94,7 +139,13 @@
    "year": 2025,
    "sequence": "Golden - KPop Demon Hunters.fseq",
    "media": "KPop Demon Hunters - Golden.mp3",
-   "length": "02:49"
+   "length": "02:49",
+   "categories": [
+    "New this year",
+    "Kids & Movies",
+    "Not-So-Christmasy",
+    "Pop"
+   ]
   },
   "do-you-hear-what-i-hear": {
    "title": "Do You Hear What I Hear",
@@ -102,7 +153,11 @@
    "year": null,
    "sequence": "Do You Hear What I Hear.fseq",
    "media": "Do You Hear What I Hear.mp3",
-   "length": "03:11"
+   "length": "03:11",
+   "categories": [
+    "Spiritual",
+    "Rock & Roll"
+   ]
   },
   "linus-and-lucy": {
    "title": "Linus and Lucy",
@@ -110,7 +165,10 @@
    "year": 1964,
    "sequence": "Linus And Lucy.fseq",
    "media": "01-04- Linus And Lucy.mp3",
-   "length": "03:05"
+   "length": "03:05",
+   "categories": [
+    "Kids & Movies"
+   ]
   },
   "the-christmas-song-merry-christmas": {
    "title": "The Christmas Song (Merry Christmas)",
@@ -118,7 +176,11 @@
    "year": 1946,
    "sequence": "The Christmas Song (Merry Christmas).fseq",
    "media": "01 The Christmas Song (Merry Christmas).mp3",
-   "length": "03:12"
+   "length": "03:12",
+   "categories": [
+    "Traditional",
+    "Crooners"
+   ]
   },
   "frozen-2-into-the-unknown": {
    "title": "Into the Unknown",
@@ -126,7 +188,11 @@
    "year": 2019,
    "sequence": "FROZEN 2 - Into the Unknown.fseq",
    "media": "03 Frozen - Into the Unknown.mp3",
-   "length": "03:14"
+   "length": "03:14",
+   "categories": [
+    "Kids & Movies",
+    "Not-So-Christmasy"
+   ]
   },
   "zero": {
    "title": "Zero",
@@ -134,7 +200,12 @@
    "year": 2018,
    "sequence": "Zero.fseq",
    "media": "01 Zero (From the Original Motion Pi.mp3",
-   "length": "03:30"
+   "length": "03:30",
+   "categories": [
+    "Rock & Roll",
+    "Not-So-Christmasy",
+    "Pop"
+   ]
   },
   "jingle-bells-epic-version": {
    "title": "Jingle Bells (Epic Version)",
@@ -142,7 +213,11 @@
    "year": null,
    "sequence": "Jingle Bells (Epic Version).fseq",
    "media": "07 Jingle Bells (Epic Version).m4a",
-   "length": "03:00"
+   "length": "03:00",
+   "categories": [
+    "Traditional",
+    "Rock & Roll"
+   ]
   },
   "first-snow-instrumental": {
    "title": "First Snow",
@@ -150,7 +225,12 @@
    "year": 1996,
    "sequence": "First Snow (Instrumental).fseq",
    "media": "04 First Snow (Instrumental).mp3",
-   "length": "03:52"
+   "length": "03:52",
+   "categories": [
+    "Contemporary",
+    "Rock & Roll",
+    "Instrumental"
+   ]
   },
   "music-box-dancer-radio-version": {
    "title": "Music Box Dancer",
@@ -158,7 +238,12 @@
    "year": null,
    "sequence": "Music Box Dancer (Radio Version).fseq",
    "media": "02 Music Box Dancer (Radio Version).mp3",
-   "length": "03:13"
+   "length": "03:13",
+   "categories": [
+    "Contemporary",
+    "Instrumental",
+    "Dance Tunes"
+   ]
   },
   "how-far-ill-go": {
    "title": "How Far I'll Go",
@@ -166,7 +251,11 @@
    "year": 2016,
    "sequence": "How Far Ill Go.fseq",
    "media": "04 How Far I'll Go.mp3",
-   "length": "02:40"
+   "length": "02:40",
+   "categories": [
+    "Kids & Movies",
+    "Not-So-Christmasy"
+   ]
   },
   "takin-care-of-christmas": {
    "title": "Takin' Care of Christmas",
@@ -174,7 +263,10 @@
    "year": null,
    "sequence": "Takin Care of Christmas.fseq",
    "media": "01 Takin' Care of Christmas.mp3",
-   "length": "03:30"
+   "length": "03:30",
+   "categories": [
+    "Rock & Roll"
+   ]
   },
   "disney-medley-happily-ever-after": {
    "title": "Happily Ever After",
@@ -182,7 +274,10 @@
    "year": null,
    "sequence": "Disney Medley - Happily Ever After .fseq",
    "media": "Happily Ever After v3 .mp3",
-   "length": "05:25"
+   "length": "05:25",
+   "categories": [
+    "Kids & Movies"
+   ]
   },
   "believer": {
    "title": "Believer",
@@ -190,7 +285,12 @@
    "year": 2017,
    "sequence": "Believer.fseq",
    "media": "04 Believer.mp3",
-   "length": "03:24"
+   "length": "03:24",
+   "categories": [
+    "Rock & Roll",
+    "Not-So-Christmasy",
+    "Pop"
+   ]
   },
   "anti-hero": {
    "title": "Anti-Hero (Kungs Remix)",
@@ -198,7 +298,12 @@
    "year": 2022,
    "sequence": "Anti-Hero.fseq",
    "media": "01 Anti-Hero (Kungs Remix).mp3",
-   "length": "03:14"
+   "length": "03:14",
+   "categories": [
+    "Not-So-Christmasy",
+    "Dance Tunes",
+    "Pop"
+   ]
   },
   "mele-kalikimaka": {
    "title": "Mele Kalikimaka",
@@ -206,7 +311,10 @@
    "year": 1950,
    "sequence": "Mele Kalikimaka.fseq",
    "media": "12 Mele Kalikimaka (Merry Christmas).mp3",
-   "length": "02:55"
+   "length": "02:55",
+   "categories": [
+    "Crooners"
+   ]
   },
   "300-violin-orchestra": {
    "title": "300 Violin Orchestra",
@@ -214,7 +322,12 @@
    "year": null,
    "sequence": "300 Violin Orchestra.fseq",
    "media": "13 300 Violin Orchestra.mp3",
-   "length": "02:47"
+   "length": "02:47",
+   "categories": [
+    "New this year",
+    "Contemporary",
+    "Instrumental"
+   ]
   },
   "little-drummer-boy-live": {
    "title": "Little Drummer Boy (Live)",
@@ -222,7 +335,11 @@
    "year": null,
    "sequence": "Little Drummer Boy (Live).fseq",
    "media": "01 Little Drummer Boy (Live).m4a",
-   "length": "04:37"
+   "length": "04:37",
+   "categories": [
+    "Spiritual",
+    "Rock & Roll"
+   ]
   },
   "the-12-days-of-christmas": {
    "title": "The 12 Days of Christmas",
@@ -230,7 +347,11 @@
    "year": null,
    "sequence": "The 12 Days of Christmas.fseq",
    "media": "15 - The 12 Days of Christmas.mp3",
-   "length": "02:58"
+   "length": "02:58",
+   "categories": [
+    "Contemporary",
+    "Sing-Along"
+   ]
   },
   "o-tannenbaum": {
    "title": "O Tannenbaum",
@@ -238,7 +359,11 @@
    "year": 1984,
    "sequence": "O Tannenbaum.fseq",
    "media": "07 O Tannenbaum.mp3",
-   "length": "02:58"
+   "length": "02:58",
+   "categories": [
+    "Traditional",
+    "Contemporary"
+   ]
   },
   "christmas-every-day": {
    "title": "Christmas Every Day",
@@ -246,7 +371,11 @@
    "year": null,
    "sequence": "Christmas Every Day.fseq",
    "media": "01 Christmas Every Day.mp3",
-   "length": "03:46"
+   "length": "03:46",
+   "categories": [
+    "Contemporary",
+    "Rock & Roll"
+   ]
   },
   "snoopys-christmas": {
    "title": "Snoopy's Christmas",
@@ -254,7 +383,12 @@
    "year": 1967,
    "sequence": "Snoopy's Christmas.fseq",
    "media": "06 Snoopy's Christmas.mp3",
-   "length": "03:10"
+   "length": "03:10",
+   "categories": [
+    "New this year",
+    "Rock & Roll",
+    "Sing-Along"
+   ]
   },
   "santa-wont-you-bring-me-love": {
    "title": "Santa Won't You (Bring Me Love)",
@@ -262,7 +396,11 @@
    "year": null,
    "sequence": "Santa Won't You (Bring Me Love).fseq",
    "media": "01 - Santa Won't You (Bring Me Love).mp3",
-   "length": "02:47"
+   "length": "02:47",
+   "categories": [
+    "New this year",
+    "Contemporary"
+   ]
   },
   "oh-christmas-tree": {
    "title": "Oh Christmas Tree",
@@ -270,7 +408,12 @@
    "year": null,
    "sequence": "Oh Christmas Tree.fseq",
    "media": "10 Oh Christmas Tree.mp3",
-   "length": "01:45"
+   "length": "01:45",
+   "categories": [
+    "Traditional",
+    "Sing-Along",
+    "Kids & Movies"
+   ]
   },
   "danger-zone-top-gun": {
    "title": "Danger Zone",
@@ -278,7 +421,12 @@
    "year": 1986,
    "sequence": "Danger Zone - Top Gun.fseq",
    "media": "01 Danger Zone.mp3",
-   "length": "03:36"
+   "length": "03:36",
+   "categories": [
+    "Rock & Roll",
+    "Not-So-Christmasy",
+    "Throwback"
+   ]
   },
   "what-a-wonderful-world-single": {
    "title": "What a Wonderful World",
@@ -286,7 +434,12 @@
    "year": 1967,
    "sequence": "What a Wonderful World (Single).fseq",
    "media": "3-15 What a Wonderful World (Single.mp3",
-   "length": "02:23"
+   "length": "02:23",
+   "categories": [
+    "Crooners",
+    "Not-So-Christmasy",
+    "Throwback"
+   ]
   },
   "dance-the-night": {
    "title": "Dance the Night",
@@ -294,7 +447,10 @@
    "year": 2023,
    "sequence": "Dance the Night.fseq",
    "media": "02 Dance The Night.mp3",
-   "length": "02:56"
+   "length": "02:56",
+   "categories": [
+    "Not-So-Christmasy"
+   ]
   },
   "sounding-joy": {
    "title": "Sounding Joy",
@@ -302,7 +458,11 @@
    "year": null,
    "sequence": "Sounding Joy.fseq",
    "media": "01 Sounding Joy.mp3",
-   "length": "03:50"
+   "length": "03:50",
+   "categories": [
+    "Contemporary",
+    "Spiritual"
+   ]
   },
   "star-wars-funk-final": {
    "title": "Star Wars Uptown Funk",
@@ -310,7 +470,12 @@
    "year": null,
    "sequence": "Star Wars Funk final.fseq",
    "media": "07 Star Wars Funk final.mp3",
-   "length": "03:42"
+   "length": "03:42",
+   "categories": [
+    "Kids & Movies",
+    "Not-So-Christmasy",
+    "Dance Tunes"
+   ]
   },
   "the-spirit-of-christmas-medley": {
    "title": "The Spirit of Christmas Medley",
@@ -318,7 +483,11 @@
    "year": null,
    "sequence": "The Spirit Of Christmas - Medley.fseq",
    "media": "The Spirit Of Christmas - Medley.mp3",
-   "length": "04:37"
+   "length": "04:37",
+   "categories": [
+    "Contemporary",
+    "Spiritual"
+   ]
   },
   "my-favorite-things": {
    "title": "My Favorite Things",
@@ -326,7 +495,11 @@
    "year": 2014,
    "sequence": "My Favorite Things.fseq",
    "media": "03 My Favorite Things.mp3",
-   "length": "02:52"
+   "length": "02:52",
+   "categories": [
+    "Contemporary",
+    "Kids & Movies"
+   ]
   },
   "carol-of-the-bells-foster-instrumental": {
    "title": "Carol of the Bells",
@@ -334,7 +507,12 @@
    "year": 1993,
    "sequence": "Carol of the Bells - Foster [Instrumental].fseq",
    "media": "01 Carol of the Bells - Foster [Instrumental].mp3",
-   "length": "02:34"
+   "length": "02:34",
+   "categories": [
+    "Traditional",
+    "Contemporary",
+    "Instrumental"
+   ]
   },
   "barbie-girl": {
    "title": "Barbie Girl",
@@ -342,7 +520,14 @@
    "year": 1997,
    "sequence": "Barbie Girl.fseq",
    "media": "03 Barbie Girl.mp3",
-   "length": "03:17"
+   "length": "03:17",
+   "categories": [
+    "Kids & Movies",
+    "Not-So-Christmasy",
+    "Dance Tunes",
+    "Pop",
+    "Throwback"
+   ]
   },
   "light-the-lights-edited": {
    "title": "Light the Lights",
@@ -350,7 +535,10 @@
    "year": null,
    "sequence": "Light the Lights-edited.fseq",
    "media": "01 Light the Lights-edited-V3.mp3",
-   "length": "03:15"
+   "length": "03:15",
+   "categories": [
+    "Contemporary"
+   ]
   },
   "wizards-in-winter-instrumental": {
    "title": "Wizards in Winter",
@@ -358,7 +546,12 @@
    "year": 2004,
    "sequence": "Wizards In Winter [Instrumental].fseq",
    "media": "04 Wizards In Winter [Instrumental].mp3",
-   "length": "03:05"
+   "length": "03:05",
+   "categories": [
+    "Contemporary",
+    "Rock & Roll",
+    "Instrumental"
+   ]
   },
   "its-the-most-wonderful-time-of-the-year": {
    "title": "It's the Most Wonderful Time of the Year",
@@ -366,7 +559,11 @@
    "year": 1963,
    "sequence": "Its the Most Wonderful Time of the Year.fseq",
    "media": "01 - Its the Most Wonderful Time of the Year.mp3",
-   "length": "02:34"
+   "length": "02:34",
+   "categories": [
+    "Crooners",
+    "Sing-Along"
+   ]
   },
   "taylor-swift-show": {
    "title": "Taylor Swift Show",
@@ -374,7 +571,11 @@
    "year": null,
    "sequence": "Taylor Swift Show.fseq",
    "media": "taylorshow2a.mp3",
-   "length": "03:37"
+   "length": "03:37",
+   "categories": [
+    "Not-So-Christmasy",
+    "Pop"
+   ]
   },
   "hallelujah": {
    "title": "Hallelujah",
@@ -382,7 +583,11 @@
    "year": 2016,
    "sequence": "Hallelujah.fseq",
    "media": "08 Hallelujah.mp3",
-   "length": "04:29"
+   "length": "04:29",
+   "categories": [
+    "Contemporary",
+    "Spiritual"
+   ]
   },
   "a-star-to-follow-short-short-xmas": {
    "title": "A Star to Follow",
@@ -390,7 +595,11 @@
    "year": 2004,
    "sequence": "A Star To Follow-short-short[Xmas].fseq",
    "media": "03 A Star To Follow-short-short.mp3",
-   "length": "01:31"
+   "length": "01:31",
+   "categories": [
+    "Traditional",
+    "Rock & Roll"
+   ]
   },
   "here-comes-the-sun": {
    "title": "Here Comes the Sun",
@@ -398,7 +607,12 @@
    "year": 1969,
    "sequence": "Here Comes the Sun.fseq",
    "media": "07 Here Comes the Sun.mp3",
-   "length": "03:05"
+   "length": "03:05",
+   "categories": [
+    "Rock & Roll",
+    "Not-So-Christmasy",
+    "Throwback"
+   ]
   },
   "star-wars-imperial-march-x-carol-of-the-bells": {
    "title": "Star Wars: Imperial March x Carol of the Bells",
@@ -406,7 +620,12 @@
    "year": null,
    "sequence": "Star Wars Imperial March x Carol of The Bells.fseq",
    "media": "Star Wars Imperial March x Carol of The Bells.mp4",
-   "length": "03:29"
+   "length": "03:29",
+   "categories": [
+    "Traditional",
+    "Contemporary",
+    "Kids & Movies"
+   ]
   },
   "queen-of-the-winter-night": {
    "title": "Queen of the Winter Night",
@@ -414,7 +633,10 @@
    "year": 2004,
    "sequence": "Queen of the Winter Night.fseq",
    "media": "08 Queen of the Winter Night.mp3",
-   "length": "03:11"
+   "length": "03:11",
+   "categories": [
+    "Rock & Roll"
+   ]
   },
   "huron-carol-short-version": {
    "title": "Huron Carol",
@@ -422,7 +644,11 @@
    "year": null,
    "sequence": "Huron Carol Short Version.fseq",
    "media": "07 Huron Carol Short Version.mp3",
-   "length": "01:34"
+   "length": "01:34",
+   "categories": [
+    "Traditional",
+    "Spiritual"
+   ]
   },
   "we-dont-talk-about-bruno": {
    "title": "We Don't Talk About Bruno",
@@ -430,7 +656,12 @@
    "year": 2021,
    "sequence": "We Dont Talk About Bruno.fseq",
    "media": "04 We Dont Talk About Bruno.mp3",
-   "length": "03:36"
+   "length": "03:36",
+   "categories": [
+    "Kids & Movies",
+    "Not-So-Christmasy",
+    "Pop"
+   ]
   },
   "i-want-a-hippopotamus-for-christmas": {
    "title": "I Want a Hippopotamus for Christmas",
@@ -438,7 +669,11 @@
    "year": 1953,
    "sequence": "I Want a Hippopotamus for Christmas.fseq",
    "media": "01 I Want a Hippopotamus for Christmas.mp3",
-   "length": "02:35"
+   "length": "02:35",
+   "categories": [
+    "Sing-Along",
+    "Kids & Movies"
+   ]
   },
   "i-gotta-feeling": {
    "title": "I Gotta Feeling",
@@ -446,7 +681,13 @@
    "year": 2009,
    "sequence": "I Gotta Feeling.fseq",
    "media": "I Gotta Feeling.mp3",
-   "length": "03:22"
+   "length": "03:22",
+   "categories": [
+    "Not-So-Christmasy",
+    "Countdown",
+    "Dance Tunes",
+    "Pop"
+   ]
   },
   "white-christmas-feat-ken-darby": {
    "title": "White Christmas",
@@ -454,7 +695,11 @@
    "year": 1942,
    "sequence": "White Christmas (feat. Ken Darby).fseq",
    "media": "03 White Christmas (feat. Ken Darby).mp3",
-   "length": "03:03"
+   "length": "03:03",
+   "categories": [
+    "Traditional",
+    "Crooners"
+   ]
   },
   "youre-a-mean-one-mr-grinch": {
    "title": "You're a Mean One, Mr. Grinch",
@@ -462,7 +707,11 @@
    "year": 2016,
    "sequence": "You're a Mean One, Mr Grinch.fseq",
    "media": "14 You're a Mean One, Mr. Grinch.m4a",
-   "length": "03:00"
+   "length": "03:00",
+   "categories": [
+    "Sing-Along",
+    "Kids & Movies"
+   ]
   },
   "dance-of-the-sugar-plum-fairy": {
    "title": "Dance of the Sugar Plum Fairy",
@@ -470,7 +719,11 @@
    "year": null,
    "sequence": "Dance of the Sugar Plum Fairy.fseq",
    "media": "01 Dance of the Sugar Plum Fairy.mp3",
-   "length": "03:45"
+   "length": "03:45",
+   "categories": [
+    "Traditional",
+    "Contemporary"
+   ]
   },
   "cant-stop-the-feeling-film-final": {
    "title": "Can't Stop the Feeling",
@@ -478,7 +731,14 @@
    "year": 2016,
    "sequence": "CANT STOP THE FEELING Film final.fseq",
    "media": "01 CAN'T STOP THE FEELING! Film final.mp3",
-   "length": "03:54"
+   "length": "03:54",
+   "categories": [
+    "Kids & Movies",
+    "Not-So-Christmasy",
+    "Countdown",
+    "Dance Tunes",
+    "Pop"
+   ]
   },
   "i-heard-the-bells-on-christmas-day": {
    "title": "I Heard the Bells on Christmas Day",
@@ -486,7 +746,11 @@
    "year": 2008,
    "sequence": "I Heard the Bells on Christmas Day.fseq",
    "media": "01 I Heard the Bells on Christmas Day.mp3",
-   "length": "04:18"
+   "length": "04:18",
+   "categories": [
+    "Contemporary",
+    "Spiritual"
+   ]
   },
   "light-of-christmas-feat-tobymac": {
    "title": "Light of Christmas",
@@ -494,7 +758,11 @@
    "year": 2012,
    "sequence": "Light of Christmas (feat. tobyMac.fseq",
    "media": "01 Light of Christmas (feat. tobyMac.mp3",
-   "length": "03:40"
+   "length": "03:40",
+   "categories": [
+    "Contemporary",
+    "Spiritual"
+   ]
   },
   "life-is-a-highway": {
    "title": "Life Is a Highway",
@@ -502,7 +770,12 @@
    "year": 2006,
    "sequence": "Life Is a Highway.fseq",
    "media": "03 Life Is A Highway (Edit).mp3",
-   "length": "02:54"
+   "length": "02:54",
+   "categories": [
+    "Rock & Roll",
+    "Kids & Movies",
+    "Not-So-Christmasy"
+   ]
   },
   "trim-up-the-tree": {
    "title": "Trim Up the Tree",
@@ -510,7 +783,11 @@
    "year": 1966,
    "sequence": "Trim Up The Tree.fseq",
    "media": "03 Trim Up The Tree.mp3",
-   "length": "01:21"
+   "length": "01:21",
+   "categories": [
+    "Sing-Along",
+    "Kids & Movies"
+   ]
   },
   "nutcracker-trepak-russian-dance": {
    "title": "Nutcracker Trepak (Russian Dance)",
@@ -518,7 +795,10 @@
    "year": 1892,
    "sequence": "Nutcracker Trepak (Russian Dance).fseq",
    "media": "205 - Nutcracker Trepak (Russian Dance).mp3",
-   "length": "01:07"
+   "length": "01:07",
+   "categories": [
+    "Traditional"
+   ]
   },
   "darude-sandstorm": {
    "title": "Sandstorm",
@@ -526,7 +806,11 @@
    "year": 1999,
    "sequence": "Darude - Sandstorm.fseq",
    "media": "01 Darude - Sandstorm.mp3",
-   "length": "03:47"
+   "length": "03:47",
+   "categories": [
+    "Instrumental",
+    "Dance Tunes"
+   ]
   },
   "the-movie-medley": {
    "title": "The Movie Medley",
@@ -534,7 +818,11 @@
    "year": null,
    "sequence": "The Movie Medley.fseq",
    "media": "13 The Movie Medley.mp3",
-   "length": "05:48"
+   "length": "05:48",
+   "categories": [
+    "Kids & Movies",
+    "Pop"
+   ]
   },
   "toccata-and-fugue-paranormal-remix": {
    "title": "Toccata and Fugue",
@@ -542,7 +830,11 @@
    "year": null,
    "sequence": "Toccata and Fugue (Paranormal Remix).fseq",
    "media": "07 Toccata and Fugue (Paranormal Rem.mp3",
-   "length": "06:02"
+   "length": "06:02",
+   "categories": [
+    "Instrumental",
+    "Dance Tunes"
+   ]
   },
   "dont-start-now": {
    "title": "Don't Start Now",
@@ -550,7 +842,12 @@
    "year": 2019,
    "sequence": "Don't Start Now.fseq",
    "media": "01 Don't Start Now.mp3",
-   "length": "03:03"
+   "length": "03:03",
+   "categories": [
+    "New this year",
+    "Dance Tunes",
+    "Pop"
+   ]
   },
   "shut-up-and-dance": {
    "title": "Shut Up and Dance",
@@ -558,7 +855,12 @@
    "year": 2014,
    "sequence": "Shut Up and Dance.fseq",
    "media": "03 Shut Up and Dance.mp3",
-   "length": "03:19"
+   "length": "03:19",
+   "categories": [
+    "Rock & Roll",
+    "Dance Tunes",
+    "Pop"
+   ]
   },
   "auld-lang-syne": {
    "title": "Auld Lang Syne",
@@ -566,26 +868,33 @@
    "year": null,
    "sequence": "Auld Lang Syne.fseq",
    "media": "13 Auld Lang Syne-short.mp3",
-   "length": "02:32"
+   "length": "02:32",
+   "categories": [
+    "Countdown"
+   ]
   }
  },
+ "categories": [
+  "New this year",
+  "Traditional",
+  "Contemporary",
+  "Spiritual",
+  "Crooners",
+  "Rock & Roll",
+  "Sing-Along",
+  "Kids & Movies",
+  "Instrumental",
+  "Not-So-Christmasy",
+  "Countdown",
+  "Dance Tunes",
+  "Pop",
+  "Throwback"
+ ],
  "shows": {
   "christmas": {
    "name": "Christmas 2025",
-   "tagline": "Tap any song. The winner plays next.",
+   "tagline": "The winner plays next.",
    "note": "",
-   "cats": [
-    "New this year",
-    "Traditional",
-    "Contemporary",
-    "Spiritual",
-    "Crooners",
-    "Rock & Roll",
-    "Sing-Along",
-    "Kids & Movies",
-    "Instrumental",
-    "Not-So-Christmasy"
-   ],
    "songs": [
     {
      "key": "christmas-vacation",
@@ -597,8 +906,8 @@
     {
      "key": "christmas-sarajevo-12-24-instrumental",
      "categories": [
-      "Rock & Roll",
       "Traditional",
+      "Rock & Roll",
       "Instrumental"
      ]
     },
@@ -625,16 +934,16 @@
     {
      "key": "frosty-the-snowman",
      "categories": [
-      "Crooners",
       "Contemporary",
+      "Crooners",
       "Kids & Movies"
      ]
     },
     {
      "key": "frozen-let-it-go-sing-along-official-disney-hd",
      "categories": [
-      "Kids & Movies",
       "Sing-Along",
+      "Kids & Movies",
       "Not-So-Christmasy"
      ]
     },
@@ -661,8 +970,8 @@
     {
      "key": "silent-night-feat-reba-mcentire",
      "categories": [
-      "Spiritual",
-      "Contemporary"
+      "Contemporary",
+      "Spiritual"
      ]
     },
     {
@@ -670,14 +979,15 @@
      "categories": [
       "New this year",
       "Kids & Movies",
-      "Not-So-Christmasy"
+      "Not-So-Christmasy",
+      "Pop"
      ]
     },
     {
      "key": "do-you-hear-what-i-hear",
      "categories": [
-      "Rock & Roll",
-      "Spiritual"
+      "Spiritual",
+      "Rock & Roll"
      ]
     },
     {
@@ -689,8 +999,8 @@
     {
      "key": "the-christmas-song-merry-christmas",
      "categories": [
-      "Crooners",
-      "Traditional"
+      "Traditional",
+      "Crooners"
      ]
     },
     {
@@ -704,7 +1014,8 @@
      "key": "zero",
      "categories": [
       "Rock & Roll",
-      "Not-So-Christmasy"
+      "Not-So-Christmasy",
+      "Pop"
      ]
     },
     {
@@ -717,8 +1028,8 @@
     {
      "key": "first-snow-instrumental",
      "categories": [
-      "Rock & Roll",
       "Contemporary",
+      "Rock & Roll",
       "Instrumental"
      ]
     },
@@ -726,7 +1037,8 @@
      "key": "music-box-dancer-radio-version",
      "categories": [
       "Contemporary",
-      "Instrumental"
+      "Instrumental",
+      "Dance Tunes"
      ]
     },
     {
@@ -751,14 +1063,17 @@
     {
      "key": "believer",
      "categories": [
+      "Rock & Roll",
       "Not-So-Christmasy",
-      "Rock & Roll"
+      "Pop"
      ]
     },
     {
      "key": "anti-hero",
      "categories": [
-      "Not-So-Christmasy"
+      "Not-So-Christmasy",
+      "Dance Tunes",
+      "Pop"
      ]
     },
     {
@@ -778,8 +1093,8 @@
     {
      "key": "little-drummer-boy-live",
      "categories": [
-      "Rock & Roll",
-      "Spiritual"
+      "Spiritual",
+      "Rock & Roll"
      ]
     },
     {
@@ -821,23 +1136,25 @@
     {
      "key": "oh-christmas-tree",
      "categories": [
+      "Traditional",
       "Sing-Along",
-      "Kids & Movies",
-      "Traditional"
+      "Kids & Movies"
      ]
     },
     {
      "key": "danger-zone-top-gun",
      "categories": [
+      "Rock & Roll",
       "Not-So-Christmasy",
-      "Rock & Roll"
+      "Throwback"
      ]
     },
     {
      "key": "what-a-wonderful-world-single",
      "categories": [
       "Crooners",
-      "Not-So-Christmasy"
+      "Not-So-Christmasy",
+      "Throwback"
      ]
     },
     {
@@ -849,15 +1166,16 @@
     {
      "key": "sounding-joy",
      "categories": [
-      "Spiritual",
-      "Contemporary"
+      "Contemporary",
+      "Spiritual"
      ]
     },
     {
      "key": "star-wars-funk-final",
      "categories": [
       "Kids & Movies",
-      "Not-So-Christmasy"
+      "Not-So-Christmasy",
+      "Dance Tunes"
      ]
     },
     {
@@ -870,15 +1188,15 @@
     {
      "key": "my-favorite-things",
      "categories": [
-      "Kids & Movies",
-      "Contemporary"
+      "Contemporary",
+      "Kids & Movies"
      ]
     },
     {
      "key": "carol-of-the-bells-foster-instrumental",
      "categories": [
-      "Contemporary",
       "Traditional",
+      "Contemporary",
       "Instrumental"
      ]
     },
@@ -886,7 +1204,10 @@
      "key": "barbie-girl",
      "categories": [
       "Kids & Movies",
-      "Not-So-Christmasy"
+      "Not-So-Christmasy",
+      "Dance Tunes",
+      "Pop",
+      "Throwback"
      ]
     },
     {
@@ -898,8 +1219,8 @@
     {
      "key": "wizards-in-winter-instrumental",
      "categories": [
-      "Rock & Roll",
       "Contemporary",
+      "Rock & Roll",
       "Instrumental"
      ]
     },
@@ -913,7 +1234,8 @@
     {
      "key": "taylor-swift-show",
      "categories": [
-      "Not-So-Christmasy"
+      "Not-So-Christmasy",
+      "Pop"
      ]
     },
     {
@@ -933,15 +1255,16 @@
     {
      "key": "here-comes-the-sun",
      "categories": [
+      "Rock & Roll",
       "Not-So-Christmasy",
-      "Rock & Roll"
+      "Throwback"
      ]
     },
     {
      "key": "star-wars-imperial-march-x-carol-of-the-bells",
      "categories": [
-      "Contemporary",
       "Traditional",
+      "Contemporary",
       "Kids & Movies"
      ]
     },
@@ -954,15 +1277,16 @@
     {
      "key": "huron-carol-short-version",
      "categories": [
-      "Spiritual",
-      "Traditional"
+      "Traditional",
+      "Spiritual"
      ]
     },
     {
      "key": "we-dont-talk-about-bruno",
      "categories": [
       "Kids & Movies",
-      "Not-So-Christmasy"
+      "Not-So-Christmasy",
+      "Pop"
      ]
     },
     {
@@ -975,14 +1299,17 @@
     {
      "key": "i-gotta-feeling",
      "categories": [
-      "Not-So-Christmasy"
+      "Not-So-Christmasy",
+      "Countdown",
+      "Dance Tunes",
+      "Pop"
      ]
     },
     {
      "key": "white-christmas-feat-ken-darby",
      "categories": [
-      "Crooners",
-      "Traditional"
+      "Traditional",
+      "Crooners"
      ]
     },
     {
@@ -1002,27 +1329,31 @@
     {
      "key": "cant-stop-the-feeling-film-final",
      "categories": [
+      "Kids & Movies",
       "Not-So-Christmasy",
-      "Kids & Movies"
+      "Countdown",
+      "Dance Tunes",
+      "Pop"
      ]
     },
     {
      "key": "i-heard-the-bells-on-christmas-day",
      "categories": [
-      "Spiritual",
-      "Contemporary"
+      "Contemporary",
+      "Spiritual"
      ]
     },
     {
      "key": "light-of-christmas-feat-tobymac",
      "categories": [
-      "Spiritual",
-      "Contemporary"
+      "Contemporary",
+      "Spiritual"
      ]
     },
     {
      "key": "life-is-a-highway",
      "categories": [
+      "Rock & Roll",
       "Kids & Movies",
       "Not-So-Christmasy"
      ]
@@ -1030,8 +1361,8 @@
     {
      "key": "trim-up-the-tree",
      "categories": [
-      "Kids & Movies",
-      "Sing-Along"
+      "Sing-Along",
+      "Kids & Movies"
      ]
     },
     {
@@ -1044,24 +1375,14 @@
   },
   "nye": {
    "name": "New Year's Eve 2026",
-   "tagline": "Ring it in. The winner plays next.",
+   "tagline": "The winner plays next.",
    "note": "Dec 29 – Jan 3",
-   "cats": [
-    "New this year",
-    "Countdown",
-    "Dance Tunes",
-    "Pop",
-    "Rock",
-    "Kids & Movies",
-    "Throwback",
-    "Instrumental"
-   ],
    "songs": [
     {
      "key": "darude-sandstorm",
      "categories": [
-      "Dance Tunes",
-      "Instrumental"
+      "Instrumental",
+      "Dance Tunes"
      ]
     },
     {
@@ -1074,23 +1395,26 @@
     {
      "key": "cant-stop-the-feeling-film-final",
      "categories": [
-      "Pop",
-      "Dance Tunes",
       "Kids & Movies",
-      "Countdown"
+      "Not-So-Christmasy",
+      "Countdown",
+      "Dance Tunes",
+      "Pop"
      ]
     },
     {
      "key": "under-the-sea-the-little-mermaid",
      "categories": [
-      "Kids & Movies"
+      "Kids & Movies",
+      "Not-So-Christmasy"
      ]
     },
     {
      "key": "here-comes-the-sun",
      "categories": [
-      "Throwback",
-      "Rock"
+      "Rock & Roll",
+      "Not-So-Christmasy",
+      "Throwback"
      ]
     },
     {
@@ -1103,40 +1427,48 @@
      "key": "star-wars-funk-final",
      "categories": [
       "Kids & Movies",
+      "Not-So-Christmasy",
       "Dance Tunes"
      ]
     },
     {
      "key": "barbie-girl",
      "categories": [
+      "Kids & Movies",
+      "Not-So-Christmasy",
+      "Dance Tunes",
       "Pop",
-      "Throwback",
-      "Dance Tunes"
+      "Throwback"
      ]
     },
     {
      "key": "toccata-and-fugue-paranormal-remix",
      "categories": [
-      "Dance Tunes",
-      "Instrumental"
+      "Instrumental",
+      "Dance Tunes"
      ]
     },
     {
      "key": "frozen-let-it-go-sing-along-official-disney-hd",
      "categories": [
-      "Kids & Movies"
+      "Sing-Along",
+      "Kids & Movies",
+      "Not-So-Christmasy"
      ]
     },
     {
      "key": "anti-hero",
      "categories": [
-      "Pop",
-      "Dance Tunes"
+      "Not-So-Christmasy",
+      "Dance Tunes",
+      "Pop"
      ]
     },
     {
      "key": "what-a-wonderful-world-single",
      "categories": [
+      "Crooners",
+      "Not-So-Christmasy",
       "Throwback"
      ]
     },
@@ -1144,34 +1476,37 @@
      "key": "dont-start-now",
      "categories": [
       "New this year",
-      "Pop",
-      "Dance Tunes"
+      "Dance Tunes",
+      "Pop"
      ]
     },
     {
      "key": "music-box-dancer-radio-version",
      "categories": [
-      "Dance Tunes",
-      "Instrumental"
+      "Contemporary",
+      "Instrumental",
+      "Dance Tunes"
      ]
     },
     {
      "key": "taylor-swift-show",
      "categories": [
+      "Not-So-Christmasy",
       "Pop"
      ]
     },
     {
      "key": "life-is-a-highway",
      "categories": [
+      "Rock & Roll",
       "Kids & Movies",
-      "Rock"
+      "Not-So-Christmasy"
      ]
     },
     {
      "key": "shut-up-and-dance",
      "categories": [
-      "Rock",
+      "Rock & Roll",
       "Dance Tunes",
       "Pop"
      ]
@@ -1180,34 +1515,39 @@
      "key": "golden-kpop-demon-hunters",
      "categories": [
       "New this year",
-      "Pop",
-      "Kids & Movies"
+      "Kids & Movies",
+      "Not-So-Christmasy",
+      "Pop"
      ]
     },
     {
      "key": "first-snow-instrumental",
      "categories": [
-      "Instrumental",
-      "Rock"
+      "Contemporary",
+      "Rock & Roll",
+      "Instrumental"
      ]
     },
     {
      "key": "how-far-ill-go",
      "categories": [
-      "Kids & Movies"
+      "Kids & Movies",
+      "Not-So-Christmasy"
      ]
     },
     {
      "key": "danger-zone-top-gun",
      "categories": [
-      "Throwback",
-      "Rock"
+      "Rock & Roll",
+      "Not-So-Christmasy",
+      "Throwback"
      ]
     },
     {
      "key": "zero",
      "categories": [
-      "Rock",
+      "Rock & Roll",
+      "Not-So-Christmasy",
       "Pop"
      ]
     },
@@ -1215,22 +1555,25 @@
      "key": "we-dont-talk-about-bruno",
      "categories": [
       "Kids & Movies",
+      "Not-So-Christmasy",
       "Pop"
      ]
     },
     {
      "key": "believer",
      "categories": [
-      "Rock",
+      "Rock & Roll",
+      "Not-So-Christmasy",
       "Pop"
      ]
     },
     {
      "key": "i-gotta-feeling",
      "categories": [
+      "Not-So-Christmasy",
+      "Countdown",
       "Dance Tunes",
-      "Pop",
-      "Countdown"
+      "Pop"
      ]
     },
     {
@@ -1245,7 +1588,6 @@
    "name": "Halloween 2026",
    "tagline": "Catalog not built yet.",
    "note": "New show — playlist still to come",
-   "cats": [],
    "songs": []
   }
  }

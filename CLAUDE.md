@@ -37,20 +37,21 @@ printed QR code never goes stale). Local WiFi is the fallback.
 Display titles come from `mediaName`, cleaned. Identity and display are
 different jobs and different fields.
 
-### 3. Three kinds of data, three lifetimes.
-- `songs` — artist, year. True regardless of show. Curate once.
-- `show_songs` — categories. True only for one show. "Zero" is *Rock & Roll* at
-  Christmas and *Dance Tunes* at New Year's.
+### 3. Two kinds of data, two lifetimes.
+- `songs` — artist, year, **and categories** (since 2026-08-26, see section
+  13). True regardless of show. Curate once.
+- `show_songs` — pure playlist membership: is this song currently active in
+  this show's playlist, and at what position. True only for one show.
 - `votes` — append-only, timestamped. Tallies are queries, never counters.
 
 One database, not one per show: 20 of 26 New Year's songs are also in the
 Christmas playlist. Separate databases would duplicate them and drift.
 
-A voter no longer sees one show's `show_songs` categories in isolation —
-since section 12, the categories on screen are the union across every show
-that curates a song, and which songs appear at all follows the live playlist,
-not a chosen show. `show_songs` itself and its per-show vocabulary are
-unchanged; see section 12 for what changed above them.
+Until 2026-08-25 a voter saw one show's catalogue in isolation; since then the
+songs on screen follow the live playlist, not a chosen show (section 12).
+Until 2026-08-26 a song's categories were also per show — "Zero" was *Rock &
+Roll* at Christmas and *Dance Tunes* at New Year's, the two vocabularies kept
+deliberately independent. That's gone too: see section 13.
 
 ### 4. Categories are editorial and never touched by the parser.
 The parser can say a song exists; it can never say it is "Traditional".
@@ -61,18 +62,17 @@ playlist is deactivated, not deleted, so categories and votes survive.
 **An uncategorised song still appears to voters under "All".** A curation gap
 must never hide a song from the people voting.
 
-Chips are per show and a show has only the ones that suit it — Halloween might
-be Scary / Spooky / Funny and share nothing with Christmas. `show_categories`
-is that vocabulary, and `Store.set_categories` refuses anything outside it: an
-unrecognised name renders no chip, so the song silently vanishes from every
-filtered view while still appearing under "All".
+The chip vocabulary is global (section 13) — `categories` is that vocabulary,
+and `Store.set_categories` refuses anything outside it: an unrecognised name
+renders no chip, so the song silently vanishes from every filtered view while
+still appearing under "All".
 
 A chip with no songs behind it is a dead end a viewer can only tap to see
-nothing, so the voter page asks for `list_categories(show_id, non_empty=True)`
-and the admin page asks for the full vocabulary plus `category_counts()`.
-Counted over active songs, so a chip disappears when its last song leaves the
-playlist and returns when it comes back — without the curated vocabulary itself
-ever being edited.
+nothing, so the voter page asks for `list_categories(non_empty=True)` filtered
+further still to tonight's live playlist, and the admin page asks for the full
+vocabulary plus `category_counts()`. Counted over songs active in at least one
+show, so a chip disappears once nothing carrying it is in any live playlist —
+without the curated vocabulary itself ever being edited.
 
 ### 5. All FPP access goes through `fpp/adapter.py`. No exceptions.
 FPP 10 ships mid-August 2026 and major releases break things. One file to fix.
@@ -255,11 +255,91 @@ the follower every tick (`Follower._tick`, `voteable_keys_from_entries`,
   few real rounds on the new playlist push it back out of the cooldown
   window), which he judged simpler than resurrecting a per-show split once
   "which show" stops being a clean boundary to split by.
-- `shows` still exists and still matters, just for **curation only**: the
-  category vocabulary each show's admin tab edits, its per-show header text
-  (section 11's two dynamic lines) and theme, and `playlist_name` as the
-  target the admin page's "Reconcile with FPP" button pulls against. It is
-  never consulted to decide who can vote for what.
+- `shows` still exists and still matters, just for **curation only**: its
+  per-show header text (section 11's two dynamic lines) and theme, and
+  `playlist_name` as the target the admin page's "Reconcile with FPP" button
+  pulls against. It is never consulted to decide who can vote for what. (The
+  category vocabulary moved out of `shows` entirely on 2026-08-26 — see
+  section 13 — so it is no longer part of what a show curates.)
+
+### 13. Categories are global too, not one vocabulary per show.
+(2026-08-26) Section 12 made *which songs* voteable follow the live playlist
+instead of a chosen show. Categories were the one thing still scoped per show
+underneath that — `show_categories` was a controlled vocabulary per show, and
+a song's category assignment lived on `show_songs`, so the same song could
+carry different tags at Christmas and at New Year's ("Zero" was *Rock & Roll*
+at one and *Dance Tunes* at the other, deliberately, per the original design
+in section 3). That fell apart once voting stopped caring which show a
+playlist "belonged to": a song shared between two playlists (20 of 26 New
+Year's songs are also at Christmas) could show a New Year's-only chip like
+*Countdown* while playing on a completely different night, which read as a
+bug even though it was working as designed. Paulin's diagnosis and his call:
+**"one set of categories, which get applied regardless of the theme or
+playlist chosen"** — categories are a fact about a song, like artist or year,
+not about which night it happens to be playing.
+
+- **One global `categories` table** (name, sort_order) replaces
+  `show_categories`. **`songs.categories`** (a JSON array, same shape as
+  before) replaces `show_songs.categories` — categories moved from the
+  "true only for one show" bucket to the "true regardless of show" bucket in
+  section 3's own terms. `Store.set_category_vocabulary()` /
+  `list_categories()` / `category_counts()` all lost their `show_id`
+  parameter; `Store.set_categories(key, categories)` assigns a song's
+  categories once, not per show.
+- **`show_songs` keeps its other job** — `active` and `playlist_index`,
+  i.e. "is this song currently in this show's playlist" — unchanged. It lost
+  `categories` and `source` (the curated/suggested/needs_review distinction),
+  both now meaningless once a song's categories don't depend on which show
+  reconciled it in.
+- **`catalog/reconcile.py` lost its category-suggestion machinery
+  entirely** — `CATEGORY_ALIASES` and `suggest_from_other_shows` existed only
+  to propose a song's categories in a newly-reconciled show by borrowing them
+  from another show that already had it curated. Global categories make that
+  whole mechanism unnecessary: a song curated once already has its
+  categories, in every show, with nothing to suggest or borrow.
+  `reconcile()` now tracks membership only (added/reactivated/deactivated/
+  unchanged) and takes no `valid_categories` argument.
+  `Store.sync_show()` fills in `Report.needs_review` itself afterward, by
+  checking which of the just-synced songs have empty `songs.categories` —
+  reconcile() itself has no view of categories at all any more.
+- **The consolidated vocabulary is a one-time computed merge, not a fresh
+  design pass.** The old Christmas (10) and New Year's (8) vocabularies were
+  unioned, "Rock" folded into "Rock & Roll" (the same idea under two names —
+  the same rename `CATEGORY_ALIASES` used to bridge before), landing on 14
+  categories; every song's new global categories are the union of whatever it
+  carried under each show it was curated in. Paulin's call: keep
+  *Not-So-Christmasy* even though it now shows up outside Christmas contexts
+  too ("an issue, but a small one in the scheme of things") — reviewing and
+  correcting the merged result by hand is expected and fine, not a sign the
+  merge did something wrong.
+- **A live database migrates itself, once, on first connection with the new
+  code** (`db/connection.py`, schema version 1 -> 2) — computed from
+  whatever is *actually* in that database's `show_categories`/
+  `show_songs.categories` at migration time, not a hardcoded copy of the
+  vocabulary above, so a database that had already drifted from `metadata.py`
+  (an admin-page edit since) migrates its own real state rather than this
+  code's snapshot of it. Old `show_songs.categories`/`.source` and the whole
+  `show_categories` table are left in place, unread, on a migrated database —
+  same "no destructive migration" precedent as `shows.votes_per_round` from
+  section 12 — while a **fresh install's `schema.sql` never creates them at
+  all**, since there is nothing left for them to do. One real bug caught
+  writing this migration: `sqlite3`'s `executescript()` implicitly commits
+  any open transaction before running (a DDL-auto-commit historical quirk),
+  which silently broke the migration's own `BEGIN IMMEDIATE` atomicity the
+  first time it ran against a realistic multi-show database — fixed by using
+  plain `execute()` for the `CREATE TABLE`/`ALTER TABLE` instead, still
+  inside the explicit transaction.
+- **Accepted trade, knowingly.** Halloween was designed (section 4's original
+  wording) to have its own vocabulary sharing nothing with Christmas — Scary /
+  Spooky / Funny, structurally incapable of leaking a chip onto the Christmas
+  page. A global vocabulary gives that up: every category exists in one flat
+  list available to every song, everywhere, and a Halloween-tagged song
+  playing at Christmas would show its Halloween chip too if such a song ever
+  existed. In practice the non-empty-chip filter (section 4) already limits
+  how often this is visible — a chip only shows at all when some currently
+  *voteable* song carries it — but the vocabularies are no longer
+  structurally isolated the way section 4 originally promised. Paulin's call,
+  accepted the same session he asked for the redesign.
 
 ## Reliability is the actual feature
 
@@ -314,7 +394,7 @@ Python enforces PEP 668 externally-managed environments.
 6. ~~Admin page — reconciliation, category assignment, settings~~ **done,
    tested** — `/admin`, backed by `/api/admin/*` in `server.py`. Every write
    goes through an existing `Store` method (`update_show`, `set_categories`,
-   `set_show_categories`, `set_display_override`, `set_song_metadata`,
+   `set_category_vocabulary`, `set_display_override`, `set_song_metadata`,
    `sync_show`); the admin routes add no SQL of their own. Reconcile pulls
    the show's playlist straight from the adapter's `get_playlist` and runs it
    through the same `reconcile()` every seed script uses — additive,
@@ -383,20 +463,21 @@ Stages 1–6 run entirely on a laptop against `FakeFppAdapter`. No Pi needed.
 - FPP truncates long media filenames mid-word. The parser repairs these only
   when unambiguous and flags the rest rather than guessing.
 - ~~`300-violin-orchestra` was tagged **Instrumental** at Christmas when that
-  was a New Year's chip only~~ **resolved.** Christmas now has its own
-  Instrumental chip and all five of its instrumental tracks carry it: 300
-  Violin Orchestra, Christmas Eve / Sarajevo 12/24, First Snow, Carol of the
-  Bells (Foster) and Wizards in Winter. `CATEGORY_ALIASES` maps Instrumental
-  straight across between the two shows now instead of degrading it to
-  Contemporary. It was the only out-of-vocabulary assignment in either
-  playlist, and `Store.set_categories` refuses new ones.
+  was a New Year's chip only~~ **resolved** (2026-08-24, while categories were
+  still per show). Christmas gained its own Instrumental chip and all five of
+  its instrumental tracks carried it: 300 Violin Orchestra, Christmas Eve /
+  Sarajevo 12/24, First Snow, Carol of the Bells (Foster) and Wizards in
+  Winter. It was the only out-of-vocabulary assignment in either playlist at
+  the time.
 - ~~`music-box-dancer-radio-version` was Instrumental at New Year's but not at
-  Christmas~~ **resolved** — an oversight, now tagged at both, bringing
-  Christmas to six instrumentals. Categories are per show and editorial, but
-  "is this an instrumental?" is a fact about the recording rather than about
-  the night, so a song at both shows should not disagree with itself.
-  `test_songs_in_both_shows_agree_on_being_instrumental` holds the line across
-  all 20 shared songs.
+  Christmas~~ **resolved** the same way — an oversight, tagged at both,
+  bringing Christmas to six instrumentals. This whole class of bug — a song
+  disagreeing with itself about being an instrumental depending on which show
+  it played at — is now **structurally impossible** rather than merely
+  fixed-and-tested: categories went global on 2026-08-26 (section 13), so
+  there is only one categories list per song, not one per show, and nothing
+  to disagree. `test_a_song_cannot_disagree_with_itself_about_being_instrumental`
+  documents the guarantee.
 
 ## Conventions
 

@@ -2,11 +2,10 @@
 This is the `songs` table: artist and year are properties of the song and are
 true regardless of which show plays it. year=None means "needs review"."""
 
-# Show definitions — display copy and the controlled category vocabulary, in
-# the order the chips appear. Lives here rather than in a script because both
-# build_catalog.py and init_db.py need it and two copies would drift; once a
-# database exists the `shows` and `show_categories` tables are the source of
-# truth and the admin page edits them, not this file.
+# Show definitions — display copy only. Lives here rather than in a script
+# because both build_catalog.py and init_db.py need it and two copies would
+# drift; once a database exists the `shows` table is the source of truth and
+# the admin page edits it, not this file.
 #
 # playlist_name is what the adapter asks FPP for. FPP stores playlists as JSON
 # files in ~/media/playlists/ and refers to them by filename WITHOUT the .json,
@@ -18,6 +17,9 @@ true regardless of which show plays it. year=None means "needs review"."""
 # Matching is tolerant of a .json suffix and of case, so either form works;
 # see Follower.resolve_show. Confirm against a capture when convenient:
 # tests/fixtures/captured/playlists_*.json is FPP's own list.
+#
+# No "categories" key any more (2026-08-26) — categories are global now, not
+# per show. See CATEGORIES below.
 SHOW_DEFS = {
     "christmas": {
         "name": "Christmas 2025",
@@ -25,12 +27,6 @@ SHOW_DEFS = {
         "tagline": "The winner plays next.",
         "note": "",
         "theme": "christmas",
-        # Instrumental sits with the other genre chips; Not-So-Christmasy is a
-        # catch-all and stays last. Move it if you would rather it read
-        # differently — sort_order is just this list's order.
-        "categories": ["New this year", "Traditional", "Contemporary", "Spiritual",
-                       "Crooners", "Rock & Roll", "Sing-Along", "Kids & Movies",
-                       "Instrumental", "Not-So-Christmasy"],
     },
     "nye": {
         "name": "New Year's Eve 2026",
@@ -38,8 +34,6 @@ SHOW_DEFS = {
         "tagline": "The winner plays next.",
         "note": "Dec 29 – Jan 3",
         "theme": "nye",
-        "categories": ["New this year", "Countdown", "Dance Tunes", "Pop", "Rock",
-                       "Kids & Movies", "Throwback", "Instrumental"],
     },
     "halloween": {
         "name": "Halloween 2026",
@@ -47,9 +41,21 @@ SHOW_DEFS = {
         "tagline": "Catalog not built yet.",
         "note": "New show — playlist still to come",
         "theme": "halloween",
-        "categories": [],
     },
 }
+
+# The controlled category vocabulary, in the order the chips appear. Global
+# across every show since 2026-08-26 (Paulin: "one set of categories, which
+# get applied regardless of the theme or playlist chosen" — a per-show
+# vocabulary was "a legacy of the per playlist approach that was originally
+# taken"). Previously two lists (10 Christmas, 8 New Year's); this is their
+# union, in Christmas's original order with New Year's new-only names
+# appended, "Rock" merged into "Rock & Roll" per Paulin's call the same day.
+CATEGORIES = [
+    "New this year", "Traditional", "Contemporary", "Spiritual", "Crooners",
+    "Rock & Roll", "Sing-Along", "Kids & Movies", "Instrumental",
+    "Not-So-Christmasy", "Countdown", "Dance Tunes", "Pop", "Throwback",
+]
 
 META = {
  # key: (artist, year)
@@ -127,101 +133,85 @@ META = {
  "auld-lang-syne":                                  (None, None),
 }
 
-CHRISTMAS_CATS = {
- "christmas-vacation":                             ["Sing-Along","Not-So-Christmasy"],
- "christmas-sarajevo-12-24-instrumental":          ["Rock & Roll","Traditional","Instrumental"],
- "let-it-snow-baby-its-cold-outside":              ["Contemporary"],
- "under-the-sea-the-little-mermaid":               ["Kids & Movies","Not-So-Christmasy"],
- "we-three-kings":                                 ["Traditional","Spiritual"],
- "frosty-the-snowman":                             ["Crooners","Contemporary","Kids & Movies"],
- "frozen-let-it-go-sing-along-official-disney-hd": ["Kids & Movies","Sing-Along","Not-So-Christmasy"],
- "carol-of-the-bells":                             ["Traditional"],
- "feliz-navidad":                                  ["Contemporary","Sing-Along"],
- "jingle-bell-rock":                               ["Rock & Roll","Sing-Along"],
- "silent-night-feat-reba-mcentire":                ["Spiritual","Contemporary"],
- "golden-kpop-demon-hunters":                      ["New this year","Kids & Movies","Not-So-Christmasy"],
- "do-you-hear-what-i-hear":                        ["Rock & Roll","Spiritual"],
- "linus-and-lucy":                                 ["Kids & Movies"],
- "the-christmas-song-merry-christmas":             ["Crooners","Traditional"],
- "frozen-2-into-the-unknown":                      ["Kids & Movies","Not-So-Christmasy"],
- "zero":                                           ["Rock & Roll","Not-So-Christmasy"],
- "jingle-bells-epic-version":                      ["Traditional","Rock & Roll"],
- "santa-wont-you-bring-me-love":                   ["New this year","Contemporary"],
- "first-snow-instrumental":                        ["Rock & Roll","Contemporary","Instrumental"],
- "music-box-dancer-radio-version":                 ["Contemporary","Instrumental"],
- "how-far-ill-go":                                 ["Kids & Movies","Not-So-Christmasy"],
- "takin-care-of-christmas":                        ["Rock & Roll"],
- "disney-medley-happily-ever-after":               ["Kids & Movies"],
- "believer":                                       ["Not-So-Christmasy","Rock & Roll"],
- "anti-hero":                                      ["Not-So-Christmasy"],
- "mele-kalikimaka":                                ["Crooners"],
- "300-violin-orchestra":                           ["New this year","Contemporary","Instrumental"],
- "little-drummer-boy-live":                        ["Rock & Roll","Spiritual"],
- "the-12-days-of-christmas":                       ["Contemporary","Sing-Along"],
- "o-tannenbaum":                                   ["Traditional","Contemporary"],
- "christmas-every-day":                            ["Contemporary","Rock & Roll"],
- "snoopys-christmas":                              ["New this year","Rock & Roll","Sing-Along"],
- "oh-christmas-tree":                              ["Sing-Along","Kids & Movies","Traditional"],
- "danger-zone-top-gun":                            ["Not-So-Christmasy","Rock & Roll"],
- "what-a-wonderful-world-single":                  ["Crooners","Not-So-Christmasy"],
- "dance-the-night":                                ["Not-So-Christmasy"],
- "sounding-joy":                                   ["Spiritual","Contemporary"],
- "star-wars-funk-final":                           ["Kids & Movies","Not-So-Christmasy"],
- "the-spirit-of-christmas-medley":                 ["Contemporary","Spiritual"],
- "my-favorite-things":                             ["Kids & Movies","Contemporary"],
- "carol-of-the-bells-foster-instrumental":         ["Contemporary","Traditional","Instrumental"],
- "barbie-girl":                                    ["Kids & Movies","Not-So-Christmasy"],
- "light-the-lights-edited":                        ["Contemporary"],
- "wizards-in-winter-instrumental":                 ["Rock & Roll","Contemporary","Instrumental"],
- "its-the-most-wonderful-time-of-the-year":        ["Crooners","Sing-Along"],
- "taylor-swift-show":                              ["Not-So-Christmasy"],
- "hallelujah":                                     ["Contemporary","Spiritual"],
- "a-star-to-follow-short-short-xmas":              ["Traditional","Rock & Roll"],
- "here-comes-the-sun":                             ["Not-So-Christmasy","Rock & Roll"],
- "star-wars-imperial-march-x-carol-of-the-bells":  ["Contemporary","Traditional","Kids & Movies"],
- "queen-of-the-winter-night":                      ["Rock & Roll"],
- "huron-carol-short-version":                      ["Spiritual","Traditional"],
- "we-dont-talk-about-bruno":                       ["Kids & Movies","Not-So-Christmasy"],
- "i-want-a-hippopotamus-for-christmas":            ["Sing-Along","Kids & Movies"],
- "i-gotta-feeling":                                ["Not-So-Christmasy"],
- "white-christmas-feat-ken-darby":                 ["Crooners","Traditional"],
- "youre-a-mean-one-mr-grinch":                     ["Sing-Along","Kids & Movies"],
- "dance-of-the-sugar-plum-fairy":                  ["Traditional","Contemporary"],
- "cant-stop-the-feeling-film-final":               ["Not-So-Christmasy","Kids & Movies"],
- "i-heard-the-bells-on-christmas-day":             ["Spiritual","Contemporary"],
- "light-of-christmas-feat-tobymac":                ["Spiritual","Contemporary"],
- "life-is-a-highway":                              ["Kids & Movies","Not-So-Christmasy"],
- "trim-up-the-tree":                               ["Kids & Movies","Sing-Along"],
- "nutcracker-trepak-russian-dance":                ["Traditional"],
-}
-
-NYE_CATS = {
- "darude-sandstorm":                               ["Dance Tunes","Instrumental"],
- "the-movie-medley":                               ["Kids & Movies","Pop"],
- "cant-stop-the-feeling-film-final":               ["Pop","Dance Tunes","Kids & Movies","Countdown"],
- "under-the-sea-the-little-mermaid":               ["Kids & Movies"],
- "here-comes-the-sun":                             ["Throwback","Rock"],
- "disney-medley-happily-ever-after":               ["Kids & Movies"],
- "star-wars-funk-final":                           ["Kids & Movies","Dance Tunes"],
- "barbie-girl":                                    ["Pop","Throwback","Dance Tunes"],
- "toccata-and-fugue-paranormal-remix":             ["Dance Tunes","Instrumental"],
- "frozen-let-it-go-sing-along-official-disney-hd": ["Kids & Movies"],
- "anti-hero":                                      ["Pop","Dance Tunes"],
- "what-a-wonderful-world-single":                  ["Throwback"],
- "dont-start-now":                                 ["New this year","Pop","Dance Tunes"],
- "music-box-dancer-radio-version":                 ["Dance Tunes","Instrumental"],
- "taylor-swift-show":                              ["Pop"],
- "life-is-a-highway":                              ["Kids & Movies","Rock"],
- "shut-up-and-dance":                              ["Rock","Dance Tunes","Pop"],
- "golden-kpop-demon-hunters":                      ["New this year","Pop","Kids & Movies"],
- "first-snow-instrumental":                        ["Instrumental","Rock"],
- "how-far-ill-go":                                 ["Kids & Movies"],
- "danger-zone-top-gun":                            ["Throwback","Rock"],
- "zero":                                           ["Rock","Pop"],
- "we-dont-talk-about-bruno":                       ["Kids & Movies","Pop"],
- "believer":                                       ["Rock","Pop"],
- "i-gotta-feeling":                                ["Dance Tunes","Pop","Countdown"],
- "auld-lang-syne":                                 ["Countdown"],
+# One set of categories per song, global (2026-08-26) — the union of the old
+# per-show CHRISTMAS_CATS/NYE_CATS, "Rock" merged into "Rock & Roll". A song
+# curated differently under the two former shows now carries every tag it
+# ever had (e.g. "zero" was Rock & Roll/Not-So-Christmasy at Christmas and
+# Rock/Pop at New Year's — it is now Rock & Roll, Not-So-Christmasy and Pop,
+# full stop). Paulin's call, and his to correct by hand from here — this was
+# a one-time computed merge, not a judgement call software should keep making.
+SONG_CATEGORIES = {
+ "300-violin-orchestra":                         ['New this year', 'Contemporary', 'Instrumental'],
+ "a-star-to-follow-short-short-xmas":            ['Traditional', 'Rock & Roll'],
+ "anti-hero":                                    ['Not-So-Christmasy', 'Dance Tunes', 'Pop'],
+ "auld-lang-syne":                               ['Countdown'],
+ "barbie-girl":                                  ['Kids & Movies', 'Not-So-Christmasy', 'Dance Tunes', 'Pop', 'Throwback'],
+ "believer":                                     ['Rock & Roll', 'Not-So-Christmasy', 'Pop'],
+ "cant-stop-the-feeling-film-final":             ['Kids & Movies', 'Not-So-Christmasy', 'Countdown', 'Dance Tunes', 'Pop'],
+ "carol-of-the-bells":                           ['Traditional'],
+ "carol-of-the-bells-foster-instrumental":       ['Traditional', 'Contemporary', 'Instrumental'],
+ "christmas-every-day":                          ['Contemporary', 'Rock & Roll'],
+ "christmas-sarajevo-12-24-instrumental":        ['Traditional', 'Rock & Roll', 'Instrumental'],
+ "christmas-vacation":                           ['Sing-Along', 'Not-So-Christmasy'],
+ "dance-of-the-sugar-plum-fairy":                ['Traditional', 'Contemporary'],
+ "dance-the-night":                              ['Not-So-Christmasy'],
+ "danger-zone-top-gun":                          ['Rock & Roll', 'Not-So-Christmasy', 'Throwback'],
+ "darude-sandstorm":                             ['Instrumental', 'Dance Tunes'],
+ "disney-medley-happily-ever-after":             ['Kids & Movies'],
+ "do-you-hear-what-i-hear":                      ['Spiritual', 'Rock & Roll'],
+ "dont-start-now":                               ['New this year', 'Dance Tunes', 'Pop'],
+ "feliz-navidad":                                ['Contemporary', 'Sing-Along'],
+ "first-snow-instrumental":                      ['Contemporary', 'Rock & Roll', 'Instrumental'],
+ "frosty-the-snowman":                           ['Contemporary', 'Crooners', 'Kids & Movies'],
+ "frozen-2-into-the-unknown":                    ['Kids & Movies', 'Not-So-Christmasy'],
+ "frozen-let-it-go-sing-along-official-disney-hd":['Sing-Along', 'Kids & Movies', 'Not-So-Christmasy'],
+ "golden-kpop-demon-hunters":                    ['New this year', 'Kids & Movies', 'Not-So-Christmasy', 'Pop'],
+ "hallelujah":                                   ['Contemporary', 'Spiritual'],
+ "here-comes-the-sun":                           ['Rock & Roll', 'Not-So-Christmasy', 'Throwback'],
+ "how-far-ill-go":                               ['Kids & Movies', 'Not-So-Christmasy'],
+ "huron-carol-short-version":                    ['Traditional', 'Spiritual'],
+ "i-gotta-feeling":                              ['Not-So-Christmasy', 'Countdown', 'Dance Tunes', 'Pop'],
+ "i-heard-the-bells-on-christmas-day":           ['Contemporary', 'Spiritual'],
+ "i-want-a-hippopotamus-for-christmas":          ['Sing-Along', 'Kids & Movies'],
+ "its-the-most-wonderful-time-of-the-year":      ['Crooners', 'Sing-Along'],
+ "jingle-bell-rock":                             ['Rock & Roll', 'Sing-Along'],
+ "jingle-bells-epic-version":                    ['Traditional', 'Rock & Roll'],
+ "let-it-snow-baby-its-cold-outside":            ['Contemporary'],
+ "life-is-a-highway":                            ['Rock & Roll', 'Kids & Movies', 'Not-So-Christmasy'],
+ "light-of-christmas-feat-tobymac":              ['Contemporary', 'Spiritual'],
+ "light-the-lights-edited":                      ['Contemporary'],
+ "linus-and-lucy":                               ['Kids & Movies'],
+ "little-drummer-boy-live":                      ['Spiritual', 'Rock & Roll'],
+ "mele-kalikimaka":                              ['Crooners'],
+ "music-box-dancer-radio-version":               ['Contemporary', 'Instrumental', 'Dance Tunes'],
+ "my-favorite-things":                           ['Contemporary', 'Kids & Movies'],
+ "nutcracker-trepak-russian-dance":              ['Traditional'],
+ "o-tannenbaum":                                 ['Traditional', 'Contemporary'],
+ "oh-christmas-tree":                            ['Traditional', 'Sing-Along', 'Kids & Movies'],
+ "queen-of-the-winter-night":                    ['Rock & Roll'],
+ "santa-wont-you-bring-me-love":                 ['New this year', 'Contemporary'],
+ "shut-up-and-dance":                            ['Rock & Roll', 'Dance Tunes', 'Pop'],
+ "silent-night-feat-reba-mcentire":              ['Contemporary', 'Spiritual'],
+ "snoopys-christmas":                            ['New this year', 'Rock & Roll', 'Sing-Along'],
+ "sounding-joy":                                 ['Contemporary', 'Spiritual'],
+ "star-wars-funk-final":                         ['Kids & Movies', 'Not-So-Christmasy', 'Dance Tunes'],
+ "star-wars-imperial-march-x-carol-of-the-bells":['Traditional', 'Contemporary', 'Kids & Movies'],
+ "takin-care-of-christmas":                      ['Rock & Roll'],
+ "taylor-swift-show":                            ['Not-So-Christmasy', 'Pop'],
+ "the-12-days-of-christmas":                     ['Contemporary', 'Sing-Along'],
+ "the-christmas-song-merry-christmas":           ['Traditional', 'Crooners'],
+ "the-movie-medley":                             ['Kids & Movies', 'Pop'],
+ "the-spirit-of-christmas-medley":               ['Contemporary', 'Spiritual'],
+ "toccata-and-fugue-paranormal-remix":           ['Instrumental', 'Dance Tunes'],
+ "trim-up-the-tree":                             ['Sing-Along', 'Kids & Movies'],
+ "under-the-sea-the-little-mermaid":             ['Kids & Movies', 'Not-So-Christmasy'],
+ "we-dont-talk-about-bruno":                     ['Kids & Movies', 'Not-So-Christmasy', 'Pop'],
+ "we-three-kings":                               ['Traditional', 'Spiritual'],
+ "what-a-wonderful-world-single":                ['Crooners', 'Not-So-Christmasy', 'Throwback'],
+ "white-christmas-feat-ken-darby":               ['Traditional', 'Crooners'],
+ "wizards-in-winter-instrumental":               ['Contemporary', 'Rock & Roll', 'Instrumental'],
+ "youre-a-mean-one-mr-grinch":                   ['Sing-Along', 'Kids & Movies'],
+ "zero":                                         ['Rock & Roll', 'Not-So-Christmasy', 'Pop'],
 }
 
 # What the earlier hand-typed song list contained that the real playlists do not

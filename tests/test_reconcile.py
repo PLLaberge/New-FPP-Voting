@@ -1,66 +1,68 @@
-"""Reconciliation must never destroy hand-assigned categories."""
+"""Reconciliation tracks show membership only, additive and idempotent.
+
+Categories moved off Membership entirely (2026-08-26, see CLAUDE.md) — they
+are global, live on `songs`, and Store.sync_show reports on them separately,
+not reconcile() itself. What's left here is what reconcile() actually still
+owns: whether a song is currently active in a show's playlist, and its
+position — and that a re-run never destroys any of it.
+"""
 from fppvote.catalog.parser import parse_playlist
 from fppvote.catalog.reconcile import reconcile
-from fppvote.catalog.metadata import CHRISTMAS_CATS, NYE_CATS
 from tests.fixtures.playlists import CHRISTMAS, NYE
 
-XCATS = ["New this year", "Traditional", "Contemporary", "Spiritual", "Crooners",
-         "Rock & Roll", "Sing-Along", "Kids & Movies", "Not-So-Christmasy"]
-NCATS = ["New this year", "Countdown", "Dance Tunes", "Pop", "Rock",
-         "Kids & Movies", "Throwback", "Instrumental"]
 
-
-def _curated_christmas():
+def _synced_christmas():
     rows, _ = parse_playlist(CHRISTMAS)
     store = {}
-    reconcile("christmas", rows, store, XCATS)
-    for (sid, key), m in store.items():
-        if key in CHRISTMAS_CATS:
-            m.categories = CHRISTMAS_CATS[key]
-            m.source = "curated"
+    reconcile("christmas", rows, store)
     return rows, store
 
 
-def test_cold_start_flags_everything_for_review():
+def test_cold_start_adds_every_song():
     rows, _ = parse_playlist(CHRISTMAS)
     store = {}
-    rep = reconcile("christmas", rows, store, XCATS)
+    rep = reconcile("christmas", rows, store)
     assert len(rep.added) == 65
-    assert len(rep.needs_review) == 65
+    assert len(store) == 65
 
 
 def test_rerun_is_idempotent():
-    """The nightly sync must not undo your curation."""
-    rows, store = _curated_christmas()
-    rep = reconcile("christmas", rows, store, XCATS)
-    assert rep.added == [] and rep.deactivated == [] and rep.needs_review == []
+    """The nightly sync must not touch membership that hasn't changed."""
+    rows, store = _synced_christmas()
+    rep = reconcile("christmas", rows, store)
+    assert rep.added == [] and rep.deactivated == [] and rep.reactivated == []
     assert rep.unchanged == 65
 
 
-def test_categories_carry_across_shows():
-    rows, store = _curated_christmas()
+def test_a_song_can_belong_to_two_shows_independently():
+    """The same store dict stands in for the whole show_songs table —
+    reconciling a second show must not disturb the first's membership."""
+    rows, store = _synced_christmas()
     nrows, _ = parse_playlist(NYE)
-    rep = reconcile("nye", nrows, store, NCATS)
-    assert len(rep.suggested) == 20
-    assert len(rep.needs_review) == 6
-    for _, cats, _ in rep.suggested:
-        assert all(c in NCATS for c in cats)
+    rep = reconcile("nye", nrows, store)
+    assert len(rep.added) == 26
+    assert store[("christmas", "barbie-girl")].active is True
+    assert store[("nye", "barbie-girl")].active is True
 
 
 def test_removed_song_is_deactivated_not_deleted():
-    rows, store = _curated_christmas()
+    rows, store = _synced_christmas()
     trimmed = [r for r in rows if r["key"] != "barbie-girl"]
-    rep = reconcile("christmas", trimmed, store, XCATS)
+    rep = reconcile("christmas", trimmed, store)
     assert rep.deactivated == ["barbie-girl"]
-    m = store[("christmas", "barbie-girl")]
-    assert m.active is False
-    assert m.categories, "categories must survive removal"
+    assert store[("christmas", "barbie-girl")].active is False
 
 
-def test_returning_song_is_reactivated_with_categories():
-    rows, store = _curated_christmas()
+def test_returning_song_is_reactivated():
+    rows, store = _synced_christmas()
     trimmed = [r for r in rows if r["key"] != "barbie-girl"]
-    reconcile("christmas", trimmed, store, XCATS)
-    rep = reconcile("christmas", rows, store, XCATS)
+    reconcile("christmas", trimmed, store)
+    rep = reconcile("christmas", rows, store)
     assert rep.reactivated == ["barbie-girl"]
-    assert store[("christmas", "barbie-girl")].categories
+    assert store[("christmas", "barbie-girl")].active is True
+
+
+def test_playlist_index_tracks_the_current_position():
+    rows, store = _synced_christmas()
+    barbie = next(r for r in rows if r["key"] == "barbie-girl")
+    assert store[("christmas", "barbie-girl")].playlist_index == barbie["playlist_index"]

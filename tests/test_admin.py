@@ -64,8 +64,7 @@ def test_shows_listing_includes_every_show_and_a_review_count(client, curated):
     data = client.get("/api/admin/shows").json()
     show = next(s for s in data if s["id"] == "christmas")
     for field in ("id", "name", "playlist_name", "tagline", "note", "theme",
-                  "active", "categories", "category_counts", "songs_total",
-                  "needs_review"):
+                  "active", "songs_total", "needs_review"):
         assert field in show, f"admin page needs {field} but the payload lacks it"
     assert show["songs_total"] == len(curated.list_show_songs("christmas"))
     assert show["needs_review"] == 0     # `curated` is fully categorised
@@ -115,27 +114,28 @@ def test_a_missing_show_is_a_404_everywhere(client):
 
 # --------------------------------------------------------------- categories
 def test_category_vocabulary_round_trips(client, curated):
-    before = client.get("/api/admin/shows/christmas/categories").json()
-    assert before["categories"] == curated.list_categories("christmas")
+    before = client.get("/api/admin/categories").json()
+    assert before["categories"] == curated.list_categories()
     assert before["counts"]["Traditional"] > 0
 
 
 def test_removing_a_category_still_in_use_reports_it_as_orphaned(client, curated):
-    """Songs keep the assignment — see Store.set_show_categories — the admin
-    page just needs to be told, since the chip stops rendering silently."""
-    vocab = curated.list_categories("christmas")
-    assert "Crooners" in vocab and curated.category_counts("christmas")["Crooners"] > 0
+    """Songs keep the assignment — see Store.set_category_vocabulary — the
+    admin page just needs to be told, since the chip stops rendering
+    silently."""
+    vocab = curated.list_categories()
+    assert "Crooners" in vocab and curated.category_counts()["Crooners"] > 0
     trimmed = [c for c in vocab if c != "Crooners"]
-    r = client.put("/api/admin/shows/christmas/categories", json={"categories": trimmed})
+    r = client.put("/api/admin/categories", json={"categories": trimmed})
     assert r.status_code == 200
     assert "Crooners" in r.json()["orphaned"]
-    assert curated.list_categories("christmas") == trimmed
+    assert curated.list_categories() == trimmed
 
 
 def test_categories_must_be_a_list_of_strings(client):
-    r = client.put("/api/admin/shows/christmas/categories", json={"categories": "nope"})
+    r = client.put("/api/admin/categories", json={"categories": "nope"})
     assert r.status_code == 400
-    r = client.put("/api/admin/shows/christmas/categories", json={"categories": [1, 2]})
+    r = client.put("/api/admin/categories", json={"categories": [1, 2]})
     assert r.status_code == 400
 
 
@@ -146,7 +146,7 @@ def test_song_listing_carries_the_raw_title_and_the_override_separately(client):
     assert song["title"] == "Mele Kalikimaka"
     assert song["display_override"] is None
     for field in ("sequence_name", "media_name", "artist", "year", "categories",
-                  "active", "playlist_index", "source", "needs_review"):
+                  "active", "playlist_index", "needs_review"):
         assert field in song
 
 
@@ -162,7 +162,7 @@ def test_setting_a_songs_categories_writes_through_and_updates_counts(client, cu
     assert r.status_code == 200
     body = r.json()
     assert body["song"]["categories"] == ["Traditional"]
-    assert body["counts"] == curated.category_counts("christmas", include_inactive=True)
+    assert body["counts"] == curated.category_counts(include_inactive=True)
     membership = next(s for s in curated.list_show_songs("christmas")
                       if s.key == "mele-kalikimaka")
     assert membership.categories == ["Traditional"]
@@ -221,8 +221,8 @@ def test_reconcile_pulls_the_live_playlist_and_reports_what_changed(curated, db_
     assert songs["mele-kalikimaka"].active is False
     assert songs["totally-new-song"].active is True
     # Categories are editorial and untouched by a reconcile — the song that
-    # was already curated must still be curated, not reset to needs_review.
-    assert songs["mele-kalikimaka"].source == "curated"
+    # was already curated must still carry its categories, not be reset.
+    assert songs["mele-kalikimaka"].categories
 
 
 def test_reconcile_reports_when_fpp_cannot_be_reached(curated, db_path):

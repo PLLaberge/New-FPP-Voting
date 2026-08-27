@@ -23,6 +23,7 @@ needed:
 """
 from __future__ import annotations
 
+import json
 import sqlite3
 import threading
 from contextlib import contextmanager
@@ -31,7 +32,12 @@ from pathlib import Path
 SCHEMA_PATH = Path(__file__).with_name("schema.sql")
 
 # Bump only alongside a new branch in the migrate() ladder below.
-SCHEMA_VERSION = 1
+SCHEMA_VERSION = 2
+
+# Categories that meant the same thing under two different names in the old
+# per-show vocabularies. Applied once, by the version-2 migration, folding
+# "Rock" into "Rock & Roll" wherever it appears -- Paulin's call, 2026-08-26.
+_V2_CATEGORY_RENAME = {"Rock": "Rock & Roll"}
 
 # Long enough to ride out another writer's transaction, short enough that a
 # genuinely stuck lock shows up as an error instead of a hung page.
@@ -97,12 +103,81 @@ def migrate(conn: sqlite3.Connection) -> int:
         conn.executescript(SCHEMA_PATH.read_text())
         version = schema_version(conn)
 
-    # if version < 2:
-    #     conn.executescript(...)
-    #     conn.execute("UPDATE schema_meta SET value='2' WHERE key='version'")
-    #     version = 2
+    if version < 2:
+        # One transaction: a migration that touches every row in `songs` is
+        # exactly the "half-applied on the Pi in December" failure this
+        # module is built to avoid. All or nothing.
+        conn.execute("BEGIN IMMEDIATE")
+        try:
+            _migrate_categories_to_global(conn)
+            conn.execute("UPDATE schema_meta SET value = '2' WHERE key = 'version'")
+        except BaseException:
+            conn.execute("ROLLBACK")
+            raise
+        else:
+            conn.execute("COMMIT")
+        version = 2
 
     return version
+
+
+def _migrate_categories_to_global(conn: sqlite3.Connection) -> None:
+    """v1 -> v2: categories move from show_songs (per show) to songs (global).
+
+    Paulin, 2026-08-26: seeing New Year's-only chips on a Christmas playlist
+    was "a legacy of the per playlist approach" -- one global vocabulary is
+    simpler and matches how the rest of `songs` already works (artist/year
+    are also true regardless of show).
+
+    Old `show_songs`/`show_categories` rows are left in place, unread --
+    same "no destructive migration" precedent as shows.votes_per_round in the
+    v1 schema. This only adds the new `categories` table and `songs.categories`
+    column and populates them; nothing is dropped.
+
+    The new global vocabulary is computed from whatever is ACTUALLY in this
+    database's `show_categories` right now, not a hardcoded list -- a
+    database that drifted from metadata.py (an admin-page edit since) should
+    migrate its own real vocabulary, not the one this code happened to ship
+    with. A song's new `categories` is the union of what it carried in every
+    show, same rename applied.
+    """
+    # Plain execute(), not executescript() -- executescript() implicitly
+    # commits any open transaction first (a Python sqlite3 quirk, there for
+    # historical DDL-auto-commit reasons), which would silently end the
+    # BEGIN IMMEDIATE this whole migration runs inside and break atomicity.
+    conn.execute("""
+        CREATE TABLE IF NOT EXISTS categories (
+            name       TEXT PRIMARY KEY,
+            sort_order INTEGER NOT NULL
+        )
+    """)
+    conn.execute("ALTER TABLE songs ADD COLUMN categories TEXT NOT NULL DEFAULT '[]'")
+
+    def renamed(name: str) -> str:
+        return _V2_CATEGORY_RENAME.get(name, name)
+
+    vocabulary: list[str] = []
+    for row in conn.execute(
+        "SELECT DISTINCT show_id, name, sort_order FROM show_categories "
+        "ORDER BY show_id, sort_order"
+    ):
+        name = renamed(row["name"])
+        if name not in vocabulary:
+            vocabulary.append(name)
+    order = {name: i for i, name in enumerate(vocabulary)}
+    conn.executemany(
+        "INSERT OR IGNORE INTO categories(name, sort_order) VALUES (?, ?)",
+        [(name, order[name]) for name in vocabulary],
+    )
+
+    unioned: dict[str, set[str]] = {}
+    for row in conn.execute("SELECT song_key, categories FROM show_songs"):
+        cats = unioned.setdefault(row["song_key"], set())
+        cats.update(renamed(c) for c in json.loads(row["categories"]))
+    for song_key, cats in unioned.items():
+        ordered = sorted(cats, key=lambda c: order.get(c, len(order)))
+        conn.execute("UPDATE songs SET categories = ? WHERE song_key = ?",
+                     (json.dumps(ordered), song_key))
 
 
 class Database:

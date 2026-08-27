@@ -4,9 +4,9 @@ The theme of every test here is the same: a re-sync must never undo a human.
 """
 import pytest
 
-from fppvote.catalog.metadata import CHRISTMAS_CATS, META
+from fppvote.catalog.metadata import META, SONG_CATEGORIES
 from fppvote.catalog.reconcile import Membership
-from tests.conftest import christmas_rows as _rows, curate_nye, sync_nye
+from tests.conftest import christmas_rows as _rows, sync_nye
 
 
 # ------------------------------------------------------------------- sync
@@ -37,20 +37,21 @@ def test_resync_does_not_rewrite_unchanged_songs(synced):
 
 def test_curation_survives_a_resync(curated):
     curated.sync_show("christmas", _rows(), metadata=META)
-    songs = {s.key: s for s in curated.list_show_songs("christmas")}
-    assert songs["zero"].categories == CHRISTMAS_CATS["zero"]
-    assert songs["zero"].source == "curated"
+    song = curated.get_song("zero")
+    assert song.categories == SONG_CATEGORIES["zero"]
 
 
-def test_categories_carry_across_shows_through_the_database(curated):
-    """20 of the 26 New Year's songs also play at Christmas. The suggestion
-    only works if load_memberships hands reconcile EVERY show, not one."""
+def test_a_songs_categories_are_the_same_in_every_show_it_appears_in(curated):
+    """Global since 2026-08-26 (see CLAUDE.md) — no per-show suggestion
+    machinery is needed any more. A song curated once keeps the same
+    categories under every show that reconciles it in."""
     report = sync_nye(curated)
-    assert len(report.suggested) == 20
-    assert len(report.needs_review) == 6
-    valid = set(curated.list_categories("nye"))
-    for _, cats, _ in report.suggested:
-        assert cats and set(cats) <= valid
+    assert len(report.added) == 26
+    solo = curated.get_song("barbie-girl").categories
+    assert solo == SONG_CATEGORIES["barbie-girl"]
+    xmas_row = next(s for s in curated.list_show_songs("christmas") if s.key == "barbie-girl")
+    nye_row = next(s for s in curated.list_show_songs("nye") if s.key == "barbie-girl")
+    assert xmas_row.categories == nye_row.categories == solo
 
 
 # ----------------------------------------------------- leaving and returning
@@ -68,7 +69,7 @@ def test_removed_song_is_deactivated_and_keeps_its_history(curated):
     kept = {s.key: s for s in
             curated.list_show_songs("christmas", include_inactive=True)}["barbie-girl"]
     assert kept.active is False
-    assert kept.categories == CHRISTMAS_CATS["barbie-girl"], "categories must survive"
+    assert kept.categories == SONG_CATEGORIES["barbie-girl"], "categories must survive"
     assert curated.tally(rnd.round_id) == {"barbie-girl": 1}, "votes must survive"
 
 
@@ -77,7 +78,7 @@ def test_returning_song_is_reactivated_with_its_categories(curated):
     report = curated.sync_show("christmas", _rows(), metadata=META)
     assert report.reactivated == ["barbie-girl"]
     songs = {s.key: s for s in curated.list_show_songs("christmas")}
-    assert songs["barbie-girl"].categories == CHRISTMAS_CATS["barbie-girl"]
+    assert songs["barbie-girl"].categories == SONG_CATEGORIES["barbie-girl"]
 
 
 # -------------------------------------------------------------- songs table
@@ -114,75 +115,53 @@ def test_uncategorised_songs_are_still_offered_to_voters(synced):
 
 
 def test_dropping_a_category_reports_orphaned_assignments(curated):
-    orphaned = curated.set_show_categories(
-        "christmas", [c for c in curated.list_categories("christmas")
-                      if c != "Crooners"])
+    orphaned = curated.set_category_vocabulary(
+        [c for c in curated.list_categories() if c != "Crooners"])
     assert orphaned == ["Crooners"]
 
 
-def test_each_show_has_its_own_chips(curated):
-    """Categories are per show. A chip belongs to the show it suits, and two
-    shows need share none at all."""
+def test_the_category_vocabulary_is_global_not_per_show(curated):
+    """Since 2026-08-26 (see CLAUDE.md) there is one vocabulary for the whole
+    install — a show no longer has "its own" chips, and list_categories
+    takes no show_id at all."""
     sync_nye(curated)
-    curate_nye(curated)
-    xmas = set(curated.list_categories("christmas"))
-    nye = set(curated.list_categories("nye"))
-    assert "Crooners" in xmas and "Crooners" not in nye
-    assert "Countdown" in nye and "Countdown" not in xmas
-    # a chip may appear in two shows; the vocabularies are still independent
-    assert "Instrumental" in xmas and "Instrumental" in nye
-
-    # a Halloween vocabulary that overlaps neither
-    curated.create_show("halloween", "Halloween 2026", "Halloween 2026",
-                        theme="halloween")
-    curated.set_show_categories("halloween", ["Scary", "Spooky", "Funny"])
-    assert curated.list_categories("halloween") == ["Scary", "Spooky", "Funny"]
-    assert not set(curated.list_categories("halloween")) & (xmas | nye)
+    before = curated.list_categories()
+    curated.set_category_vocabulary(before + ["Spooky"])
+    assert "Spooky" in curated.list_categories()
 
 
 def test_the_voter_page_only_sees_chips_that_have_songs(curated):
     """A chip with nothing behind it is a dead end for a viewer, but the admin
     page still needs to see it to curate against."""
-    counts = curated.category_counts("christmas")
+    counts = curated.category_counts()
     assert counts["Crooners"] == 6
 
     crooners = [s.key for s in curated.list_show_songs("christmas")
                 if "Crooners" in s.categories]
     curated.sync_show("christmas", _rows(exclude=set(crooners)), metadata=META)
 
-    assert curated.category_counts("christmas")["Crooners"] == 0
-    assert "Crooners" not in curated.list_categories("christmas", non_empty=True)
-    assert "Crooners" in curated.list_categories("christmas"), \
+    assert curated.category_counts()["Crooners"] == 0
+    assert "Crooners" not in curated.list_categories(non_empty=True)
+    assert "Crooners" in curated.list_categories(), \
         "the vocabulary itself is curated and must survive"
 
     # and the chip comes back with its songs
     curated.sync_show("christmas", _rows(), metadata=META)
-    assert "Crooners" in curated.list_categories("christmas", non_empty=True)
+    assert "Crooners" in curated.list_categories(non_empty=True)
 
 
-def test_a_brand_new_show_offers_no_chips_until_songs_are_curated(store):
-    store.create_show("halloween", "Halloween 2026", "Halloween 2026")
-    store.set_show_categories("halloween", ["Scary", "Spooky", "Funny"])
-    assert store.list_categories("halloween", non_empty=True) == []
-    assert store.category_counts("halloween") == {"Scary": 0, "Spooky": 0, "Funny": 0}
+def test_a_fresh_vocabulary_offers_no_chips_until_songs_are_curated(store):
+    store.set_category_vocabulary(["Scary", "Spooky", "Funny"])
+    assert store.list_categories(non_empty=True) == []
+    assert store.category_counts() == {"Scary": 0, "Spooky": 0, "Funny": 0}
 
 
 def test_a_category_outside_the_vocabulary_is_refused(curated):
     """An unrecognised category renders no chip, so the song silently drops out
     of every filtered view while still showing under "All" — invisible until
-    someone goes looking for it.
-
-    This caught a real error on its first run: CHRISTMAS_CATS gave
-    300-violin-orchestra the category "Instrumental" when that was a New Year's
-    chip only. Christmas has since gained its own Instrumental chip and all
-    five of its instrumental tracks carry it, so the two cases below are a typo
-    and a chip borrowed from another show.
-    """
-    sync_nye(curated)
+    someone goes looking for it."""
     with pytest.raises(ValueError, match="Rock and Roll"):
-        curated.set_categories("christmas", "zero", ["Rock and Roll"])
-    with pytest.raises(ValueError, match="Crooners"):
-        curated.set_categories("nye", "zero", ["Crooners"])
+        curated.set_categories("zero", ["Rock and Roll"])
 
 
 def test_christmas_instrumentals_carry_the_chip(curated):
@@ -197,22 +176,21 @@ def test_christmas_instrumentals_carry_the_chip(curated):
         "wizards-in-winter-instrumental",
         "music-box-dancer-radio-version",
     }
-    assert curated.category_counts("christmas")["Instrumental"] == 6
+    assert curated.category_counts()["Instrumental"] == 6
 
 
-def test_songs_in_both_shows_agree_on_being_instrumental(curated):
-    """Categories are per show, but "is this an instrumental?" is a fact about
-    the recording, not about the night. Where a song plays at both shows and
-    both have the chip, disagreeing is an oversight rather than a choice —
-    which is exactly what music-box-dancer-radio-version was.
-    """
+def test_a_song_cannot_disagree_with_itself_about_being_instrumental(curated):
+    """The historical bug this test used to guard against — a song was
+    Instrumental under one show and not the other — is now structurally
+    impossible: categories are global, so there is only one list to agree or
+    disagree with."""
     sync_nye(curated)
-    curate_nye(curated)
     xmas = {s.key: s.categories for s in curated.list_show_songs("christmas")}
     nye = {s.key: s.categories for s in curated.list_show_songs("nye")}
-    disagree = {key for key in xmas.keys() & nye.keys()
-                if ("Instrumental" in xmas[key]) != ("Instrumental" in nye[key])}
-    assert disagree == set()
+    shared = xmas.keys() & nye.keys()
+    assert shared        # sanity: there is real overlap to check
+    for key in shared:
+        assert xmas[key] == nye[key]
 
 
 # ------------------------------------------------------------------ shows
@@ -233,8 +211,7 @@ def test_merging_a_renamed_sequence_moves_votes_and_categories(curated):
 
     curated.upsert_song("believer-2026", "Believer", "Believer 2026.fseq")
     curated.save_memberships({
-        ("christmas", "believer-2026"):
-            Membership("christmas", "believer-2026", [], source="needs_review")
+        ("christmas", "believer-2026"): Membership("christmas", "believer-2026")
     })
 
     curated.merge_songs("believer", "believer-2026")
@@ -242,20 +219,21 @@ def test_merging_a_renamed_sequence_moves_votes_and_categories(curated):
     assert curated.tally(rnd.round_id) == {"believer-2026": 1}
     songs = {s.key: s for s in curated.list_show_songs("christmas")}
     assert "believer" not in songs
-    assert songs["believer-2026"].categories == CHRISTMAS_CATS["believer"]
+    assert songs["believer-2026"].categories == SONG_CATEGORIES["believer"]
     # the old key still resolves, so a stale link or open phone keeps working
     assert curated.resolve_key("believer") == "believer-2026"
     assert curated.get_song("believer").key == "believer-2026"
 
 
-def test_nye_curation_is_independent_of_christmas(curated):
+def test_categories_are_shared_between_christmas_and_nye(curated):
+    """The old per-show independence (CLAUDE.md's original "Zero is Rock &
+    Roll at Christmas, Dance Tunes at New Year's" example) no longer applies —
+    categories are global since 2026-08-26."""
     sync_nye(curated)
-    curate_nye(curated)
     curated.sync_show("christmas", _rows(), metadata=META)
     xmas = {s.key: s for s in curated.list_show_songs("christmas")}
     nye = {s.key: s for s in curated.list_show_songs("nye")}
-    assert xmas["zero"].categories == ["Rock & Roll", "Not-So-Christmasy"]
-    assert nye["zero"].categories == ["Rock", "Pop"]
+    assert xmas["zero"].categories == nye["zero"].categories == SONG_CATEGORIES["zero"]
 
 
 def test_seeding_refreshes_the_playlist_name_but_not_global_voting_rules(christmas):

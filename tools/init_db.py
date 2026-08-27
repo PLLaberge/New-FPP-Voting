@@ -19,12 +19,12 @@ sys.path[:0] = [str(ROOT / "src"), str(ROOT)]
 
 from tests.fixtures.playlists import CHRISTMAS, NYE          # noqa: E402
 from fppvote.catalog.metadata import (                       # noqa: E402
-    CHRISTMAS_CATS, META, NYE_CATS, SHOW_DEFS,
+    CATEGORIES, META, SHOW_DEFS, SONG_CATEGORIES,
 )
 from fppvote.catalog.parser import parse_playlist            # noqa: E402
 from fppvote.db import Store                                 # noqa: E402
 
-PLAYLISTS = {"christmas": (CHRISTMAS, CHRISTMAS_CATS), "nye": (NYE, NYE_CATS)}
+PLAYLISTS = {"christmas": CHRISTMAS, "nye": NYE}
 
 
 def artist_for(key, row):
@@ -48,10 +48,17 @@ def main():
     store = Store.open(args.db)
     print(f"{'created' if fresh else 'opened'} {args.db}")
     # Global since 2026-08-25 (see CLAUDE.md) -- one allowance and one
-    # cooldown for the whole install, not per show, so this line moved out of
-    # the per-show loop below.
+    # cooldown for the whole install, not per show.
     print(f"voting rules (global): {store.votes_per_round()} vote(s)/round, "
-          f"cooldown {store.cooldown_songs()}\n")
+          f"cooldown {store.cooldown_songs()}")
+
+    # Categories are global too, since 2026-08-26 -- one vocabulary for the
+    # whole install, seeded once here rather than per show.
+    orphaned = store.set_category_vocabulary(CATEGORIES)
+    print(f"categories (global): {len(CATEGORIES)} in the vocabulary")
+    if orphaned:
+        print(f"    ! songs still assigned to removed categories: {orphaned}")
+    print()
 
     skipped = []
 
@@ -61,50 +68,23 @@ def main():
             show_id, cfg["name"], cfg["playlist_name"],
             tagline=cfg["tagline"], note=cfg["note"], theme=cfg["theme"],
         )
-        orphaned = store.set_show_categories(show_id, cfg["categories"])
         show = store.get_show(show_id)
-        print(f"[{show_id}] {show.name} — {outcome}"
-              f", {len(cfg['categories'])} categories")
+        print(f"[{show_id}] {show.name} — {outcome}")
         print(f"    playlist: {show.playlist_name!r}")
         if before and before.playlist_name != show.playlist_name:
             # The one field where a silent no-op would cost an evening of
             # debugging, so it gets called out rather than merely applied.
             print(f"    ^ changed from {before.playlist_name!r}")
-        if orphaned:
-            print(f"    ! songs still assigned to removed categories: {orphaned}")
 
         if show_id not in PLAYLISTS:
             print("    no playlist yet — nothing to sync\n")
             continue
 
-        entries, curated = PLAYLISTS[show_id]
+        entries = PLAYLISTS[show_id]
         rows, issues = parse_playlist(entries)
         metadata = {r["key"]: artist_for(r["key"], r) for r in rows}
         report = store.sync_show(show_id, rows, metadata=metadata)
         print(f"    sync: {report.summary()}")
-
-        # Categories are editorial. metadata.py IS the human's curation, so it
-        # outranks a cross-show `suggested` guess and fills a `needs_review`
-        # gap — but never overwrites something already marked curated, which
-        # means it came from the admin page and is newer than this file.
-        valid = set(cfg["categories"])
-        existing = {s.key: s for s in
-                    store.list_show_songs(show_id, include_inactive=True)}
-        applied = 0
-        for key, cats in curated.items():
-            if key not in existing:
-                continue
-            if existing[key].source == "curated" and not args.recategorise:
-                continue
-            usable = [c for c in cats if c in valid]
-            for c in cats:
-                if c not in valid:
-                    skipped.append((show_id, key, c))
-            if usable:
-                store.set_categories(show_id, key, usable)
-                applied += 1
-        print(f"    categories: {applied} song(s) written"
-              f"{' (--recategorise)' if args.recategorise else ' from metadata.py'}")
 
         if issues:
             kinds = {}
@@ -112,17 +92,48 @@ def main():
                 kinds[i["type"]] = kinds.get(i["type"], 0) + 1
             print("    parser notes: "
                   + ", ".join(f"{k} x{v}" for k, v in sorted(kinds.items())))
+        print()
 
+    # Categories are editorial and global (2026-08-26) — one pass over
+    # SONG_CATEGORIES, not per show, and deliberately run AFTER every show has
+    # synced above: the "still uncategorised" counts printed next need to see
+    # the post-categorisation state, not a snapshot from partway through this
+    # run. metadata.py IS the human's curation, so it fills a needs_review gap
+    # but never overwrites a song that already has categories set, which means
+    # it came from the admin page (or an earlier run of this script) and
+    # outranks this file.
+    valid = set(CATEGORIES)
+    applied = 0
+    for key, cats in SONG_CATEGORIES.items():
+        song = store.get_song(key)
+        if song is None:
+            continue          # not in the catalogue at all (yet)
+        if song.categories and not args.recategorise:
+            continue
+        usable = [c for c in cats if c in valid]
+        for c in cats:
+            if c not in valid:
+                skipped.append((key, c))
+        if usable:
+            store.set_categories(key, usable)
+            applied += 1
+    print(f"categories: {applied} song(s) written"
+          f"{' (--recategorise)' if args.recategorise else ' from metadata.py'}\n")
+
+    for show_id in PLAYLISTS:
+        if store.get_show(show_id) is None:
+            continue
         songs = store.list_show_songs(show_id)
         review = [s for s in songs if s.needs_review]
-        print(f"    {len(songs)} active songs, {len(review)} still uncategorised"
-              + (f" (still votable under All)" if review else "") + "\n")
+        print(f"[{show_id}] {len(songs)} active songs, {len(review)} still uncategorised"
+              + (" (still votable under All)" if review else ""))
+    print()
 
     if skipped:
-        print("Category assignments refused — no such chip in that show:")
-        for show_id, key, cat in skipped:
-            print(f"    {show_id:<10} {key:<34} {cat!r}")
-        print("    Fix by adding the category to SHOW_DEFS or changing the "
+        print("Category assignments refused — no such chip in the vocabulary:")
+        for key, cat in skipped:
+            print(f"    {key:<34} {cat!r}")
+        print("    Fix by adding the category to CATEGORIES or changing the "
               "assignment in metadata.py.\n")
 
     placeholders = [s for s in SHOW_DEFS

@@ -7,9 +7,11 @@
 --    song — that is the bug in the old plugin. Media filenames are not unique;
 --    three 2025 Christmas entries shared one mp3.
 --
---  * songs holds facts true regardless of show (artist, release year).
---    show_songs holds facts true only for one show (categories). The same
---    "Zero" is Rock & Roll at Christmas and Dance Tunes at New Year's.
+--  * songs holds facts true regardless of show (artist, release year,
+--    categories). show_songs holds facts true only for one show (is this
+--    song currently in this show's playlist). Categories moved from
+--    show_songs to songs on 2026-08-26 -- see CLAUDE.md: one global
+--    vocabulary, not "Rock & Roll at Christmas, Dance Tunes at New Year's."
 --
 --  * votes is append-only with a timestamp. Tallies are queries, never stored
 --    counters, so history survives playlist edits and supports per-night stats.
@@ -36,8 +38,17 @@ CREATE TABLE IF NOT EXISTS songs (
     media_name       TEXT,
     duration_seconds REAL,
     display_override TEXT,                     -- manual title fix from admin UI
+    categories       TEXT NOT NULL DEFAULT '[]', -- JSON array; global, not per show
     created_at       TEXT NOT NULL DEFAULT (datetime('now')),
     updated_at       TEXT NOT NULL DEFAULT (datetime('now'))
+);
+
+-- The controlled category vocabulary. One list for the whole install, not
+-- per show (2026-08-26) -- see the note at the top of this file. Chips have
+-- a fixed order and you cannot typo "Rock and Roll" against "Rock & Roll".
+CREATE TABLE IF NOT EXISTS categories (
+    name       TEXT PRIMARY KEY,
+    sort_order INTEGER NOT NULL
 );
 
 -- Renaming a .fseq changes song_key. An alias forwards the old key so votes
@@ -64,24 +75,14 @@ CREATE TABLE IF NOT EXISTS shows (
     CHECK (cooldown_songs >= 0)
 );
 
--- Controlled vocabulary per show, so chips have a fixed order and you cannot
--- typo "Rock and Roll" against "Rock & Roll".
-CREATE TABLE IF NOT EXISTS show_categories (
-    show_id    TEXT NOT NULL REFERENCES shows(show_id) ON DELETE CASCADE,
-    name       TEXT NOT NULL,
-    sort_order INTEGER NOT NULL,
-    PRIMARY KEY (show_id, name)
-);
-
 -- ---------------------------------------------------------------- membership
+-- Is this song currently part of this show's playlist? Nothing about
+-- categorisation lives here any more -- see songs.categories above.
 CREATE TABLE IF NOT EXISTS show_songs (
     show_id        TEXT NOT NULL REFERENCES shows(show_id) ON DELETE CASCADE,
     song_key       TEXT NOT NULL REFERENCES songs(song_key) ON DELETE CASCADE,
-    categories     TEXT NOT NULL DEFAULT '[]', -- JSON array of category names
     active         INTEGER NOT NULL DEFAULT 1, -- 0 = left the playlist, kept
     playlist_index INTEGER,                    -- runtime only, never identity
-    source         TEXT NOT NULL DEFAULT 'needs_review',
-                                               -- curated | suggested | needs_review
     last_seen      TEXT,
     PRIMARY KEY (show_id, song_key)
 );
@@ -143,4 +144,4 @@ CREATE TABLE IF NOT EXISTS schema_meta (
     key   TEXT PRIMARY KEY,
     value TEXT NOT NULL
 );
-INSERT OR IGNORE INTO schema_meta(key, value) VALUES ('version', '1');
+INSERT OR IGNORE INTO schema_meta(key, value) VALUES ('version', '2');

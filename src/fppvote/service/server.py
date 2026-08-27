@@ -190,18 +190,15 @@ def _fpp_block(state) -> dict:
 # ------------------------------------------------------------------- admin
 def _admin_show_block(store: Store, show) -> dict:
     """A show as the admin page wants it: settings plus enough of a summary
-    to show whether it needs attention, without shipping every song."""
+    to show whether it needs attention, without shipping every song.
+
+    No categories here any more (2026-08-26) — they're global, see
+    /api/admin/categories."""
     songs = store.list_show_songs(show.show_id, include_inactive=True)
     return {
         "id": show.show_id, "name": show.name, "playlist_name": show.playlist_name,
         "tagline": show.tagline, "note": show.note, "theme": show.theme,
         "active": show.active,
-        "categories": store.list_categories(show.show_id),
-        # include_inactive=True: a deactivated song still carries a category
-        # assignment, and the vocabulary editor needs to know that before
-        # letting a chip be dropped — same population set_show_categories
-        # itself scans for orphans.
-        "category_counts": store.category_counts(show.show_id, include_inactive=True),
         "songs_total": sum(1 for s in songs if s.active),
         "needs_review": sum(1 for s in songs if s.active and s.needs_review),
     }
@@ -209,12 +206,13 @@ def _admin_show_block(store: Store, show) -> dict:
 
 def _song_block(song) -> dict:
     """The song fields that are true regardless of show — see CLAUDE.md
-    section 3. Shared by the per-show song listing and the plain song editor
-    so the two never describe the same columns differently."""
+    section 3, now including categories (global since 2026-08-26). Shared by
+    the per-show song listing and the plain song editor so the two never
+    describe the same columns differently."""
     return {
         "key": song.key, "title": song.title, "display_override": song.display_override,
         "sequence_name": song.sequence_name, "media_name": song.media_name,
-        "artist": song.artist, "year": song.year,
+        "artist": song.artist, "year": song.year, "categories": song.categories,
     }
 
 
@@ -223,8 +221,7 @@ def _admin_song_block(store: Store, membership) -> dict:
     curated ones, so 'what the parser saw' and 'what a human overrode' are
     both visible rather than pre-blended into one title."""
     block = _song_block(store.get_song(membership.key))
-    block.update(categories=membership.categories, active=membership.active,
-                 playlist_index=membership.playlist_index, source=membership.source,
+    block.update(active=membership.active, playlist_index=membership.playlist_index,
                  needs_review=membership.needs_review)
     return block
 
@@ -389,24 +386,25 @@ def create_app(config: Config | None = None, *, store: Store | None = None,
         return _admin_show_block(store, store.get_show(show_id))
 
     # ----------------------------------------------------- admin: categories
-    @app.get("/api/admin/shows/{show_id}/categories")
-    def admin_get_categories(show_id: str, _: None = Depends(require_admin)):
-        if store.get_show(show_id) is None:
-            raise HTTPException(404, f"no such show: {show_id!r}")
-        return {"categories": store.list_categories(show_id),
-                "counts": store.category_counts(show_id, include_inactive=True)}
+    # Global since 2026-08-26 (see CLAUDE.md) -- one vocabulary for the whole
+    # install, no show_id in these routes any more.
+    @app.get("/api/admin/categories")
+    def admin_get_categories(_: None = Depends(require_admin)):
+        return {"categories": store.list_categories(),
+                # include_inactive=True: a deactivated song still carries a
+                # category assignment, and the vocabulary editor needs to
+                # know that before letting a chip be dropped — same
+                # population set_category_vocabulary itself scans for orphans.
+                "counts": store.category_counts(include_inactive=True)}
 
-    @app.put("/api/admin/shows/{show_id}/categories")
-    def admin_set_categories(show_id: str, body: dict = Body(...),
-                             _: None = Depends(require_admin)):
-        if store.get_show(show_id) is None:
-            raise HTTPException(404, f"no such show: {show_id!r}")
+    @app.put("/api/admin/categories")
+    def admin_set_categories(body: dict = Body(...), _: None = Depends(require_admin)):
         names = body.get("categories")
         if not isinstance(names, list) or not all(isinstance(n, str) for n in names):
             raise HTTPException(400, "categories must be a list of strings")
-        orphaned = store.set_show_categories(show_id, names)
-        return {"categories": store.list_categories(show_id),
-                "counts": store.category_counts(show_id, include_inactive=True),
+        orphaned = store.set_category_vocabulary(names)
+        return {"categories": store.list_categories(),
+                "counts": store.category_counts(include_inactive=True),
                 "orphaned": orphaned}
 
     # ---------------------------------------------------------- admin: songs
@@ -420,20 +418,23 @@ def create_app(config: Config | None = None, *, store: Store | None = None,
     @app.put("/api/admin/shows/{show_id}/songs/{song_key}/categories")
     def admin_set_song_categories(show_id: str, song_key: str, body: dict = Body(...),
                                   _: None = Depends(require_admin)):
+        """Still nested under a show in the URL, since that's where the admin
+        page is browsing from — but the write itself is global (Paulin,
+        2026-08-26: one set of categories per song, not one per show)."""
         if store.get_show(show_id) is None:
             raise HTTPException(404, f"no such show: {show_id!r}")
         cats = body.get("categories")
         if not isinstance(cats, list) or not all(isinstance(c, str) for c in cats):
             raise HTTPException(400, "categories must be a list of strings")
         try:
-            store.set_categories(show_id, song_key, cats)
+            store.set_categories(song_key, cats)
         except ValueError as e:
             raise HTTPException(400, str(e))
         row = _find_show_song(store, show_id, song_key)
         if row is None:
             raise HTTPException(404, f"no such song in {show_id!r}: {song_key!r}")
         return {"song": _admin_song_block(store, row),
-                "counts": store.category_counts(show_id, include_inactive=True)}
+                "counts": store.category_counts(include_inactive=True)}
 
     @app.put("/api/admin/songs/{song_key}")
     def admin_update_song(song_key: str, body: dict = Body(...),
@@ -483,8 +484,6 @@ def create_app(config: Config | None = None, *, store: Store | None = None,
             "summary": report.summary(),
             "added": report.added, "reactivated": report.reactivated,
             "deactivated": report.deactivated, "unchanged": report.unchanged,
-            "suggested": [{"key": k, "categories": c, "borrowed_from": b}
-                         for k, c, b in report.suggested],
             "needs_review": report.needs_review,
             "parser_issues": issues,
         }

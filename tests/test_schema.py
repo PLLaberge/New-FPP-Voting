@@ -21,7 +21,7 @@ def db():
 
 def test_schema_loads(db):
     tables = {r[0] for r in db.execute("SELECT name FROM sqlite_master WHERE type='table'")}
-    assert {"songs", "shows", "show_songs", "show_categories", "rounds", "votes"} <= tables
+    assert {"songs", "shows", "show_songs", "categories", "rounds", "votes"} <= tables
 
 
 def test_one_vote_per_person_per_song_per_round(db):
@@ -44,7 +44,7 @@ def test_same_person_may_vote_again_next_round(db):
 
 
 def test_categories_default_to_empty_json(db):
-    db.execute("INSERT INTO show_songs(show_id,song_key) VALUES('christmas','zero')")
-    db.commit()
-    row = db.execute("SELECT categories, source FROM show_songs").fetchone()
-    assert row[0] == "[]" and row[1] == "needs_review"
+    """categories lives on `songs` now, global (2026-08-26, see CLAUDE.md) —
+    not on show_songs, which is membership only."""
+    row = db.execute("SELECT categories FROM songs WHERE song_key = 'zero'").fetchone()
+    assert row[0] == "[]"

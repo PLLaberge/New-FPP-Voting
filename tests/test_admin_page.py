@@ -87,8 +87,9 @@ def test_typing_back_the_parsed_title_clears_the_override_rather_than_setting_on
 
 # ----------------------------------------------------------- reconcile safety
 def test_reconcile_never_sends_categories_the_server_would_have_to_invent():
-    """The reconcile button posts with no body — categories are never guessed
-    client-side, only by Store.sync_show's suggest_from_other_shows."""
+    """The reconcile button posts with no body — categories are global and
+    editorial (CLAUDE.md section 13), never guessed client-side or by
+    reconcile() itself."""
     body = SCRIPT[SCRIPT.index('$("#reconcileBtn").onclick'):
                   SCRIPT.index('/* ---------- songs')]
     assert 'method:"POST"' in body
