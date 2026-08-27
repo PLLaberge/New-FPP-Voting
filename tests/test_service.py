@@ -160,6 +160,19 @@ def test_uncategorised_songs_are_still_listed(synced, fpp, config):
     assert state["categories"] == [], "no chips, but every song is still there"
 
 
+def test_an_excluded_song_is_not_voteable_even_while_live(follower, curated):
+    """excluded (2026-08-27) is checked directly, unlike show_songs.active —
+    it works even on a song still sitting in tonight's live FPP playlist."""
+    curated.set_excluded("zero", True)
+    state = follower.tick()
+    assert "zero" not in state.voteable_keys
+
+    rnd = curated.current_round()
+    result = curated.cast_vote(rnd.round_id, "voter", "zero",
+                               valid_keys=state.voteable_keys)
+    assert result.outcome == "not_in_show"
+
+
 # --------------------------------------------------------------------- voting
 def test_a_vote_round_trips_through_the_api(client):
     first = client.get("/api/state").json()

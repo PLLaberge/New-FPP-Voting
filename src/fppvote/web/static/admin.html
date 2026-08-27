@@ -43,6 +43,10 @@ button{font-family:inherit}
 .btn.primary{background:color-mix(in srgb,var(--accent) 20%,transparent);
   border-color:color-mix(in srgb,var(--accent) 55%,transparent);color:var(--accent)}
 .btn.small{padding:5px 11px;font-size:12px}
+.btn.danger{background:color-mix(in srgb,var(--red) 16%,transparent);
+  border-color:color-mix(in srgb,var(--red) 45%,transparent);color:var(--red)}
+.btn.danger:hover{background:color-mix(in srgb,var(--red) 26%,transparent)}
+.votingcell{display:flex;flex-direction:column;align-items:flex-start;gap:5px}
 .msg{font-size:12.5px;color:var(--text-3);margin-left:10px}
 .msg.ok{color:var(--green)}
 .msg.err{color:var(--red)}
@@ -278,9 +282,9 @@ th.num{text-align:right}
       </div>
       <table>
         <thead>
-          <tr><th style="width:26%">Title</th><th style="width:16%">Artist</th>
-              <th style="width:8%">Year</th><th style="width:38%">Categories</th>
-              <th style="width:12%">Status</th></tr>
+          <tr><th style="width:23%">Title</th><th style="width:14%">Artist</th>
+              <th style="width:7%">Year</th><th style="width:32%">Categories</th>
+              <th style="width:10%">Status</th><th style="width:14%">Voting</th></tr>
         </thead>
         <tbody id="songRows"></tbody>
       </table>
@@ -702,7 +706,7 @@ function renderSongRows(){
   const vocab = categoryVocabulary;    // global vocabulary (2026-08-26), not per show
   const list = visibleSongs();
   if(!list.length){
-    const tr = el("tr",""); const td = el("td",""); td.colSpan = 5;
+    const tr = el("tr",""); const td = el("td",""); td.colSpan = 6;
     td.textContent = songs.length ? "No songs match that search." : "No songs synced yet — try Reconcile.";
     td.style.textAlign = "center"; td.style.color = "var(--text-3)"; td.style.padding = "24px";
     tr.appendChild(td); body.appendChild(tr);
@@ -741,7 +745,52 @@ function renderSongRows(){
     statusTd.appendChild(badges);
     tr.appendChild(statusTd);
 
+    const votingTd = el("td","");
+    const cell = el("div","votingcell");
+    const excludeLabel = el("label","checkrow");
+    const excludeInput = document.createElement("input");
+    excludeInput.type = "checkbox";
+    excludeInput.checked = !!s.excluded;
+    excludeInput.onchange = () => toggleExcluded(s, excludeInput.checked);
+    excludeLabel.append(excludeInput, document.createTextNode("Exclude from voting"));
+    cell.appendChild(excludeLabel);
+    if(s.excluded){
+      const delBtn = el("button","btn small danger");
+      delBtn.type = "button"; delBtn.textContent = "Delete";
+      delBtn.title = "Only works if this song has never played or been voted for";
+      delBtn.onclick = () => deleteSong(s);
+      cell.appendChild(delBtn);
+    }
+    votingTd.appendChild(cell);
+    tr.appendChild(votingTd);
+
     body.appendChild(tr);
+  }
+}
+
+async function toggleExcluded(song, excluded){
+  try{
+    const updated = await api("/api/admin/songs/" + encodeURIComponent(song.key), {
+      method:"PUT", body: JSON.stringify({excluded}),
+    });
+    Object.assign(song, updated);
+    renderSongRows();
+  }catch(e){
+    alert("Could not change voting eligibility: " + e.message);
+    renderSongRows();     // put the checkbox back to what the server actually has
+  }
+}
+
+async function deleteSong(song){
+  if(!confirm(`Permanently delete "${song.title}"? This only works if it has `
+             + "never played or been voted for, and cannot be undone."))
+    return;
+  try{
+    await api("/api/admin/songs/" + encodeURIComponent(song.key), {method:"DELETE"});
+    songs = songs.filter(s => s.key !== song.key);
+    renderSongRows();
+  }catch(e){
+    alert("Could not delete: " + e.message);
   }
 }
 

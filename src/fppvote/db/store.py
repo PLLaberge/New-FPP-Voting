@@ -92,6 +92,7 @@ class Song:
     duration_seconds: float | None
     display_override: str | None
     categories: list[str]          # global since 2026-08-26 — see CLAUDE.md
+    excluded: bool                 # manual "never voteable" flag, 2026-08-27
 
     @property
     def display_title(self) -> str:
@@ -183,7 +184,7 @@ def _song(row) -> Song:
         key=row["song_key"], title=row["title"], artist=row["artist"], year=row["year"],
         sequence_name=row["sequence_name"], media_name=row["media_name"],
         duration_seconds=row["duration_seconds"], display_override=row["display_override"],
-        categories=json.loads(row["categories"]),
+        categories=json.loads(row["categories"]), excluded=bool(row["excluded"]),
     )
 
 
@@ -463,6 +464,18 @@ class Store:
             (text or None, self.resolve_key(key)),
         )
 
+    def set_excluded(self, key: str, excluded: bool) -> None:
+        """Manually take a song out of voting, or put it back. Global
+        (2026-08-27) — separate from show_songs.active, which reflects
+        Reconcile's own bookkeeping and does not gate voting at all any more
+        (see CLAUDE.md section 12). Checked by voteable_catalog, so it works
+        even on a song still sitting in tonight's live FPP playlist."""
+        self._q(
+            "UPDATE songs SET excluded = ?, updated_at = datetime('now') "
+            "WHERE song_key = ?",
+            (int(bool(excluded)), self.resolve_key(key)),
+        )
+
     def set_song_metadata(self, key: str, *, artist=_UNSET, year=_UNSET) -> None:
         """Overwrite curated metadata. Unlike upsert_song this DOES replace —
         it is a human deliberately correcting a value, including back to None
@@ -553,6 +566,45 @@ class Store:
             self._q("DELETE FROM songs WHERE song_key = ?", (old,))
             self._q("INSERT OR REPLACE INTO song_aliases(alias_key, song_key) "
                     "VALUES(?, ?)", (old, new))
+
+    def delete_song(self, key: str) -> None:
+        """Permanently remove a song that was never played and never voted
+        for. The admin page's answer to "how do I get rid of a junk entry" —
+        see CLAUDE.md section 13's sibling decision, section 14.
+
+        Deliberately narrow, both checked here rather than left to the
+        foreign keys to enforce blindly:
+
+        - Must already be `excluded` (Store.set_excluded) — a safety fence,
+          not a technical requirement. Nothing stops a song with zero votes
+          *so far* from being live in tonight's playlist and about to get
+          its first one; requiring it to be excluded first means a human
+          deliberately took it out of rotation before anything permanent
+          happens.
+        - Must have no `rounds`/`votes` referencing it. `rounds.song_key` and
+          `votes.song_key` have no ON DELETE CASCADE (deliberately — see
+          schema.sql), so the database would refuse this anyway, but a plain
+          IntegrityError is a worse error message than this one.
+
+        `show_songs` and `song_aliases` rows DO cascade — a song with no
+        history has no votes to lose either way.
+        """
+        song = self.get_song(key)
+        if song is None:
+            raise ValueError(f"no such song: {key!r}")
+        if not song.excluded:
+            raise ValueError(
+                f"{key!r} must be excluded from voting before it can be deleted")
+        history = self._q(
+            "SELECT (SELECT COUNT(*) FROM rounds WHERE song_key = ? OR winner_key = ?)"
+            " + (SELECT COUNT(*) FROM votes WHERE song_key = ?) AS n",
+            (song.key, song.key, song.key),
+        ).fetchone()["n"]
+        if history:
+            raise ValueError(
+                f"{key!r} has {history} round(s)/vote(s) on record and cannot "
+                f"be deleted — that history is append-only by design")
+        self._q("DELETE FROM songs WHERE song_key = ?", (song.key,))
 
     # --------------------------------------------------------- memberships
     def load_memberships(self) -> dict[tuple[str, str], Membership]:
@@ -701,11 +753,13 @@ class Store:
     def voteable_catalog(self, keys: Iterable[str]) -> dict[str, dict]:
         """For each of `keys` (already resolved through aliases, already
         filtered by the caller to entries FPP reports having real media) that
-        exists in `songs`, its display info and categories. A key with no
-        matching song is simply omitted — it just isn't voteable yet, the
-        same "a curation gap never hides a song, it just has no chips" idea
-        as before, one level earlier: here the song has not been reconciled
-        into the catalogue at all yet, so there is nothing to show.
+        exists in `songs` and is not manually `excluded`, its display info
+        and categories. A key with no matching song is simply omitted — it
+        just isn't voteable yet, the same "a curation gap never hides a song,
+        it just has no chips" idea as before, one level earlier: here the
+        song has not been reconciled into the catalogue at all yet, so there
+        is nothing to show. `excluded` (2026-08-27) is the same kind of gap,
+        deliberate rather than a missing reconcile — see Store.set_excluded.
         """
         keys = list(dict.fromkeys(keys))       # de-dupe, keep order
         if not keys:
@@ -717,6 +771,7 @@ class Store:
             key: {"key": key, "title": song.display_title, "artist": song.artist,
                  "year": song.year, "categories": song.categories}
             for key, song in songs.items()
+            if not song.excluded
         }
 
     def show_overlap_counts(self, keys: Iterable[str]) -> dict[str, int]:

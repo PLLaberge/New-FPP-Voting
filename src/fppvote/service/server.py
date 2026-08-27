@@ -213,6 +213,7 @@ def _song_block(song) -> dict:
         "key": song.key, "title": song.title, "display_override": song.display_override,
         "sequence_name": song.sequence_name, "media_name": song.media_name,
         "artist": song.artist, "year": song.year, "categories": song.categories,
+        "excluded": song.excluded,
     }
 
 
@@ -439,13 +440,15 @@ def create_app(config: Config | None = None, *, store: Store | None = None,
     @app.put("/api/admin/songs/{song_key}")
     def admin_update_song(song_key: str, body: dict = Body(...),
                           _: None = Depends(require_admin)):
-        """Display-name override and curated artist/year — the fields the
-        parser cannot get right or cannot know at all."""
+        """Display-name override, curated artist/year, and the excluded flag
+        — the fields the parser cannot get right or cannot know at all."""
         song = store.get_song(song_key)
         if song is None:
             raise HTTPException(404, f"no such song: {song_key!r}")
         if "display_override" in body:
             store.set_display_override(song_key, body["display_override"])
+        if "excluded" in body:
+            store.set_excluded(song_key, bool(body["excluded"]))
         meta: dict = {}
         if "artist" in body:
             meta["artist"] = body["artist"]
@@ -460,6 +463,20 @@ def create_app(config: Config | None = None, *, store: Store | None = None,
         if meta:
             store.set_song_metadata(song_key, **meta)
         return _song_block(store.get_song(song_key))
+
+    @app.delete("/api/admin/songs/{song_key}")
+    def admin_delete_song(song_key: str, _: None = Depends(require_admin)):
+        """Permanently remove a song with no history. Store.delete_song does
+        the real gatekeeping (must be excluded first, must have zero rounds/
+        votes) — this route turns that ValueError into a 400; a missing song
+        is a 404, matching admin_update_song's own convention."""
+        if store.get_song(song_key) is None:
+            raise HTTPException(404, f"no such song: {song_key!r}")
+        try:
+            store.delete_song(song_key)
+        except ValueError as e:
+            raise HTTPException(400, str(e))
+        return {"deleted": song_key}
 
     # ------------------------------------------------------ admin: reconcile
     @app.post("/api/admin/shows/{show_id}/reconcile")

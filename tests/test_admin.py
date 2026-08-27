@@ -201,6 +201,46 @@ def test_a_missing_song_is_a_404(client):
     assert client.put("/api/admin/songs/no-such-song", json={"artist": "X"}).status_code == 404
 
 
+# --------------------------------------------------- excluding and deleting
+def test_a_song_can_be_excluded_and_reinstated(client, curated):
+    r = client.put("/api/admin/songs/zero", json={"excluded": True})
+    assert r.status_code == 200
+    assert r.json()["excluded"] is True
+    assert curated.get_song("zero").excluded is True
+
+    r = client.put("/api/admin/songs/zero", json={"excluded": False})
+    assert r.json()["excluded"] is False
+    assert curated.get_song("zero").excluded is False
+
+
+def test_deleting_a_song_that_is_not_excluded_is_a_400(client):
+    r = client.delete("/api/admin/songs/zero")
+    assert r.status_code == 400
+    assert "excluded" in r.json()["detail"]
+
+
+def test_deleting_a_song_with_history_is_a_400(client, curated):
+    rnd = curated.ensure_round("christmas", "hallelujah")
+    curated.cast_vote(rnd.round_id, "voter", "zero")
+    client.put("/api/admin/songs/zero", json={"excluded": True})
+
+    r = client.delete("/api/admin/songs/zero")
+    assert r.status_code == 400
+    assert curated.get_song("zero") is not None
+
+
+def test_deleting_an_excluded_unplayed_song_succeeds(client, curated):
+    client.put("/api/admin/songs/zero", json={"excluded": True})
+    r = client.delete("/api/admin/songs/zero")
+    assert r.status_code == 200
+    assert r.json()["deleted"] == "zero"
+    assert curated.get_song("zero") is None
+
+
+def test_deleting_a_missing_song_is_a_404(client):
+    assert client.delete("/api/admin/songs/no-such-song").status_code == 404
+
+
 # --------------------------------------------------------------- reconcile
 def test_reconcile_pulls_the_live_playlist_and_reports_what_changed(curated, db_path):
     """A song dropped from the FPP playlist and a new one added — the same

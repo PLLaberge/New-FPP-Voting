@@ -32,7 +32,7 @@ from pathlib import Path
 SCHEMA_PATH = Path(__file__).with_name("schema.sql")
 
 # Bump only alongside a new branch in the migrate() ladder below.
-SCHEMA_VERSION = 2
+SCHEMA_VERSION = 3
 
 # Categories that meant the same thing under two different names in the old
 # per-show vocabularies. Applied once, by the version-2 migration, folding
@@ -117,6 +117,23 @@ def migrate(conn: sqlite3.Connection) -> int:
         else:
             conn.execute("COMMIT")
         version = 2
+
+    if version < 3:
+        # Explicit transaction even for a one-column ALTER TABLE: without it,
+        # a crash between the ALTER and the version bump leaves the column
+        # already there but schema_meta still saying '2' -- the next startup
+        # would retry the ALTER and fail on "duplicate column name".
+        conn.execute("BEGIN IMMEDIATE")
+        try:
+            conn.execute(
+                "ALTER TABLE songs ADD COLUMN excluded INTEGER NOT NULL DEFAULT 0")
+            conn.execute("UPDATE schema_meta SET value = '3' WHERE key = 'version'")
+        except BaseException:
+            conn.execute("ROLLBACK")
+            raise
+        else:
+            conn.execute("COMMIT")
+        version = 3
 
     return version
 

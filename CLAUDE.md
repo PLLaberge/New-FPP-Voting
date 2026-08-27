@@ -341,6 +341,41 @@ not about which night it happens to be playing.
   structurally isolated the way section 4 originally promised. Paulin's call,
   accepted the same session he asked for the redesign.
 
+### 14. A song can be manually excluded from voting, and deleted once it is.
+(2026-08-27) Paulin noticed `show_songs.active` on a song (e.g. 300 Violin
+Orchestra showing "inactive") and assumed toggling it would stop the song
+being voted on. It would not — since section 12, voteability never looks at
+`show_songs.active` at all; that column is now purely Reconcile's own
+bookkeeping ("was this in the last playlist I synced against") and the
+admin song table's display filter. A song still sitting in the live FPP
+playlist stays fully voteable regardless of what `show_songs.active` says.
+
+That gap prompted two real, separate needs: stopping a specific song from
+being voted on even while it's still live in the playlist, and cleaning up
+a junk/duplicate entry that never played. One new mechanism covers both:
+
+- **`songs.excluded`** — a manual, global boolean, checked directly by
+  `Store.voteable_catalog`. Set it and the song stops being voteable on the
+  very next follower tick, independent of whether it's still in the FPP
+  playlist, still active in some show's `show_songs`, or anything else.
+  `Store.set_excluded(key, bool)` is the write path; the admin page's Songs
+  table carries a checkbox per row.
+- **`Store.delete_song(key)`** permanently removes a song, but only when
+  both are true: it is already `excluded` (a deliberate safety fence, not a
+  technical requirement — a song with zero votes *right now* can still be
+  about to get its first one, so requiring exclusion first means a human
+  already took it out of rotation before anything permanent happens), and it
+  has zero `rounds`/`votes` referencing it. The second condition isn't
+  optional either way — `rounds.song_key`/`votes.song_key` have no `ON
+  DELETE CASCADE` (deliberately, see schema.sql), so the database would
+  refuse the delete regardless; the explicit check exists only to turn that
+  into a clear message instead of a raw `IntegrityError`. `show_songs` and
+  `song_aliases` *do* cascade — a song with no vote history has nothing
+  else worth keeping either.
+- The admin Songs table's Delete button only appears once a row is
+  excluded, and the server is the actual gate either way — the button
+  existing is not a promise the delete will succeed.
+
 ## Reliability is the actual feature
 
 The viewers already like the old broken app. The win is that this one keeps

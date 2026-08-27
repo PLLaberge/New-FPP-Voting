@@ -13,6 +13,13 @@
 --    show_songs to songs on 2026-08-26 -- see CLAUDE.md: one global
 --    vocabulary, not "Rock & Roll at Christmas, Dance Tunes at New Year's."
 --
+--  * songs.excluded (2026-08-27) is a manual, global "never voteable" flag --
+--    separate from show_songs.active, which only reflects whether Reconcile
+--    last saw a song in a particular show's live playlist and does not gate
+--    voting at all any more (see CLAUDE.md section 12). excluded is checked
+--    by Store.voteable_catalog directly, so it works even on a song that is
+--    still sitting in the live FPP playlist right now.
+--
 --  * votes is append-only with a timestamp. Tallies are queries, never stored
 --    counters, so history survives playlist edits and supports per-night stats.
 --
@@ -39,6 +46,7 @@ CREATE TABLE IF NOT EXISTS songs (
     duration_seconds REAL,
     display_override TEXT,                     -- manual title fix from admin UI
     categories       TEXT NOT NULL DEFAULT '[]', -- JSON array; global, not per show
+    excluded         INTEGER NOT NULL DEFAULT 0, -- manual "never voteable" flag
     created_at       TEXT NOT NULL DEFAULT (datetime('now')),
     updated_at       TEXT NOT NULL DEFAULT (datetime('now'))
 );
@@ -144,4 +152,4 @@ CREATE TABLE IF NOT EXISTS schema_meta (
     key   TEXT PRIMARY KEY,
     value TEXT NOT NULL
 );
-INSERT OR IGNORE INTO schema_meta(key, value) VALUES ('version', '2');
+INSERT OR IGNORE INTO schema_meta(key, value) VALUES ('version', '3');

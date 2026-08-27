@@ -260,3 +260,52 @@ def test_seeding_refreshes_the_playlist_name_but_not_global_voting_rules(christm
 def test_define_show_creates_when_missing(store):
     assert store.define_show("nye", "New Year's Eve 2026", "NY_Dance_Party") == "created"
     assert store.get_show("nye").playlist_name == "NY_Dance_Party"
+
+
+# ---------------------------------------------- excluding and deleting songs
+def test_excluding_a_song_removes_it_from_voteable_catalog(curated):
+    """Global (2026-08-27) -- checked directly in voteable_catalog, so it
+    works even on a song still sitting in the live playlist right now."""
+    assert "zero" in curated.voteable_catalog(["zero"])
+    curated.set_excluded("zero", True)
+    assert "zero" not in curated.voteable_catalog(["zero"])
+    curated.set_excluded("zero", False)
+    assert "zero" in curated.voteable_catalog(["zero"])
+
+
+def test_a_song_must_be_excluded_before_it_can_be_deleted(curated):
+    """A safety fence, not a technical requirement -- see Store.delete_song.
+    A song can have zero votes right now and still be about to get its
+    first one; excluded first means a human deliberately pulled it."""
+    with pytest.raises(ValueError, match="excluded"):
+        curated.delete_song("zero")
+    assert curated.get_song("zero") is not None
+
+
+def test_a_song_with_history_cannot_be_deleted(curated):
+    rnd = curated.ensure_round("christmas", "hallelujah")
+    curated.cast_vote(rnd.round_id, "voter", "zero")
+    curated.set_excluded("zero", True)
+    with pytest.raises(ValueError, match="round|vote"):
+        curated.delete_song("zero")
+    assert curated.get_song("zero") is not None
+
+
+def test_an_excluded_song_with_no_history_can_be_deleted(curated):
+    curated.set_excluded("zero", True)
+    curated.delete_song("zero")
+    assert curated.get_song("zero") is None
+
+
+def test_deleting_a_song_cascades_its_show_membership(curated):
+    """show_songs has ON DELETE CASCADE for exactly this -- a song with no
+    votes has nothing else worth keeping once it's gone."""
+    curated.set_excluded("zero", True)
+    curated.delete_song("zero")
+    assert all(s.key != "zero" for s in
+              curated.list_show_songs("christmas", include_inactive=True))
+
+
+def test_deleting_a_song_that_does_not_exist_is_refused(store):
+    with pytest.raises(ValueError, match="no such song"):
+        store.delete_song("no-such-key")
