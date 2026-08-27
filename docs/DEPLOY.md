@@ -35,12 +35,23 @@ Do (1) first and confirm it works **on your home network** before touching
 ### Install
 
 FPP's Plugin Manager installs anything it can `git clone`, whether or not
-it's in the official plugin catalog:
+it's in the official plugin catalog — but the "paste a URL" box only
+recognizes a URL ending literally in `pluginInfo.json`, confirmed against
+FPP's own `www/plugins.php`
+(`isUrlInput = uiLevel >= 3 && /plugininfo\.json$/i.test(raw)`). A bare repo
+URL is silently treated as a plain search term instead, which just looks like
+the box did nothing:
 
-1. On the Pi's web UI: **Content Setup → Plugin Manager**.
-2. Look for an "Add Plugin from URL" / "Install from URL" field (wording
-   varies by FPP version).
-3. Paste: `https://github.com/PLLaberge/New-FPP-Voting.git`
+1. **UI Level 3+ required.** In FPP's Settings, find the UI Level control and
+   raise it if needed — level 3 is also what unlocks the "Developer" tab. If
+   the search box's placeholder just says "Find a Plugin" (not mentioning
+   pluginInfo.json), the level is too low and pasting a URL will never work
+   regardless of what you paste.
+2. On the Pi's web UI: **Content Setup → Plugin Manager**.
+3. Paste the actual pluginInfo.json URL, not the repo URL:
+   `https://raw.githubusercontent.com/PLLaberge/New-FPP-Voting/main/pluginInfo.json`
+   (a `github.com/.../blob/main/pluginInfo.json` URL also works — FPP
+   rewrites it to the raw form automatically).
 4. Install. FPP clones the repo into
    `/home/fpp/media/plugins/New-FPP-Voting/` and runs
    `scripts/fpp_install.sh`, which:
@@ -50,13 +61,15 @@ it's in the official plugin catalog:
      doesn't already exist
    - installs and starts a systemd service, `fppvote`, listening on port 8000
 
-If your FPP version has no "install from URL" option, SSH in and do the
-equivalent by hand:
+If that still doesn't work, SSH in and do the equivalent by hand — `-E`
+matters here, since `sudo` resets the environment by default and
+`fpp_install.sh` needs `$FPPDIR` (set for a normal login shell) to find
+`${FPPDIR}/scripts/common`:
 
 ```bash
 cd /home/fpp/media/plugins
 git clone https://github.com/PLLaberge/New-FPP-Voting.git
-sudo bash New-FPP-Voting/scripts/fpp_install.sh
+sudo -E bash New-FPP-Voting/scripts/fpp_install.sh
 ```
 
 ### Check
