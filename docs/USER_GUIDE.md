@@ -8,6 +8,23 @@ this, see `CLAUDE.md`; for the one-time Cloudflare Tunnel setup, see
 
 ---
 
+## Quick start
+
+To resume working on this project with Claude Code, from a terminal on your
+laptop:
+
+```bash
+cd ~/projects/"FPP Voting"
+source .venv/bin/activate
+claude
+```
+
+That puts you back in the project directory with the Python virtualenv
+active and starts a Claude Code session there — the rest of this guide is
+for the *deployed* plugin on the Pi, not this step.
+
+---
+
 ## 1. Installing / updating the plugin
 
 ### If it's already installed (the normal case)
