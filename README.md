@@ -123,6 +123,12 @@ Installing the plugin on real FPP hardware and putting a Cloudflare Tunnel in
 front of it are covered in **`docs/DEPLOY.md`** — that's the one part of this
 project that needs the actual Pi rather than `FPPVOTE_FAKE=1`.
 
+## Day-to-day: installing, updating, and running `/admin`
+
+**`docs/USER_GUIDE.md`** — the owner-facing reference: both install paths
+(Plugin Manager URL and manual SSH), the routine `git pull` update, and a
+walkthrough of every `/admin` card and control.
+
 ## Capture your FPP's responses
 
 **Do this before trusting the adapter.** The contract tests currently run
