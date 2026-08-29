@@ -488,6 +488,25 @@ Python enforces PEP 668 externally-managed environments.
 
 Stages 1–6 run entirely on a laptop against `FakeFppAdapter`. No Pi needed.
 
+## Companion plugin: FPP-Control-Mobile
+
+A second, separate plugin (`github.com/PLLaberge/FPP-Control-Mobile`, design
+settled 2026-08-28) — a phone-sized controller for FPP's Player-Mode
+dashboard. It is fully independent: its own repo, service, systemd unit, port
+(8001), venv. It never opens `fppvote.db`.
+
+The only thing this repo owes it is **`GET /api/leader`** — the current
+round's front-runner as `{title, votes, round_id}`, read-only and
+unauthenticated like `/api/state`. `Store.leader()` computes it with the same
+ordering as `winner()` so the line a viewer reads matches the song that would
+actually take over; nulls when no round is open or nobody has voted yet.
+Nothing in *this* repo consumes it — it exists only so the controller can show
+a "most votes" line without parsing the whole state payload for two fields.
+
+If FPP-Control-Mobile ever gains "play this song next", it will need a *write*
+here too (a `force-winner` override endpoint) — deliberately deferred, see
+that repo's `CLAUDE.md`.
+
 ## Known data issues (real, in Paulin's playlists)
 
 - 6 songs have no artist, 23 have no release year. `year=None` means "needs

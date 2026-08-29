@@ -313,6 +313,27 @@ def create_app(config: Config | None = None, *, store: Store | None = None,
         payload.pop("_selections", None)
         return payload
 
+    @app.get("/api/leader")
+    def get_leader():
+        """The current round's front-runner — display title and vote count.
+
+        Added for the companion FPP-Control-Mobile plugin, which shows a
+        "most votes" line next to what FPP is playing. Read-only and
+        unauthenticated, same as /api/state; a much smaller contract than
+        parsing the whole state payload for the same two fields.
+
+        `round_id` is null only when no round is open. `title` is null when
+        no round is open OR a round is open but nobody has voted yet — the
+        caller shows a dash either way.
+        """
+        round_id = follower.state.round_id
+        if round_id is None:
+            return {"title": None, "votes": 0, "round_id": None}
+        lead = store.leader(round_id)
+        if lead is None:
+            return {"title": None, "votes": 0, "round_id": round_id}
+        return {"title": lead["title"], "votes": lead["votes"], "round_id": round_id}
+
     @app.post("/api/vote")
     def post_vote(response: Response, body: dict = Body(...),
                   x_voter_token: str | None = Header(default=None),

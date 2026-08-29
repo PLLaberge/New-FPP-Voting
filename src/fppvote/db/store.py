@@ -1037,6 +1037,38 @@ class Store:
         ).fetchone()
         return row["song_key"] if row else None
 
+    def leader(self, round_id: int) -> dict | None:
+        """The current front-runner for a round: display title and vote count.
+
+        Same ordering as winner() — votes, then least-recently-played, then
+        title — so the line a viewer reads matches the song that would
+        actually take over. Returns None when nobody has voted in the round
+        yet.
+
+        Separate from winner() on purpose: winner() feeds the handover and
+        returns only a key; this feeds a display line — the companion
+        FPP-Control-Mobile plugin's "most votes" readout, via /api/leader —
+        and needs the title and the number in one read.
+        """
+        row = self._q(
+            """
+            SELECT COALESCE(s.display_override, s.title) AS title,
+                   COUNT(*) AS votes,
+                   COALESCE((SELECT MAX(r.round_id) FROM rounds r
+                             WHERE r.song_key = v.song_key), -1) AS last_played
+            FROM votes v
+            JOIN songs s ON s.song_key = v.song_key
+            WHERE v.round_id = ?
+            GROUP BY v.song_key
+            ORDER BY votes DESC, last_played ASC, s.title ASC
+            LIMIT 1
+            """,
+            (round_id,),
+        ).fetchone()
+        if row is None:
+            return None
+        return {"title": row["title"], "votes": row["votes"]}
+
     # --------------------------------------------------------- voting rules
     def votes_per_round(self) -> int:
         """The vote allowance, global across every show (2026-08-25) — see

@@ -190,6 +190,39 @@ def test_a_vote_round_trips_through_the_api(client):
     assert voted["votes"] == 1
 
 
+def test_the_leader_endpoint_tracks_the_front_runner(client):
+    state = client.get("/api/state").json()
+    token = state["you"]["token"]
+
+    # Round open, nobody has voted: round_id is real, but there is no leader.
+    empty = client.get("/api/leader").json()
+    assert empty["round_id"] == state["round_id"]
+    assert empty["title"] is None
+    assert empty["votes"] == 0
+
+    unlocked = next(s for s in state["songs"] if not s["locked"])
+    client.post("/api/vote", json={"song_key": unlocked["key"]},
+                headers={"X-Voter-Token": token})
+
+    lead = client.get("/api/leader").json()
+    assert lead["title"] == unlocked["title"]
+    assert lead["votes"] == 1
+    assert lead["round_id"] == state["round_id"]
+
+
+def test_the_leader_endpoint_is_all_nulls_with_no_open_round(curated, fpp, config):
+    # Built without the `client` fixture on purpose: that one runs the follower
+    # loop as a live background task, which would race this test's own tick over
+    # whether the round is closed. Here nothing ever starts on the fake, so FPP
+    # is idle from the first tick and the round is unambiguously closed.
+    curated.update_show("christmas", playlist_name=PLAYLIST)
+    app = create_app(config, store=curated, adapter=fpp)
+    app.state.follower.tick()
+    assert app.state.follower.state.round_id is None
+    body = TestClient(app).get("/api/leader").json()
+    assert body == {"title": None, "votes": 0, "round_id": None}
+
+
 def test_the_allowance_is_enforced_over_the_api(client):
     state = client.get("/api/state").json()
     token = state["you"]["token"]
